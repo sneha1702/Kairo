@@ -72,6 +72,11 @@ class Config:
     # Dune pipeline settings
     QUERY_DIR: str = os.getenv("QUERY_DIR", "app/ingestion/query")
     DUNE_API_KEY: str = os.getenv("DUNE_API_KEY", "")
+    # How far back each Dune query looks. Env var > dune_params.json > default of 4h.
+    # Accepts any integer number of hours (e.g. 2, 4, 24, 168, 720, 8760).
+    DUNE_QUERY_WINDOW_HOURS: int = int(
+        os.getenv("DUNE_QUERY_WINDOW_HOURS", str(_dune_params.get("query_window_hours", 4)))
+    )
     
     @classmethod
     def validate(cls) -> bool:
