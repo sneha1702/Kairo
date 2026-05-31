@@ -257,6 +257,9 @@ class NarrativeTracker:
                     "key_evidence": 1,
                     "signal_sources": 1,
                     "momentum": 1,
+                    "data_window_start": 1,
+                    "data_window_end": 1,
+                    "last_ingested_at": 1,
                 },
             )
             .sort("confidence_score", DESCENDING)
