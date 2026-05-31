@@ -4,6 +4,7 @@ Uses Gemini to infer narratives from Dune Analytics data (8 signal types) plus w
 """
 
 import json
+import logging
 import os
 from google import genai
 from datetime import datetime
@@ -12,7 +13,9 @@ from typing import List, Dict, Any, Optional
 import pandas as pd
 from collections import defaultdict
 
-_PROMPT_DIR = Path(__file__).resolve().parents[2] / "app" / "prompts"
+logger = logging.getLogger(__name__)
+
+_PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts"
 
 
 class NarrativeEngine:
