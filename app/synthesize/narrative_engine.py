@@ -547,9 +547,14 @@ Each object MUST have EXACTLY these fields:
             narratives = json.loads(response_text)
             logger.info("[GEMINI] Parsed %d narratives from response", len(narratives))
 
+            built_at = datetime.utcnow().isoformat() + "Z"
             for narrative in narratives:
-                narrative["detected_at"] = datetime.now().isoformat()
-                narrative["source"] = "gemini_analysis"
+                narrative["detected_at"]        = built_at
+                narrative["source"]             = "gemini_analysis"
+                narrative["data_window_start"]  = data_window_start
+                narrative["data_window_end"]    = data_window_end
+                narrative["last_ingested_at"]   = last_ingested_at
+                narrative["prompt_built_at"]    = built_at
 
             return narratives
         except json.JSONDecodeError as e:
