@@ -395,29 +395,29 @@ class _KairoEncoder(json.JSONEncoder):
 # ---------------------------------------------------------------------------
 
 es_manager, narrative_engine, tracker = init_services()
-demo_mode = os.getenv("DEMO_MODE", "false").lower() == "true"
 
-# ── Sidebar (collapsed by default) ──────────────────────────────────────────
-user_id = st.sidebar.text_input("User ID", value="default")
-hours_lookback = st.sidebar.slider("Hours to analyse", 1, 168, 24)
+# ── Two-tab layout: Kairo view | Admin Panel ─────────────────────────────────
+tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin Panel"])
 
-# ── Refresh / Run Detection button ──────────────────────────────────────────
-col_btn, col_status = st.columns([1, 5])
-with col_btn:
-    run_detection = st.button("🔮 Refresh / Run Detection", use_container_width=True)
+# Admin tab — evaluated first so user_id / hours_lookback are set before Kairo tab
+with tab_admin:
+    st.subheader("Detection Settings")
+    user_id        = st.text_input("User ID", value="default")
+    hours_lookback = st.slider("Hours to analyse", 1, 168, 24)
 
-# If button pressed, run detection then clear the cache so data rebuilds
-if run_detection:
-    _cached_build_data.clear()
-    if es_manager is not None and narrative_engine is not None:
-        with col_status:
+    st.divider()
+    st.subheader("Run Detection")
+    run_detection = st.button("🔮 Run Detection", use_container_width=True)
+
+    if run_detection:
+        _cached_build_data.clear()
+        if es_manager is not None and narrative_engine is not None:
             with st.spinner("Fetching signals & running Gemini narrative analysis…"):
                 try:
                     dune_context = es_manager.get_dune_signal_context(hours=hours_lookback)
                     signal_trend = es_manager.get_signal_trend(hours_per_bucket=24, num_buckets=3)
                     current_narratives = tracker.get_current_narratives(user_id, min_confidence=0.0) if tracker else []
-                    # Richer summary for Gemini: includes prior evidence, momentum, hours_since_update
-                    history_summary = tracker.get_narratives_summary(user_id) if tracker else []
+                    history_summary    = tracker.get_narratives_summary(user_id) if tracker else []
 
                     def _parse_dt(val):
                         if isinstance(val, datetime):
@@ -458,28 +458,34 @@ if run_detection:
                                 tracker.save_narratives(enriched, user_id)
                                 returned_ids = {n.get("narrative_id") for n in enriched}
                                 tracker.mark_stale_narratives(returned_ids, user_id)
-                    # force cache invalidation for fresh data
+
                     _cached_build_data.clear()
-                    st.success(f"Detection complete — refreshing Kairo…")
-                    st.rerun()
+                    st.success("Detection complete — switch to the Kairo tab to see updated narratives.")
                 except Exception as exc:
                     st.error(f"Detection error: {exc}")
                     logger.exception("Detection failed")
-    else:
-        with col_status:
+        else:
             st.info("Services not fully configured — showing available data.")
 
-# ── Build data (cached 5 min) ────────────────────────────────────────────────
-kairo_data = _cached_build_data(user_id, hours_lookback)
+    st.divider()
+    st.subheader("Service Status")
+    st.write("Elasticsearch:", "✅ connected" if es_manager is not None else "❌ not connected")
+    st.write("Narrative Engine:", "✅ ready" if narrative_engine is not None else "❌ not ready")
+    st.write("MongoDB Tracker:", "✅ connected" if tracker is not None else "❌ not connected")
 
-# ── Serialise to JSON ────────────────────────────────────────────────────────
-try:
-    data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
-except Exception as exc:
-    logger.exception("JSON serialisation failed: %s", exc)
-    from app.synthesize.kairo_data import _fallback_data
-    data_json_str = json.dumps(_fallback_data(), ensure_ascii=False)
+# ── Kairo tab — iframe only, no other Streamlit widgets ─────────────────────
+with tab_kairo:
+    # Build data (cached 5 min)
+    kairo_data = _cached_build_data(user_id, hours_lookback)
 
-# ── Build and render the Kairo HTML ─────────────────────────────────────────
-html = build_kairo_html(data_json_str)
-components.html(html, height=1400, scrolling=True)
+    # Serialise to JSON
+    try:
+        data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
+    except Exception as exc:
+        logger.exception("JSON serialisation failed: %s", exc)
+        from app.synthesize.kairo_data import _empty_data
+        data_json_str = json.dumps(_empty_data(), ensure_ascii=False)
+
+    # Build and render the Kairo HTML
+    html = build_kairo_html(data_json_str)
+    components.html(html, height=1400, scrolling=True)
