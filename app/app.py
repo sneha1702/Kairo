@@ -539,6 +539,10 @@ with tab_kairo:
     # Build data (cached 5 min)
     kairo_data = _cached_build_data(user_id, hours_lookback)
 
+    # Inject server-side config so the React frontend can display it
+    from config.config import Config as _CfgKairo
+    kairo_data.setdefault("config", {})["dune_query_window_hours"] = _CfgKairo.DUNE_QUERY_WINDOW_HOURS
+
     # Serialise to JSON
     try:
         data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
