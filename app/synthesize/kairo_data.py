@@ -555,10 +555,7 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
     try:
         whale_rows = dune_context.get("whale_transactions") or []
         top_tokens = set(t.upper() for t in (narrative.get("top_tokens") or []))
-        # prefer rows matching narrative tokens, then fall back to all rows by size
-        relevant = [r for r in whale_rows if (r.get("symbol") or "").upper() in top_tokens] if top_tokens else whale_rows
-        if not relevant:
-            relevant = whale_rows
+        relevant = [r for r in whale_rows if (r.get("symbol") or "").upper() in top_tokens] if top_tokens else []
         top_whales = sorted(relevant, key=lambda r: _safe_float(r.get("usd_value"), 0), reverse=True)[:5]
         for r in top_whales:
             usd = _safe_float(r.get("usd_value"), 0)
