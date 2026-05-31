@@ -323,14 +323,53 @@ class NarrativeEngine:
             ]
             history_section = json.dumps(slim, indent=2, default=_default)
 
+        # ── Extract data provenance from dune_context ──────────────────────────
+        data_window_start: Optional[str] = None
+        data_window_end:   Optional[str] = None
+        last_ingested_at:  Optional[str] = None
+
+        if dune_context:
+            all_event_times: List[str] = []
+            all_ingested_ats: List[str] = []
+            # timestamp field names present per signal type
+            ts_fields = [
+                "block_time", "first_buy", "last_buy",
+                "earliest_tx_time", "latest_tx_time",
+                "earliest_flow_time", "latest_flow_time",
+                "earliest_trade_time", "latest_trade_time",
+                "window_start_time", "window_end_time",
+                "snapshot_time",
+            ]
+            for docs in dune_context.values():
+                for doc in docs:
+                    for f in ts_fields:
+                        v = doc.get(f)
+                        if v and isinstance(v, str) and len(v) >= 10:
+                            all_event_times.append(v)
+                    ia = doc.get("ingested_at")
+                    if ia and isinstance(ia, str):
+                        all_ingested_ats.append(ia)
+
+            if all_event_times:
+                data_window_start = min(all_event_times)
+                data_window_end   = max(all_event_times)
+            if all_ingested_ats:
+                last_ingested_at = max(all_ingested_ats)
+
         # ── Section 3a: token confluence ───────────────────────────────────────
         confluence_section = "No on-chain data available."
         signal_summary_section = ""
+        data_freshness_header = ""
         if dune_context:
             confluence = self.build_token_confluence(dune_context)
             confluence_section = json.dumps(confluence, indent=2, default=_default)
             summary = self.build_signal_summary(dune_context)
             signal_summary_section = json.dumps(summary, indent=2, default=_default)
+            data_freshness_header = (
+                f"Data provenance: on-chain events from {data_window_start} → {data_window_end} "
+                f"| last ingested into ES at {last_ingested_at} "
+                f"| prompt built at {datetime.utcnow().isoformat()}Z"
+            )
 
         # ── Section 3c: temporal trend ─────────────────────────────────────────
         trend_section = "No trend data available."
