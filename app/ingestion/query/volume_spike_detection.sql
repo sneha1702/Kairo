@@ -64,6 +64,8 @@ SELECT
     cw.current_trades,
     ROUND(b.avg_hourly_trades * {{time_window_hours}}, 0)   AS expected_trades,
     cw.current_unique_traders,
+    cw.window_start_time,
+    cw.window_end_time,
     CASE
         WHEN cw.current_volume_usd / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0) >= {{spike_multiplier}} * 2
             THEN '🚨 Extreme Spike (>2x threshold)'
