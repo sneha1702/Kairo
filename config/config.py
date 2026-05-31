@@ -79,6 +79,25 @@ class Config:
     )
     
     @classmethod
+    def set_dune_query_window(cls, hours: int) -> None:
+        """Persist a new query window to dune_params.json and update the class attr."""
+        params_file = _CONFIG_DIR / "dune_params.json"
+        existing: dict = {}
+        if params_file.exists():
+            try:
+                existing = json.loads(params_file.read_text())
+            except Exception:
+                pass
+        existing["query_window_hours"] = int(hours)
+        existing["_comment"] = (
+            "Runtime-configurable Dune ingestion params. "
+            "Edit via the Admin Panel or set DUNE_QUERY_WINDOW_HOURS env var. "
+            "Env var takes precedence."
+        )
+        params_file.write_text(json.dumps(existing, indent=2) + "\n")
+        cls.DUNE_QUERY_WINDOW_HOURS = int(hours)
+
+    @classmethod
     def validate(cls) -> bool:
         """Validate required configuration."""
         required = ['ES_URL', 'ES_USERNAME', 'ES_PASSWORD', 'GEMINI_KEY']
