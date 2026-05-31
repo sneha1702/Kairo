@@ -403,125 +403,120 @@ es_manager, narrative_engine, tracker = init_services()
 # ── Two-tab layout: Kairo view | Admin Panel ─────────────────────────────────
 tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin Panel"])
 
-# Admin tab — evaluated first so user_id / hours_lookback are set before Kairo tab
+# Admin tab — evaluated first so user_id / hours_lookback are always defined before Kairo tab
 with tab_admin:
-    # ── Dune Ingestion Settings ───────────────────────────────────────────────
-    st.subheader("Dune Ingestion Settings")
-
-    from config.config import Config as _Cfg
-
-    _WINDOW_PRESETS: dict[str, int] = {
-        "2 hours":    2,
-        "4 hours (default)": 4,
-        "6 hours":    6,
-        "12 hours":   12,
-        "24 hours / 1 day":  24,
-        "48 hours / 2 days": 48,
-        "1 week":     168,
-        "1 month":    720,
-        "3 months":   2160,
-        "6 months":   4380,
-        "1 year":     8760,
-    }
-
-    current_hours = _Cfg.DUNE_QUERY_WINDOW_HOURS
-    current_label = next(
-        (lbl for lbl, h in _WINDOW_PRESETS.items() if h == current_hours),
-        f"{current_hours} hours (custom)",
-    )
-    st.caption(f"Current query window: **{current_label}**")
-
-    selected_preset = st.selectbox(
-        "Query window (how far back each Dune query looks)",
-        options=list(_WINDOW_PRESETS.keys()),
-        index=list(_WINDOW_PRESETS.values()).index(current_hours)
-              if current_hours in _WINDOW_PRESETS.values() else 1,
-        help="Sets time_window_hours for all Dune SQL queries. Per-query YAML overrides in "
-             "app/ingestion/query/config.yaml still take precedence for individual queries.",
-    )
-
-    custom_hours = st.number_input(
-        "Or enter a custom value (hours)",
-        min_value=1, max_value=8760,
-        value=current_hours,
-        help="Overrides the preset above when you click Save.",
-    )
-
-    if st.button("Save Dune Query Window", use_container_width=True):
-        new_hours = int(custom_hours)
-        try:
-            _Cfg.set_dune_query_window(new_hours)
-            _cached_build_data.clear()
-            st.success(
-                f"Query window updated to **{new_hours}h**. "
-                "Restart the ingestion pipeline (`schedule_runner.py`) for the change to take effect."
-            )
-        except Exception as exc:
-            st.error(f"Failed to save: {exc}")
-
-    st.divider()
-
-    # ── Detection Settings ────────────────────────────────────────────────────
+    # ── Detection Settings — defined first so they're always in scope ─────────
     st.subheader("Detection Settings")
     user_id        = st.text_input("User ID", value="default")
     hours_lookback = st.slider("Hours to analyse", 1, 168, 24)
 
     st.divider()
+
+    # ── Dune Ingestion Settings ───────────────────────────────────────────────
+    from config.config import Config as _Cfg
+    from app.ingestion.dune_pipeline import build_pipeline as _build_pipeline
+
+    st.subheader("Dune Ingestion Settings")
+
+    _WINDOW_PRESETS: list[tuple[str, int]] = [
+        ("2 hours",           2),
+        ("4 hours (default)", 4),
+        ("6 hours",           6),
+        ("12 hours",          12),
+        ("24 hours / 1 day",  24),
+        ("48 hours / 2 days", 48),
+        ("1 week",            168),
+        ("1 month",           720),
+        ("3 months",          2160),
+        ("6 months",          4380),
+        ("1 year",            8760),
+    ]
+    _preset_labels = [p[0] for p in _WINDOW_PRESETS]
+    _preset_hours  = [p[1] for p in _WINDOW_PRESETS]
+    _preset_map    = dict(_WINDOW_PRESETS)
+
+    current_hours = _Cfg.DUNE_QUERY_WINDOW_HOURS
+    current_label = next((lbl for lbl, h in _WINDOW_PRESETS if h == current_hours),
+                         f"{current_hours}h (custom)")
+    st.caption(f"Active query window: **{current_label}** ({current_hours}h)")
+
+    default_idx = _preset_hours.index(current_hours) if current_hours in _preset_hours else 1
+    selected_window = st.selectbox(
+        "Query window — how far back each Dune query looks",
+        options=_preset_labels,
+        index=default_idx,
+        key="dune_window_select",
+    )
+    selected_hours = _preset_map[selected_window]
+
+    fetch_after_save = st.checkbox(
+        "Fetch fresh data from Dune immediately after saving",
+        value=True,
+        help="Runs all 8 Dune queries with the new window and stores results in Elasticsearch.",
+    )
+
+    if st.button("Save & Apply", use_container_width=True, key="save_dune_window"):
+        try:
+            _Cfg.set_dune_query_window(selected_hours)
+            st.success(f"Query window set to **{selected_window}** ({selected_hours}h).")
+
+            if fetch_after_save:
+                with st.spinner(f"Running Dune pipeline — fetching last {selected_window} of on-chain data…"):
+                    try:
+                        pipeline = _build_pipeline()
+                        results  = pipeline.run_all()
+                        n_ok   = sum(1 for r in results.values() if r.success)
+                        n_fail = sum(1 for r in results.values() if not r.success)
+                        _cached_build_data.clear()
+                        if n_fail:
+                            failed_names = [r.query_name for r in results.values() if not r.success]
+                            st.warning(f"Ingestion: {n_ok} queries succeeded, {n_fail} failed: {failed_names}")
+                        else:
+                            total_rows = sum(r.rows_fetched for r in results.values())
+                            st.success(f"Ingested {total_rows:,} rows across {n_ok} queries into Elasticsearch.")
+                    except Exception as exc:
+                        st.error(f"Dune ingestion failed: {exc}")
+                        logger.exception("Dune ingestion failed from admin panel")
+        except Exception as exc:
+            st.error(f"Failed to save config: {exc}")
+
+    st.divider()
+
+    # ── Run Detection ─────────────────────────────────────────────────────────
     st.subheader("Run Detection")
-    run_detection = st.button("🔮 Run Detection", use_container_width=True)
+    run_detection = st.button("🔮 Run Detection", use_container_width=True, key="run_detection")
 
     if run_detection:
-        _cached_build_data.clear()
         if es_manager is not None and narrative_engine is not None:
             with st.spinner("Fetching signals & running Gemini narrative analysis…"):
                 try:
-                    dune_context = es_manager.get_dune_signal_context(hours=hours_lookback)
-                    signal_trend = es_manager.get_signal_trend(hours_per_bucket=24, num_buckets=3)
+                    dune_context      = es_manager.get_dune_signal_context(hours=hours_lookback)
+                    signal_trend      = es_manager.get_signal_trend(hours_per_bucket=24, num_buckets=3)
                     current_narratives = tracker.get_current_narratives(user_id, min_confidence=0.0) if tracker else []
                     history_summary    = tracker.get_narratives_summary(user_id) if tracker else []
 
-                    def _parse_dt(val):
-                        if isinstance(val, datetime):
-                            return val.replace(tzinfo=val.tzinfo)
-                        if isinstance(val, str):
-                            try:
-                                return datetime.fromisoformat(val.replace("Z", "+00:00"))
-                            except Exception:
-                                pass
-                        return None
-
-                    latest_ingested = max(
-                        filter(None, (_parse_dt(doc.get("ingested_at")) for docs in dune_context.values() for doc in docs)),
-                        default=None,
+                    # Always run detection when the button is clicked — skip the stale-data guard
+                    new_narratives = narrative_engine.detect_narratives(
+                        dune_context=dune_context,
+                        historical_narratives=history_summary,
+                        signal_trend=signal_trend,
                     )
-                    last_detected = max(
-                        filter(None, (_parse_dt(n.get("detected_at")) for n in current_narratives)),
-                        default=None,
-                    )
-                    has_new_data = (
-                        latest_ingested is None
-                        or last_detected is None
-                        or latest_ingested.replace(tzinfo=None) > last_detected.replace(tzinfo=None)
-                    )
-
-                    if has_new_data or not current_narratives:
-                        new_narratives = narrative_engine.detect_narratives(
-                            dune_context=dune_context,
-                            historical_narratives=history_summary,
-                            signal_trend=signal_trend,
-                        )
-                        if new_narratives:
-                            enriched = [
-                                narrative_engine.enrich_narrative(n, previous_narratives=current_narratives)
-                                for n in new_narratives
-                            ]
-                            if tracker:
-                                tracker.save_narratives(enriched, user_id)
-                                returned_ids = {n.get("narrative_id") for n in enriched}
-                                tracker.mark_stale_narratives(returned_ids, user_id)
+                    if new_narratives:
+                        enriched = [
+                            narrative_engine.enrich_narrative(n, previous_narratives=current_narratives)
+                            for n in new_narratives
+                        ]
+                        if tracker:
+                            tracker.save_narratives(enriched, user_id)
+                            returned_ids = {n.get("narrative_id") for n in enriched}
+                            tracker.mark_stale_narratives(returned_ids, user_id)
 
                     _cached_build_data.clear()
-                    st.success("Detection complete — switch to the Kairo tab to see updated narratives.")
+                    count = len(new_narratives) if new_narratives else 0
+                    st.success(
+                        f"Detection complete — {count} narrative(s) detected. "
+                        "Switch to the Kairo tab to see results."
+                    )
                 except Exception as exc:
                     st.error(f"Detection error: {exc}")
                     logger.exception("Detection failed")
@@ -530,9 +525,9 @@ with tab_admin:
 
     st.divider()
     st.subheader("Service Status")
-    st.write("Elasticsearch:", "✅ connected" if es_manager is not None else "❌ not connected")
-    st.write("Narrative Engine:", "✅ ready" if narrative_engine is not None else "❌ not ready")
-    st.write("MongoDB Tracker:", "✅ connected" if tracker is not None else "❌ not connected")
+    st.write("Elasticsearch:",  "✅ connected" if es_manager     is not None else "❌ not connected")
+    st.write("Narrative Engine:", "✅ ready"   if narrative_engine is not None else "❌ not ready")
+    st.write("MongoDB Tracker:", "✅ connected" if tracker        is not None else "❌ not connected")
 
 # ── Kairo tab — iframe only, no other Streamlit widgets ─────────────────────
 with tab_kairo:
