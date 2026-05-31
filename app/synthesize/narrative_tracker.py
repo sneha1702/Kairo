@@ -9,15 +9,19 @@ Deduplication strategy:
   Upsert key: narrative_id + user_id  →  one doc per theme per user.
 """
 
+import json
 import logging
 import re
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import CollectionInvalid, OperationFailure
 
 logger = logging.getLogger(__name__)
+
+_OUTPUT_DIR = Path(__file__).resolve().parents[1] / "outputs"
 
 
 # ---------------------------------------------------------------------------
