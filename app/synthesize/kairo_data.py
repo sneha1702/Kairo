@@ -581,9 +581,7 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
     try:
         smart_rows = dune_context.get("smart_money") or []
         top_tokens = set(t.upper() for t in (narrative.get("top_tokens") or []))
-        relevant = [r for r in smart_rows if (r.get("symbol") or "").upper() in top_tokens] if top_tokens else smart_rows
-        if not relevant:
-            relevant = smart_rows
+        relevant = [r for r in smart_rows if (r.get("symbol") or "").upper() in top_tokens] if top_tokens else []
         top_smart = sorted(relevant, key=lambda r: _safe_float(r.get("total_bought_usd"), 0), reverse=True)[:4]
         for r in top_smart:
             usd = _safe_float(r.get("total_bought_usd"), 0)
