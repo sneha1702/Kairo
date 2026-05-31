@@ -47,15 +47,17 @@ hourly_breakdown AS (
 )
 
 SELECT
-    'Summary'                                           AS view_type,
-    nhc.new_holders                                     AS new_holders_current_window,
-    nhp.prior_new_holders                               AS new_holders_prior_window,
+    'Summary'                                                               AS view_type,
+    nhc.new_holders                                                         AS new_holders_current_window,
+    nhp.prior_new_holders                                                   AS new_holders_prior_window,
     ROUND(
         (nhc.new_holders - nhp.prior_new_holders) * 100.0
         / NULLIF(nhp.prior_new_holders, 0), 2
-    )                                                   AS growth_rate_pct,
-    th.total                                            AS total_holders_all_time,
-    ROUND(nhc.new_holders * 100.0 / NULLIF(th.total, 0), 4) AS new_holders_pct_of_total,
+    )                                                                       AS growth_rate_pct,
+    th.total                                                                AS total_holders_all_time,
+    ROUND(nhc.new_holders * 100.0 / NULLIF(th.total, 0), 4)                AS new_holders_pct_of_total,
+    NOW() - INTERVAL '{{time_window_hours}}' HOUR                          AS window_start_time,
+    NOW()                                                                   AS window_end_time,
     CASE
         WHEN (nhc.new_holders - nhp.prior_new_holders) * 100.0
              / NULLIF(nhp.prior_new_holders, 0) > 50
@@ -67,7 +69,7 @@ SELECT
              / NULLIF(nhp.prior_new_holders, 0) > 0
             THEN '✅ Steady Growth'
         ELSE '📉 Declining Adoption'
-    END                                                 AS growth_signal
+    END                                                                     AS growth_signal
 FROM new_holders_current nhc
 CROSS JOIN new_holders_prior nhp
 CROSS JOIN total_holders th
@@ -81,5 +83,7 @@ SELECT
     NULL                                                AS growth_rate_pct,
     NULL                                                AS total_holders_all_time,
     NULL                                                AS new_holders_pct_of_total,
+    hb.hour                                             AS window_start_time,
+    hb.hour + INTERVAL '1' HOUR                        AS window_end_time,
     CAST(hb.hour AS VARCHAR)                            AS growth_signal
 FROM hourly_breakdown hb
