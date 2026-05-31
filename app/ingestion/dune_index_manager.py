@@ -101,6 +101,8 @@ _INDEX_MAPPINGS: dict = {
             "current_trades":          {"type": "integer"},
             "expected_trades":         {"type": "double"},
             "current_unique_traders":  {"type": "integer"},
+            "window_start_time":       {"type": "date"},
+            "window_end_time":         {"type": "date"},
             "spike_signal":            {"type": "keyword"},
         },
     },
