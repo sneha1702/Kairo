@@ -89,6 +89,8 @@ class ElasticsearchManager:
                 seen[sym] = seen.get(sym, 0.0) + amt
             return [s for s, _ in sorted(seen.items(), key=lambda x: -x[1])][:5]
 
+        self.logger.info("[ES] Building signal trend — %d buckets × %dh each", num_buckets, hours_per_bucket)
+
         for i in range(num_buckets - 1, -1, -1):
             bucket_end   = now - timedelta(hours=i * hours_per_bucket)
             bucket_start = bucket_end - timedelta(hours=hours_per_bucket)
@@ -108,7 +110,7 @@ class ElasticsearchManager:
                     )
                     return [h["_source"] for h in resp["hits"]["hits"]]
                 except Exception as exc:
-                    self.logger.debug("signal_trend fetch %s: %s", index, exc)
+                    self.logger.warning("[ES] signal_trend fetch %s: %s", index, exc)
                     return []
 
             whales    = _fetch("dune_whale_transactions")
