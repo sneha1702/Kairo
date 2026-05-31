@@ -413,6 +413,12 @@ Each entry shows: narrative_id, prior key_evidence, prior signal_sources, moment
 Use this to CONTINUE and ENRICH existing narratives rather than recreating them.
 
 ════════════════════════════════════════════════════════
+SECTION 3 — ON-CHAIN SIGNALS
+════════════════════════════════════════════════════════
+
+{data_freshness_header}
+
+════════════════════════════════════════════════════════
 SECTION 3a — TOKEN CONFLUENCE TABLE (cross-signal view)
 ════════════════════════════════════════════════════════
 
