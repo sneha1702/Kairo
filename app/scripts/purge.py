@@ -3,10 +3,10 @@
 purge.py — Wipe Kairo Elasticsearch indices and/or MongoDB collections on demand.
 
 Usage:
-  python scripts/purge.py --all             # purge both ES and MongoDB
-  python scripts/purge.py --elastic         # purge ES indices only
-  python scripts/purge.py --mongo           # purge MongoDB collections only
-  python scripts/purge.py --all --dry-run   # preview without deleting
+  python app/scripts/purge.py --all             # purge both ES and MongoDB
+  python app/scripts/purge.py --elastic         # purge ES indices only
+  python app/scripts/purge.py --mongo           # purge MongoDB collections only
+  python app/scripts/purge.py --all --dry-run   # preview without deleting
 
 Credentials are loaded from `brain.config.Config`, which itself reads environment variables and .env values.
 """
@@ -66,7 +66,7 @@ def purge_elasticsearch(dry_run: bool) -> None:
         print("ERROR: 'elasticsearch' package not installed. Run: pip install elasticsearch")
         sys.exit(1)
 
-    from app.brain.config import Config
+    from config.config import Config
 
     es_url      = Config.ES_URL
     es_username = Config.ES_USERNAME
@@ -119,7 +119,7 @@ def purge_mongodb(dry_run: bool) -> None:
         print("ERROR: 'pymongo' package not installed. Run: pip install pymongo")
         sys.exit(1)
 
-    from app.brain.config import Config
+    from config.config import Config
 
     mongo_uri = Config.MONGO_URI
     mongo_db  = Config.MONGO_DB or "kairo"

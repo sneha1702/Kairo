@@ -463,10 +463,27 @@ Each object MUST have EXACTLY these fields:
 }}
 """
 
+        # ── Save prompt to disk ────────────────────────────────────────────────
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        try:
+            _PROMPT_DIR.mkdir(parents=True, exist_ok=True)
+            prompt_file = _PROMPT_DIR / f"prompt_{ts}.txt"
+            prompt_file.write_text(prompt, encoding="utf-8")
+        except Exception as exc:
+            print(f"Warning: could not save prompt: {exc}")
+
         response = self.client.models.generate_content(
             model=self.model_name,
             contents=prompt,
         )
+
+        # ── Save raw Gemini response alongside the prompt ──────────────────────
+        try:
+            raw_response = getattr(response, "text", "") or ""
+            response_file = _PROMPT_DIR / f"response_{ts}.txt"
+            response_file.write_text(raw_response, encoding="utf-8")
+        except Exception as exc:
+            print(f"Warning: could not save response: {exc}")
 
         try:
             raw_text = getattr(response, "text", "") or ""

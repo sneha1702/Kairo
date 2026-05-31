@@ -430,3 +430,6 @@ Each document gets a _id computed by _make_doc_id from content-based keys (not i
 
 1. Compile Python Code after local refractoring
 python -m compileall .
+
+2. Compile specific script
+python3 -m py_compile scripts/purge.py

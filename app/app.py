@@ -381,7 +381,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 # ---------------------------------------------------------------------------
 
 class _KairoEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj): # type: ignore
         if isinstance(obj, datetime):
             return obj.isoformat()
         try:
