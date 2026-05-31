@@ -6,10 +6,10 @@ Run this to test the system without the Streamlit UI.
 import json
 import os
 from datetime import datetime, timedelta
-from brain.elasticsearch_manager import ElasticsearchManager
-from synthesize.narrative_engine import NarrativeEngine
-from synthesize.narrative_tracker import NarrativeTracker
-from brain.config import Config, NarrativeConfig
+from app.brain.elasticsearch_manager import ElasticsearchManager
+from app.synthesize.narrative_engine import NarrativeEngine
+from app.synthesize.narrative_tracker import NarrativeTracker
+from app.brain.config import Config, NarrativeConfig
 from utils.utils import format_usd, get_momentum_emoji
 
 

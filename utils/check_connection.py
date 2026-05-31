@@ -1,5 +1,5 @@
 """Quick connectivity check — run this after updating credentials in config.py"""
-from brain.config import Config
+from app.brain.config import Config
 from elasticsearch import Elasticsearch
 
 print(f"Connecting to: {Config.ES_URL}")

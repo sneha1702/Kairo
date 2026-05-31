@@ -3,13 +3,19 @@ import streamlit.components.v1 as components
 import json
 import os
 import logging
+import sys
 from datetime import datetime, timezone
 
 from pathlib import Path
-from brain.elasticsearch_manager import ElasticsearchManager
-from synthesize.narrative_engine import NarrativeEngine
-from synthesize.narrative_tracker import NarrativeTracker
-from synthesize.kairo_data import build_kairo_data
+
+ROOT_PATH = Path(__file__).resolve().parents[1]
+if str(ROOT_PATH) not in sys.path:
+    sys.path.insert(0, str(ROOT_PATH))
+
+from app.brain.elasticsearch_manager import ElasticsearchManager
+from app.synthesize.narrative_engine import NarrativeEngine
+from app.synthesize.narrative_tracker import NarrativeTracker
+from app.synthesize.kairo_data import build_kairo_data
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -56,7 +62,7 @@ st.markdown(
 def init_services():
     """Initialise ES, Gemini, and MongoDB.  Returns (es_manager, narrative_engine, tracker)."""
     try:
-        from brain.config import Config
+        from config.config import Config
 
         def _secret(key: str, default: str = "") -> str:
             try:
@@ -121,7 +127,7 @@ def _cached_build_data(user_id: str, hours: int = 24) -> dict:
         )
     except Exception as exc:
         logger.exception("_cached_build_data failed: %s", exc)
-        from synthesize.kairo_data import _fallback_data
+        from app.synthesize.kairo_data import _fallback_data
         return _fallback_data()
 
 
@@ -315,7 +321,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             logger.error("Could not read %s: %s", path, exc)
             return f"/* ERROR reading {path}: {exc} */"
 
-    base = str(Path(__file__).resolve().parent / "kairo_design")
+    base = str(Path(__file__).resolve().parent / "frontend")
     tweaks_panel_jsx  = _read(f"{base}/tweaks-panel.jsx")
     components_jsx    = _read(f"{base}/components.jsx")
     screen_morning_jsx = _read(f"{base}/screen-morning.jsx")
@@ -471,7 +477,7 @@ try:
     data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
 except Exception as exc:
     logger.exception("JSON serialisation failed: %s", exc)
-    from synthesize.kairo_data import _fallback_data
+    from app.synthesize.kairo_data import _fallback_data
     data_json_str = json.dumps(_fallback_data(), ensure_ascii=False)
 
 # ── Build and render the Kairo HTML ─────────────────────────────────────────

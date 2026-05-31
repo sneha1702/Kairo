@@ -1,8 +1,8 @@
 import json
 import logging
 from pathlib import Path
-from brain.elasticsearch_manager import ElasticsearchManager
-from brain.config import Config
+from app.brain.elasticsearch_manager import ElasticsearchManager
+from app.brain.config import Config
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)

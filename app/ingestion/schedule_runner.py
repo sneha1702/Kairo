@@ -12,8 +12,8 @@ import logging
 import time
 from datetime import datetime, timezone
 
-from ingestion.dune_pipeline import CADENCE_GROUPS, build_pipeline
-from ingestion.tempo_executor import TempoPaymentError
+from app.ingestion.dune_pipeline import CADENCE_GROUPS, build_pipeline
+from app.ingestion.tempo_executor import TempoPaymentError
 
 logging.basicConfig(
     level=logging.INFO,

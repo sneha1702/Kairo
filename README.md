@@ -424,3 +424,9 @@ Each document gets a _id computed by _make_doc_id from content-based keys (not i
 
 
 **🔮 Built with ❤️ for crypto researchers and traders**
+
+
+**Helper commands**
+
+1. Compile Python Code after local refractoring
+python -m compileall .

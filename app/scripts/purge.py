@@ -66,7 +66,7 @@ def purge_elasticsearch(dry_run: bool) -> None:
         print("ERROR: 'elasticsearch' package not installed. Run: pip install elasticsearch")
         sys.exit(1)
 
-    from brain.config import Config
+    from app.brain.config import Config
 
     es_url      = Config.ES_URL
     es_username = Config.ES_USERNAME
@@ -119,7 +119,7 @@ def purge_mongodb(dry_run: bool) -> None:
         print("ERROR: 'pymongo' package not installed. Run: pip install pymongo")
         sys.exit(1)
 
-    from brain.config import Config
+    from app.brain.config import Config
 
     mongo_uri = Config.MONGO_URI
     mongo_db  = Config.MONGO_DB or "kairo"

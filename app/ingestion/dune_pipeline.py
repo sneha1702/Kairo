@@ -29,10 +29,10 @@ import yaml
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers as es_helpers
 
-from brain.config import Config
-from ingestion.dune_index_manager import DuneIndexManager
-from brain.elasticsearch_manager import ElasticsearchManager
-from ingestion.dune_api_executor import DuneApiExecutor, DuneApiError
+from app.brain.config import Config
+from app.ingestion.dune_index_manager import DuneIndexManager
+from app.brain.elasticsearch_manager import ElasticsearchManager
+from app.ingestion.dune_api_executor import DuneApiExecutor, DuneApiError
 
 logging.basicConfig(
     level=logging.INFO,

@@ -14,14 +14,14 @@ class Config:
     """Application configuration."""
     
     # Elasticsearch
-    ES_URL: str = os.getenv("ES_URL", "https://my-elasticsearch-project-d9aecb.es.europe-west1.gcp.elastic.cloud:443")
-    ES_USERNAME: str = os.getenv("ES_USERNAME", "elastic")
-    ES_PASSWORD: str = os.getenv("ES_PASSWORD", "dNZBYMpC*u$!r7A")
-    ES_API_KEY_ID: str = os.getenv("ES_API_KEY_ID", "aDJYbFg1NEJVNTE3RGRHZXZjUjk6WHk4QmkxcHl3VTN2WVZHd2QyaHlkQQ==")
+    ES_URL: str = os.getenv("ES_URL","")
+    ES_USERNAME: str = os.getenv("ES_USERNAME","")
+    ES_PASSWORD: str = os.getenv("ES_PASSWORD","")
+    ES_API_KEY_ID: str = os.getenv("ES_API_KEY_ID","")
     
     # Google Gemini
-    GEMINI_KEY: str = os.getenv("GEMINI_KEY", "AIzaSyDf8uUKnKuGmrlYQeZRXQhxKw2uZxVvCpY")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    GEMINI_KEY: str = os.getenv("GEMINI_KEY","")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "")
     
     # Application Settings
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
@@ -33,7 +33,6 @@ class Config:
     NARRATIVE_HISTORY_DAYS: int = int(os.getenv("NARRATIVE_HISTORY_DAYS", "7"))
     
     # Index names — existing
-    WHALE_TRANSACTIONS_INDEX: str = "whale_transactions"
     NARRATIVES_INDEX: str = "narratives"
     NARRATIVE_HISTORY_INDEX: str = "narrative_history"
 
@@ -48,11 +47,11 @@ class Config:
     DUNE_DEX_CONCENTRATION_INDEX: str = "dune_dex_concentration"
 
     # MongoDB
-    MONGO_URI: str = os.getenv("MONGO_URI", "mongodb+srv://kairoDBAdmin:KvghCaQGqqyK2k7U@kairocluster.wwrd9ag.mongodb.net/")
-    MONGO_DB: str = os.getenv("MONGO_DB", "kairo")
+    MONGO_URI: str = os.getenv("MONGO_URI","")
+    MONGO_DB: str = os.getenv("MONGO_DB","")
 
     # Dune pipeline settings
-    QUERY_DIR: str = os.getenv("QUERY_DIR", "ingestion/query")
+    QUERY_DIR: str = os.getenv("QUERY_DIR", "app/ingestion/query")
     DUNE_API_KEY: str = os.getenv("DUNE_API_KEY", "")
     
     @classmethod
