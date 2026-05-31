@@ -132,6 +132,8 @@ _INDEX_MAPPINGS: dict = {
             "avg_trade_usd":            {"type": "double"},
             "dex_share_pct":            {"type": "double"},
             "top10_wallets_share_pct":  {"type": "double"},
+            "earliest_trade_time":      {"type": "date"},
+            "latest_trade_time":        {"type": "date"},
             "concentration_signal":     {"type": "keyword"},
         },
     },
