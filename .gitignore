@@ -288,6 +288,9 @@ tmbootpicker.efi
 # Streamlit
 .streamlit/secrets.toml
 
+# Kairo component build — generated at runtime by app.py
+app/_kairo_build/
+
 # Local IDE settings
 .vscode/
 .idea/

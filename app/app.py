@@ -41,21 +41,232 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Hide all Streamlit chrome
+# Global styles — hide Streamlit chrome + apply Kairo design tokens everywhere
 # ---------------------------------------------------------------------------
 st.markdown(
     """
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+    /* ── Kairo design tokens (mirrors the React app) ── */
+    :root {
+      --paper:       oklch(0.985 0.006 80);
+      --surface:     oklch(0.995 0.004 85);
+      --surface-2:   oklch(0.965 0.008 80);
+      --hairline:    oklch(0.90  0.010 75);
+      --hairline-strong: oklch(0.84 0.012 70);
+      --ink:         oklch(0.27  0.012 60);
+      --ink-2:       oklch(0.42  0.012 60);
+      --ink-3:       oklch(0.58  0.012 65);
+      --ink-4:       oklch(0.70  0.010 70);
+      --accent:      oklch(0.64  0.124 42);
+      --accent-soft: oklch(0.92  0.045 50);
+      --accent-ink:  oklch(0.46  0.115 40);
+      --font-sans:   "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+      --font-mono:   "IBM Plex Mono", ui-monospace, monospace;
+      --r-sm: 10px; --r-md: 16px; --r-lg: 22px;
+      --shadow-card: 0 1px 2px oklch(0.5 0.02 60 / 0.05), 0 6px 22px oklch(0.5 0.02 60 / 0.06);
+    }
+
+    /* ── Chrome / chrome resets ── */
     #MainMenu, header, footer { display: none !important; }
-    .stApp { padding: 0 !important; }
+    .stApp { padding: 0 !important; background: var(--paper) !important; }
     .block-container { padding: 0 !important; max-width: 100% !important; }
+    /* Eliminate default Streamlit vertical gaps so the iframe sits flush */
     div[data-testid="stVerticalBlock"] { gap: 0 !important; }
     iframe { border: none !important; }
-    /* hide "running" spinner overlay */
-    .stSpinner { display: none !important; }
+
+    /* ── Global font ── */
+    .stApp, .stApp * {
+      font-family: var(--font-sans) !important;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Tabs ── */
+    .stTabs [data-baseweb="tab-list"] {
+      background: var(--surface) !important;
+      border-bottom: 1px solid var(--hairline) !important;
+      gap: 0 !important;
+      padding: 0 28px !important;
+    }
+    .stTabs [data-baseweb="tab"] {
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      color: var(--ink-3) !important;
+      border-bottom: 2px solid transparent !important;
+      padding: 14px 18px !important;
+      background: transparent !important;
+    }
+    .stTabs [aria-selected="true"] {
+      color: var(--ink) !important;
+      border-bottom-color: var(--accent) !important;
+    }
+    /* Strip all padding from tab panels — admin uses columns for its own width */
+    .stTabs [data-baseweb="tab-panel"] { padding: 0 !important; }
+
+    /* ── Headings ── */
+    [data-testid="stHeadingWithActionElements"] h2,
+    [data-testid="stHeadingWithActionElements"] h3,
+    .stMarkdown h2, .stMarkdown h3 {
+      color: var(--ink) !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.015em !important;
+      margin-top: 4px !important;
+    }
+
+    /* ── Divider ── */
+    hr { border-color: var(--hairline) !important; margin: 20px 0 !important; }
+
+    /* ── Widget labels ── */
+    [data-testid="stWidgetLabel"] p,
+    .stSelectbox label, .stSlider label, .stTextInput label,
+    .stCheckbox label, .stRadio label {
+      font-weight: 600 !important;
+      color: var(--ink-2) !important;
+      font-size: 13.5px !important;
+      letter-spacing: 0 !important;
+    }
+
+    /* ── Text input ── */
+    .stTextInput input {
+      background: var(--surface) !important;
+      border: 1px solid var(--hairline-strong) !important;
+      border-radius: var(--r-sm) !important;
+      color: var(--ink) !important;
+      font-size: 15px !important;
+      padding: 10px 14px !important;
+      box-shadow: none !important;
+    }
+    .stTextInput input:focus {
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 0 3px var(--accent-soft) !important;
+    }
+
+    /* ── Selectbox ── */
+    [data-baseweb="select"] > div:first-child {
+      background: var(--surface) !important;
+      border: 1px solid var(--hairline-strong) !important;
+      border-radius: var(--r-sm) !important;
+      color: var(--ink) !important;
+      font-size: 15px !important;
+    }
+    [data-baseweb="popover"] [data-baseweb="menu"] {
+      background: var(--surface) !important;
+      border: 1px solid var(--hairline) !important;
+      border-radius: var(--r-md) !important;
+      box-shadow: var(--shadow-card) !important;
+    }
+    [data-baseweb="menu"] li {
+      color: var(--ink-2) !important;
+      font-size: 14.5px !important;
+    }
+    [data-baseweb="menu"] li:hover {
+      background: var(--surface-2) !important;
+    }
+
+    /* ── Slider ── */
+    [data-testid="stSlider"] [data-testid="stThumbValue"] {
+      color: var(--ink) !important;
+      font-weight: 700 !important;
+      font-family: var(--font-mono) !important;
+    }
+    [data-testid="stSlider"] [role="slider"] {
+      background: var(--accent) !important;
+      border-color: var(--accent) !important;
+    }
+    [data-testid="stSlider"] [data-testid="stSliderTrack"] > div:first-child {
+      background: var(--accent) !important;
+    }
+
+    /* ── Checkbox ── */
+    .stCheckbox [data-testid="stCheckbox"] > label {
+      color: var(--ink-2) !important;
+    }
+    .stCheckbox [data-testid="stCheckbox"] input:checked + div {
+      background: var(--accent) !important;
+      border-color: var(--accent) !important;
+    }
+
+    /* ── Buttons ── */
+    .stButton > button {
+      background: var(--accent) !important;
+      color: var(--paper) !important;
+      border: none !important;
+      border-radius: var(--r-sm) !important;
+      font-weight: 700 !important;
+      font-size: 14.5px !important;
+      padding: 11px 24px !important;
+      letter-spacing: -0.01em !important;
+      transition: background 0.15s !important;
+      box-shadow: none !important;
+    }
+    .stButton > button:hover {
+      background: var(--accent-ink) !important;
+      color: var(--paper) !important;
+    }
+    .stButton > button:focus {
+      box-shadow: 0 0 0 3px var(--accent-soft) !important;
+      outline: none !important;
+    }
+
+    /* ── Caption ── */
+    .stCaptionContainer p,
+    [data-testid="stCaptionContainer"] p {
+      color: var(--ink-3) !important;
+      font-size: 13px !important;
+    }
+
+    /* ── Alerts ── */
+    [data-testid="stAlert"] {
+      border-radius: var(--r-md) !important;
+      font-size: 14.5px !important;
+    }
+
+    /* ── Progress bar ── */
+    [data-testid="stProgressBar"] > div {
+      background: var(--accent-soft) !important;
+      border-radius: 99px !important;
+    }
+    [data-testid="stProgressBar"] > div > div {
+      background: var(--accent) !important;
+      border-radius: 99px !important;
+    }
+    [data-testid="stProgressBar"] + div p {
+      color: var(--ink-3) !important;
+      font-size: 13px !important;
+    }
+
+    /* ── Write / text ── */
+    .stMarkdown p, [data-testid="stText"] {
+      color: var(--ink-2) !important;
+      font-size: 14.5px !important;
+    }
+
+    /* ── Running indicator — keep visible but style it ── */
+    [data-testid="stStatusWidget"] { opacity: 0.7 !important; }
     </style>
     """,
     unsafe_allow_html=True,
+)
+
+# Set autocomplete="off" on Streamlit text inputs so Chrome stops warning about
+# the empty autocomplete attribute. Streamlit strips <script> from st.markdown,
+# so reach into the parent DOM from a zero-height component iframe.
+components.html(
+    """
+    <script>
+    (function tick() {
+      try {
+        var doc = window.parent.document;
+        doc.querySelectorAll('.stTextInput input').forEach(function (el) {
+          if (el.getAttribute('autocomplete') !== 'off') el.setAttribute('autocomplete', 'off');
+        });
+      } catch (e) {}
+      setTimeout(tick, 600);
+    })();
+    </script>
+    """,
+    height=0,
 )
 
 # ---------------------------------------------------------------------------
@@ -326,13 +537,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             return f"/* ERROR reading {path}: {exc} */"
 
     base = str(Path(__file__).resolve().parent / "frontend")
-    tweaks_panel_jsx  = _read(f"{base}/tweaks-panel.jsx")
-    components_jsx    = _read(f"{base}/components.jsx")
-    screen_morning_jsx = _read(f"{base}/screen-morning.jsx")
+    tweaks_panel_jsx     = _read(f"{base}/tweaks-panel.jsx")
+    components_jsx       = _read(f"{base}/components.jsx")
+    screen_morning_jsx   = _read(f"{base}/screen-morning.jsx")
     screen_narrative_jsx = _read(f"{base}/screen-narrative.jsx")
-    screen_history_jsx = _read(f"{base}/screen-history.jsx")
-    screen_config_jsx  = _read(f"{base}/screen-config.jsx")
-    app_jsx           = _read(f"{base}/app.jsx")
+    screen_history_jsx   = _read(f"{base}/screen-history.jsx")
+    screen_config_jsx    = _read(f"{base}/screen-config.jsx")
+    app_jsx              = _read(f"{base}/app.jsx")
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -398,39 +609,55 @@ class _KairoEncoder(json.JSONEncoder):
 # Main app
 # ---------------------------------------------------------------------------
 
+from config.config import Config as _Cfg
+from app.ingestion.dune_pipeline import build_pipeline as _build_pipeline
+
 es_manager, narrative_engine, tracker = init_services()
 
-# ── Two-tab layout: Kairo view | Admin Panel ─────────────────────────────────
-tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin Panel"])
 
-# Admin tab — evaluated first so user_id / hours_lookback are always defined before Kairo tab
-with tab_admin:
-    # ── Detection Settings — defined first so they're always in scope ─────────
+# ---------------------------------------------------------------------------
+# Fragment: entire admin panel.
+# Wrapping everything in ONE fragment means no interaction inside the admin
+# tab ever causes a full-page re-run — the Kairo iframe is never touched.
+# Only explicit st.rerun() calls (after data-changing operations) refresh
+# the whole page so the Kairo tab picks up new data.
+# ---------------------------------------------------------------------------
+
+_WINDOW_PRESETS: list[tuple[str, int]] = [
+    ("2 hours",           2),
+    ("4 hours (default)", 4),
+    ("6 hours",           6),
+    ("12 hours",          12),
+    ("24 hours / 1 day",  24),
+    ("48 hours / 2 days", 48),
+    ("1 week",            168),
+    ("1 month",           720),
+    ("3 months",          2160),
+    ("6 months",          4380),
+    ("1 year",            8760),
+]
+
+@st.fragment
+def _admin_panel() -> None:
+    _es, _engine, _tracker = init_services()
+
+    # Constrain admin content width without touching the Kairo tab panel
+    col, _ = st.columns([5, 2])
+    with col:
+        _admin_panel_content(_es, _engine, _tracker)
+
+
+def _admin_panel_content(_es, _engine, _tracker) -> None:
+    # ── Detection Settings ────────────────────────────────────────────────────
     st.subheader("Detection Settings")
-    user_id        = st.text_input("User ID", value="default")
-    hours_lookback = st.slider("Hours to analyse", 1, 168, 24)
+    st.text_input("User ID", value="default", key="admin_user_id")
+    st.slider("Hours to analyse", 1, 168, 24, key="admin_hours_lookback")
 
     st.divider()
 
     # ── Dune Ingestion Settings ───────────────────────────────────────────────
-    from config.config import Config as _Cfg
-    from app.ingestion.dune_pipeline import build_pipeline as _build_pipeline
-
     st.subheader("Dune Ingestion Settings")
 
-    _WINDOW_PRESETS: list[tuple[str, int]] = [
-        ("2 hours",           2),
-        ("4 hours (default)", 4),
-        ("6 hours",           6),
-        ("12 hours",          12),
-        ("24 hours / 1 day",  24),
-        ("48 hours / 2 days", 48),
-        ("1 week",            168),
-        ("1 month",           720),
-        ("3 months",          2160),
-        ("6 months",          4380),
-        ("1 year",            8760),
-    ]
     _preset_labels = [p[0] for p in _WINDOW_PRESETS]
     _preset_hours  = [p[1] for p in _WINDOW_PRESETS]
     _preset_map    = dict(_WINDOW_PRESETS)
@@ -441,42 +668,50 @@ with tab_admin:
     st.caption(f"Active query window: **{current_label}** ({current_hours}h)")
 
     default_idx = _preset_hours.index(current_hours) if current_hours in _preset_hours else 1
-    selected_window = st.selectbox(
+    st.selectbox(
         "Query window — how far back each Dune query looks",
         options=_preset_labels,
         index=default_idx,
         key="dune_window_select",
     )
-    selected_hours = _preset_map[selected_window]
 
-    fetch_after_save = st.checkbox(
+    st.checkbox(
         "Fetch fresh data from Dune immediately after saving",
         value=True,
+        key="fetch_after_save",
         help="Runs all 8 Dune queries with the new window and stores results in Elasticsearch.",
     )
 
     if st.button("Save & Apply", use_container_width=True, key="save_dune_window"):
+        _selected_window = st.session_state.get("dune_window_select", "4 hours (default)")
+        _selected_hours  = _preset_map.get(_selected_window, 4)
         try:
-            _Cfg.set_dune_query_window(selected_hours)
-            st.success(f"Query window set to **{selected_window}** ({selected_hours}h).")
+            _Cfg.set_dune_query_window(_selected_hours)
+            st.success(f"Query window set to **{_selected_window}** ({_selected_hours}h).")
 
-            if fetch_after_save:
-                with st.spinner(f"Running Dune pipeline — fetching last {selected_window} of on-chain data…"):
-                    try:
-                        pipeline = _build_pipeline()
-                        results  = pipeline.run_all()
-                        n_ok   = sum(1 for r in results.values() if r.success)
-                        n_fail = sum(1 for r in results.values() if not r.success)
-                        _cached_build_data.clear()
-                        if n_fail:
-                            failed_names = [r.query_name for r in results.values() if not r.success]
-                            st.warning(f"Ingestion: {n_ok} queries succeeded, {n_fail} failed: {failed_names}")
-                        else:
-                            total_rows = sum(r.rows_fetched for r in results.values())
-                            st.success(f"Ingested {total_rows:,} rows across {n_ok} queries into Elasticsearch.")
-                    except Exception as exc:
-                        st.error(f"Dune ingestion failed: {exc}")
-                        logger.exception("Dune ingestion failed from admin panel")
+            if st.session_state.get("fetch_after_save", True):
+                status = st.empty()
+                progress = st.progress(0, text="Connecting to Dune…")
+                try:
+                    progress.progress(10, text="Running Dune pipeline…")
+                    pipeline = _build_pipeline()
+                    progress.progress(40, text="Fetching on-chain data…")
+                    results  = pipeline.run_all()
+                    n_ok   = sum(1 for r in results.values() if r.success)
+                    n_fail = sum(1 for r in results.values() if not r.success)
+                    _cached_build_data.clear()
+                    progress.progress(100, text="Done.")
+                    if n_fail:
+                        failed_names = [r.query_name for r in results.values() if not r.success]
+                        status.warning(f"Ingestion: {n_ok} succeeded, {n_fail} failed: {failed_names}")
+                    else:
+                        total_rows = sum(r.rows_fetched for r in results.values())
+                        status.success(f"Ingested {total_rows:,} rows across {n_ok} queries.")
+                    st.rerun()
+                except Exception as exc:
+                    progress.empty()
+                    st.error(f"Dune ingestion failed: {exc}")
+                    logger.exception("Dune ingestion failed from admin panel")
         except Exception as exc:
             st.error(f"Failed to save config: {exc}")
 
@@ -484,61 +719,82 @@ with tab_admin:
 
     # ── Run Detection ─────────────────────────────────────────────────────────
     st.subheader("Run Detection")
-    run_detection = st.button("🔮 Run Detection", use_container_width=True, key="run_detection")
+    if st.button("🔮 Run Detection", use_container_width=True, key="run_detection"):
+        _user_id = st.session_state.get("admin_user_id", "default")
+        _hours   = st.session_state.get("admin_hours_lookback", 24)
 
-    if run_detection:
-        if es_manager is not None and narrative_engine is not None:
-            with st.spinner("Fetching signals & running Gemini narrative analysis…"):
-                try:
-                    dune_context      = es_manager.get_dune_signal_context(hours=hours_lookback)
-                    signal_trend      = es_manager.get_signal_trend(hours_per_bucket=24, num_buckets=3)
-                    current_narratives = tracker.get_current_narratives(user_id, min_confidence=0.0) if tracker else []
-                    history_summary    = tracker.get_narratives_summary(user_id) if tracker else []
+        if _es is not None and _engine is not None:
+            status   = st.empty()
+            progress = st.progress(0, text="Starting…")
+            try:
+                progress.progress(10, text="Fetching Elasticsearch signals…")
+                dune_context = _es.get_dune_signal_context(hours=_hours)
 
-                    # Always run detection when the button is clicked — skip the stale-data guard
-                    new_narratives = narrative_engine.detect_narratives(
-                        dune_context=dune_context,
-                        historical_narratives=history_summary,
-                        signal_trend=signal_trend,
-                    )
-                    if new_narratives:
-                        enriched = [
-                            narrative_engine.enrich_narrative(n, previous_narratives=current_narratives)
-                            for n in new_narratives
-                        ]
-                        if tracker:
-                            tracker.save_narratives(enriched, user_id)
-                            returned_ids = {n.get("narrative_id") for n in enriched}
-                            tracker.mark_stale_narratives(returned_ids, user_id)
+                progress.progress(25, text="Fetching signal trend…")
+                signal_trend = _es.get_signal_trend(hours_per_bucket=24, num_buckets=3)
 
-                    _cached_build_data.clear()
-                    count = len(new_narratives) if new_narratives else 0
-                    st.success(
-                        f"Detection complete — {count} narrative(s) detected. "
-                        "Switch to the Kairo tab to see results."
-                    )
-                except Exception as exc:
-                    st.error(f"Detection error: {exc}")
-                    logger.exception("Detection failed")
+                progress.progress(35, text="Loading existing narratives from MongoDB…")
+                current_narratives = _tracker.get_current_narratives(_user_id, min_confidence=0.0) if _tracker else []
+                history_summary    = _tracker.get_narratives_summary(_user_id) if _tracker else []
+
+                progress.progress(50, text="Running Gemini narrative detection…")
+                new_narratives = _engine.detect_narratives(
+                    dune_context=dune_context,
+                    historical_narratives=history_summary,
+                    signal_trend=signal_trend,
+                )
+
+                enriched = []
+                if new_narratives:
+                    for i, n in enumerate(new_narratives):
+                        pct = 60 + int(30 * (i + 1) / len(new_narratives))
+                        progress.progress(pct, text=f"Enriching narrative {i + 1}/{len(new_narratives)}…")
+                        enriched.append(_engine.enrich_narrative(n, previous_narratives=current_narratives))
+
+                    if _tracker:
+                        progress.progress(92, text="Saving to MongoDB…")
+                        _tracker.save_narratives(enriched, _user_id)
+                        returned_ids = {n.get("narrative_id") for n in enriched}
+                        _tracker.mark_stale_narratives(returned_ids, _user_id)
+
+                _cached_build_data.clear()
+                progress.progress(100, text="Done.")
+                count = len(new_narratives) if new_narratives else 0
+                status.success(
+                    f"Detection complete — {count} narrative(s) detected. "
+                    "Switch to the Kairo tab to see results."
+                )
+                st.rerun()
+            except Exception as exc:
+                progress.empty()
+                st.error(f"Detection error: {exc}")
+                logger.exception("Detection failed")
         else:
             st.info("Services not fully configured — showing available data.")
 
     st.divider()
+
+    # ── Service Status ────────────────────────────────────────────────────────
     st.subheader("Service Status")
-    st.write("Elasticsearch:",  "✅ connected" if es_manager     is not None else "❌ not connected")
-    st.write("Narrative Engine:", "✅ ready"   if narrative_engine is not None else "❌ not ready")
-    st.write("MongoDB Tracker:", "✅ connected" if tracker        is not None else "❌ not connected")
+    st.write("Elasticsearch:",    "✅ connected" if _es      is not None else "❌ not connected")
+    st.write("Narrative Engine:", "✅ ready"     if _engine  is not None else "❌ not ready")
+    st.write("MongoDB Tracker:",  "✅ connected" if _tracker is not None else "❌ not connected")
 
-# ── Kairo tab — iframe only, no other Streamlit widgets ─────────────────────
+
+# ── Two-tab layout ────────────────────────────────────────────────────────────
+tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin"])
+
+with tab_admin:
+    _admin_panel()
+
+# ── Kairo tab — iframe only ───────────────────────────────────────────────────
 with tab_kairo:
-    # Build data (cached 5 min)
+    user_id        = st.session_state.get("admin_user_id",      "default")
+    hours_lookback = st.session_state.get("admin_hours_lookback", 24)
+
     kairo_data = _cached_build_data(user_id, hours_lookback)
+    kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
 
-    # Inject server-side config so the React frontend can display it
-    from config.config import Config as _CfgKairo
-    kairo_data.setdefault("config", {})["dune_query_window_hours"] = _CfgKairo.DUNE_QUERY_WINDOW_HOURS
-
-    # Serialise to JSON
     try:
         data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
     except Exception as exc:
@@ -546,6 +802,5 @@ with tab_kairo:
         from app.synthesize.kairo_data import _empty_data
         data_json_str = json.dumps(_empty_data(), ensure_ascii=False)
 
-    # Build and render the Kairo HTML
     html = build_kairo_html(data_json_str)
     components.html(html, height=1400, scrolling=True)

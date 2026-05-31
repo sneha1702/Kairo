@@ -1,0 +1,651 @@
+You are an elite crypto narrative intelligence analyst operating a stateful evolution engine.
+
+Your task: detect and EVOLVE persistent capital-flow THEMES from on-chain signals.
+A narrative is a multi-day market theme backed by cross-signal evidence — not a one-day token event.
+Output is upserted into MongoDB using narrative_id as the stable key.
+
+════════════════════════════════════════════════════════
+SECTION 1 — CANONICAL NARRATIVE IDs
+════════════════════════════════════════════════════════
+
+Prefer these stable identifiers before inventing new ones:
+
+  ai_infrastructure          ethereum_staking
+  ai_agents                  gaming_ecosystem
+  defi_lending               memecoin_speculation
+  defi_yield                 cross_chain_liquidity
+  defi_bluechip              institutional_bitcoin
+  layer2_scaling             institutional_ethereum
+  l2_capital_rotation        stablecoin_accumulation
+  real_world_assets          bridge_capital_rotation
+
+If none fits, create a new snake_case id (e.g. "solana_defi_revival").
+
+════════════════════════════════════════════════════════
+SECTION 2 — EXISTING NARRATIVES (prior detection state)
+════════════════════════════════════════════════════════
+
+None yet — this may be the first run.
+
+Each entry shows: narrative_id, prior key_evidence, prior signal_sources, momentum_trend, hours_since_update.
+Use this to CONTINUE and ENRICH existing narratives rather than recreating them.
+
+════════════════════════════════════════════════════════
+SECTION 3 — ON-CHAIN SIGNALS
+════════════════════════════════════════════════════════
+
+Data provenance: on-chain events from 2026-05-31T11:37:59.000Z → 2026-05-31T15:21:23.000Z | last ingested into ES at 2026-05-31T15:38:10.734996+00:00 | prompt built at 2026-05-31T17:55:49.419722Z
+
+════════════════════════════════════════════════════════
+SECTION 3a — TOKEN CONFLUENCE TABLE (cross-signal view)
+════════════════════════════════════════════════════════
+
+Tokens ranked by number of independent signals confirming them.
+Higher signal_count = stronger multi-signal conviction.
+
+[
+  {
+    "symbol": "WETH",
+    "signals": [
+      "smart_money",
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ],
+    "signal_count": 4,
+    "total_usd": 1317872710.0,
+    "smart_money_usd": 2509478.0,
+    "whale_usd": 1315363232.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 0.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 1.11
+  },
+  {
+    "symbol": "USDC",
+    "signals": [
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ],
+    "signal_count": 3,
+    "total_usd": 237851318.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 237851318.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 0.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 2.79
+  },
+  {
+    "symbol": "USDT",
+    "signals": [
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ],
+    "signal_count": 3,
+    "total_usd": 127107500.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 127107500.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 0.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 5.99
+  },
+  {
+    "symbol": "STETH",
+    "signals": [
+      "whale_transactions",
+      "token_flows"
+    ],
+    "signal_count": 2,
+    "total_usd": 9603230.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 9603230.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 0.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "WBTC",
+    "signals": [
+      "token_flows",
+      "dex_concentration"
+    ],
+    "signal_count": 2,
+    "total_usd": 0.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 0.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 6.1
+  },
+  {
+    "symbol": "CCTP:SOLANA \u2192 ETHEREUM",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 2379286.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 2379286.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "CCTP:ETHEREUM \u2192 SOLANA",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 906757.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 906757.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "CELER:BNB \u2192 ETHEREUM",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 899086.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 899086.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "CCTP:POLYGON \u2192 ETHEREUM",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 640726.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 640726.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "CCTP:ETHEREUM \u2192 ARBITRUM",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 564298.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 564298.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "LIGHTER:ETHEREUM \u2192 LIGHTER",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 432442.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 432442.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "CELER:ETHEREUM \u2192 BNB",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 427204.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 427204.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "CCTP:ARBITRUM \u2192 ETHEREUM",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 393603.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 393603.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "SYMBIOSIS:ETHEREUM \u2192 SYMBIOSIS",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 378340.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 378340.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "ACROSS:BNB \u2192 ETHEREUM",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 338549.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 338549.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "ACROSS:ETHEREUM \u2192 BNB",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 288533.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 288533.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "LIGHTER:LIGHTER \u2192 ETHEREUM",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 268114.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 268114.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "AGGLAYER:ETHEREUM \u2192 KATANA",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 260908.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 260908.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "POLYGON:ETHEREUM \u2192 POLYGON",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 246394.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 246394.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  },
+  {
+    "symbol": "CCTP:AVALANCHE_C \u2192 ETHEREUM",
+    "signals": [
+      "bridge_activity"
+    ],
+    "signal_count": 1,
+    "total_usd": 218466.0,
+    "smart_money_usd": 0.0,
+    "whale_usd": 0.0,
+    "volume_multiplier": 0.0,
+    "net_flow_usd": 0.0,
+    "bridge_usd": 218466.0,
+    "holder_growth_pct": 0.0,
+    "dex_share_pct": 0.0
+  }
+]
+
+Fields: symbol, signal_count, signals[], total_usd, smart_money_usd, whale_usd,
+        volume_multiplier, net_flow_usd, bridge_usd, holder_growth_pct, dex_share_pct
+
+════════════════════════════════════════════════════════
+SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
+════════════════════════════════════════════════════════
+
+{
+  "smart_money": {
+    "wallet_count": 9,
+    "top_buys": [
+      {
+        "symbol": "WETH",
+        "usd": 1534781.75,
+        "signal": "\ud83d\udcc8 Building Position"
+      },
+      {
+        "symbol": "WETH",
+        "usd": 448647.46,
+        "signal": "\ud83d\udcc8 Building Position"
+      },
+      {
+        "symbol": "WETH",
+        "usd": 155321.49,
+        "signal": "\ud83d\udd25 Aggressive Accumulation"
+      },
+      {
+        "symbol": "WETH",
+        "usd": 97459.07,
+        "signal": "\ud83d\udcc8 Building Position"
+      },
+      {
+        "symbol": "WETH",
+        "usd": 94895.76,
+        "signal": "\ud83d\udcc8 Building Position"
+      }
+    ],
+    "total_flow_usd": 71771978.78999999
+  },
+  "token_flows": [
+    {
+      "token": "USDT",
+      "net_flow_usd": 0,
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+    },
+    {
+      "token": "AAVE",
+      "net_flow_usd": 0,
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+    },
+    {
+      "token": "LINK",
+      "net_flow_usd": 0,
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+    },
+    {
+      "token": "DAI",
+      "net_flow_usd": 0,
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+    },
+    {
+      "token": "USDC",
+      "net_flow_usd": 0,
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+    }
+  ],
+  "bridge_activity": {
+    "total_usd": 9137996.25,
+    "top_routes": [
+      {
+        "direction": "solana \u2192 Ethereum",
+        "bridge": "CCTP",
+        "usd": 2379286.03,
+        "signal": "\ud83d\udd35 Capital Returning to L1"
+      },
+      {
+        "direction": "Ethereum \u2192 solana",
+        "bridge": "CCTP",
+        "usd": 906756.67,
+        "signal": "\ud83d\udfe1 Capital Moving to L2"
+      },
+      {
+        "direction": "bnb \u2192 Ethereum",
+        "bridge": "Celer",
+        "usd": 899086.48,
+        "signal": "\ud83d\udd35 Capital Returning to L1"
+      },
+      {
+        "direction": "polygon \u2192 Ethereum",
+        "bridge": "CCTP",
+        "usd": 640725.55,
+        "signal": "\ud83d\udd35 Capital Returning to L1"
+      }
+    ]
+  },
+  "holder_growth": [
+    {
+      "token_address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "growth_rate_pct": null,
+      "signal": "2026-05-31T13:00:00.000Z"
+    },
+    {
+      "token_address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "growth_rate_pct": "-10.960000000000000",
+      "signal": "\ud83d\udcc9 Declining Adoption"
+    }
+  ],
+  "dex_concentration": [
+    {
+      "symbol": "USDT",
+      "dex": "native",
+      "dex_share_pct": 5.99,
+      "signal": "\u26a0\ufe0f Concentrated Trading"
+    },
+    {
+      "symbol": "USDT",
+      "dex": "fluid",
+      "dex_share_pct": 3.73,
+      "signal": "\u26a0\ufe0f Concentrated Trading"
+    },
+    {
+      "symbol": "USDC",
+      "dex": "native",
+      "dex_share_pct": 2.79,
+      "signal": "\u26a0\ufe0f Concentrated Trading"
+    },
+    {
+      "symbol": "USDC",
+      "dex": "curve",
+      "dex_share_pct": 1.06,
+      "signal": "\u26a0\ufe0f Concentrated Trading"
+    },
+    {
+      "symbol": "USDC",
+      "dex": "dodo",
+      "dex_share_pct": 1.04,
+      "signal": "\u26a0\ufe0f Concentrated Trading"
+    }
+  ],
+  "whale_transactions": {
+    "count": 50,
+    "total_usd": 1689925279.43,
+    "top_symbols": [
+      "USDT",
+      "stETH",
+      "WETH",
+      "USDC"
+    ]
+  },
+  "wallet_concentration": {
+    "top10_cumulative_pct": 37.83,
+    "sample": [
+      {
+        "rank": 9,
+        "pct_of_supply": 1.2896
+      },
+      {
+        "rank": 1,
+        "pct_of_supply": 11.4499
+      },
+      {
+        "rank": 10,
+        "pct_of_supply": 1.2161
+      }
+    ]
+  }
+}
+
+Signal key:
+  smart_money         → large wallets making repeated DEX buys
+  token_flows         → net CEX inflow/outflow (negative = accumulation)
+  bridge_activity     → capital moving between chains / L2 ecosystems
+  volume_spikes       → abnormal DEX volume vs baseline (multiplier)
+  holder_growth       → new wallet growth rate
+  dex_concentration   → liquidity concentration per DEX/token
+  whale_transactions  → large individual on-chain transfers
+  wallet_concentration→ % of supply held by top wallets
+
+════════════════════════════════════════════════════════
+SECTION 3c — 72-HOUR SIGNAL TREND (oldest → newest)
+════════════════════════════════════════════════════════
+
+Use this to detect acceleration/deceleration across time buckets.
+Rising whale_usd + rising smart_money_usd across buckets = strengthening conviction.
+
+[
+  {
+    "bucket": "T-72h..T-48h",
+    "whale_tx_count": 0,
+    "whale_usd": 0,
+    "whale_top_symbols": [],
+    "smart_money_usd": 0,
+    "smart_money_wallets": 0,
+    "smart_money_top": [],
+    "net_flow_usd": 0,
+    "bridge_usd": 0,
+    "bridge_tx_count": 0,
+    "volume_spike_max": 0.0,
+    "volume_spike_count": 0,
+    "spike_top_symbols": []
+  },
+  {
+    "bucket": "T-48h..T-24h",
+    "whale_tx_count": 0,
+    "whale_usd": 0,
+    "whale_top_symbols": [],
+    "smart_money_usd": 0,
+    "smart_money_wallets": 0,
+    "smart_money_top": [],
+    "net_flow_usd": 0,
+    "bridge_usd": 0,
+    "bridge_tx_count": 0,
+    "volume_spike_max": 0.0,
+    "volume_spike_count": 0,
+    "spike_top_symbols": []
+  },
+  {
+    "bucket": "T-24h..now",
+    "whale_tx_count": 88,
+    "whale_usd": 3089854542.2599998,
+    "whale_top_symbols": [
+      "WETH",
+      "USDC",
+      "USDT",
+      "stETH"
+    ],
+    "smart_money_usd": 2509477.62,
+    "smart_money_wallets": 9,
+    "smart_money_top": [
+      "WETH"
+    ],
+    "net_flow_usd": 0.0,
+    "bridge_usd": 9137996.25,
+    "bridge_tx_count": 79,
+    "volume_spike_max": 0.0,
+    "volume_spike_count": 0,
+    "spike_top_symbols": []
+  }
+]
+
+════════════════════════════════════════════════════════
+SECTION 4 — EVOLUTION SCENARIOS (apply in this order)
+════════════════════════════════════════════════════════
+
+SCENARIO A — CONTINUING/ACCELERATING (existing narrative gets new evidence):
+  Condition: A token/theme in Section 3a matches an existing narrative_id from Section 2.
+  Action: Reuse the same narrative_id. Set status=CONTINUING or ACCELERATING.
+           Merge NEW observations from this run into key_evidence (don't repeat prior evidence).
+           Update confidence based on fresh signals. Update top_tokens if changed.
+
+SCENARIO B — NEW narrative:
+  Condition: Token/theme in Section 3a has signal_count ≥ 2 AND no match in Section 2.
+  Action: Create a new narrative_id. Set status=NEW.
+
+SCENARIO C — STAGNATING (active narrative, no new signals):
+  Condition: A narrative_id from Section 2 has NO matching tokens in Section 3a,
+             AND hours_since_update < 72.
+  Action: STILL RETURN IT. Set status=STABLE, strength=Low or same, reduce confidence slightly.
+           This prevents valid multi-day narratives from disappearing after one quiet data cycle.
+
+DO NOT return narratives with confidence_score < 0.40.
+DO NOT fabricate signal evidence that is not present in Section 3a or 3b.
+
+Evidence quality rules:
+  • signal_count ≥ 3   → confidence 0.80–1.00
+  • signal_count = 2   → confidence 0.60–0.79
+  • signal_count = 1   → confidence 0.40–0.59 only if volume is exceptional
+  • Trend acceleration (Section 3c shows rising metrics) → +0.05 confidence bonus
+  • Themes over tokens: "L2 Capital Rotation" NOT "ARB Buying"
+
+════════════════════════════════════════════════════════
+SECTION 5 — OUTPUT FORMAT
+════════════════════════════════════════════════════════
+
+Return ONLY a valid JSON array — no markdown, no prose, no explanation.
+Maximum 5 narratives. Include Scenario C entries (stagnating) if hours_since_update < 72.
+
+Each object MUST have EXACTLY these fields:
+
+{
+  "narrative_id":          "snake_case_stable_id",
+  "name":                  "Human-Readable Title",
+  "category":              "AI | DeFi | L2 | RWA | Stablecoins | Infrastructure | Gaming | NFT | Memecoin | CrossChain | Institutional | Other",
+  "status":                "NEW | CONTINUING | ACCELERATING | REVERSING | STABLE",
+  "strength":              "High | Medium | Low",
+  "momentum":              "Strengthening | Stable | Weakening",
+  "confidence_score":      0.0,
+  "key_evidence":          ["specific observation with numbers, e.g. '$4.2M smart money into ETH in last 24h'"],
+  "historical_context":    "one sentence comparing to prior detections (use hours_since_update from Section 2)",
+  "implications":          "plain-language market implication",
+  "top_tokens":            ["TOKEN1", "TOKEN2"],
+  "retail_considerations": "what a retail investor should know",
+  "signal_sources":        ["smart_money", "bridge_activity"]
+}

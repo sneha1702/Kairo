@@ -4,7 +4,7 @@
    ============================================================ */
 const { useState } = React;
 const K = window.KAIRO;
-let Icon, Asset, ForceTag, Dir, Confidence, ExplainToggle, CardLabel;
+let Icon, Asset, ForceTag, Dir, Confidence, ExplainToggle, CardLabel, StatusBadge;
 
 /* ---------- greeting header ---------- */
 function BriefHeader() {

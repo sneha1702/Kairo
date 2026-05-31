@@ -27,7 +27,18 @@
       "Bash(chmod +x /Users/snehaparihar/KairoAgent/scripts/purge.py)",
       "Bash(git -C /Users/snehaparihar/KairoAgent status --porcelain)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(pip show *)",
+      "Bash(poetry run *)",
+      "Bash(curl -fsS http://localhost:8501/_stcore/health)",
+      "Bash(curl -fsS http://localhost:8501/ -o /tmp/kairo_root.html)",
+      "Bash(curl -sI http://localhost:8501/)",
+      "Bash(curl -fsS http://localhost:8501/)",
+      "Bash(curl *)",
+      "Bash(npx --version)",
+      "Bash(grep -rn \"component_url\\\\|component/.*?\\\\$\\\\|/component\" /Users/snehaparihar/KairoAgent/.venv/lib/python3.14/site-packages/streamlit/components/v1/component_registry.py)",
+      "Bash(npm install *)",
+      "Bash(node app/frontend/_compile_jsx.js app/frontend/components.jsx)"
     ]
   }
 }

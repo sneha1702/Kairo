@@ -1,0 +1,187 @@
+[
+  {
+    "narrative_id": "defi_bluechip",
+    "name": "Ethereum Bluechip Capital Inflow",
+    "category": "DeFi",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.55,
+      "strength_change": 0,
+      "confidence_change": 0.09999999999999998
+    },
+    "confidence_score": 1.0,
+    "key_evidence": [
+      "Over $1.3B in whale transactions and $2.5M+ in smart money buys (Building Position, Aggressive Accumulation) into WETH in the last 24 hours.",
+      "$9.6M+ in whale transactions for STETH, reflecting sustained interest in liquid staked Ethereum.",
+      "Approximately $3.9M in capital bridged into Ethereum from Solana, BNB, and Polygon ('Capital Returning to L1').",
+      "WETH shows strong confluence of 4 signals: smart_money, whale_transactions, token_flows, and dex_concentration."
+    ],
+    "historical_context": "The narrative continues to show strong capital inflow to the Ethereum ecosystem, with sustained whale and smart money activity mirroring previous periods, and notable bridge inflows. Updated 3 hours after prior detection.",
+    "implications": "Persistent interest in Ethereum's core assets and ecosystem, coupled with capital returning from other chains, suggests strong confidence in its long-term value and yield opportunities.",
+    "top_tokens": [
+      "WETH",
+      "STETH"
+    ],
+    "retail_considerations": "This indicates a bullish sentiment on Ethereum and its major liquid staking derivatives. Retail investors may consider opportunities in WETH and STETH, or participation in the broader Ethereum DeFi ecosystem.",
+    "signal_sources": [
+      "smart_money",
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration",
+      "bridge_activity"
+    ],
+    "detected_at": "2026-05-31T21:38:45.249450Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T11:37:59.000Z",
+    "data_window_end": "2026-05-31T15:21:23.000Z",
+    "last_ingested_at": "2026-05-31T15:38:10.734996+00:00",
+    "prompt_built_at": "2026-05-31T21:38:45.249450Z"
+  },
+  {
+    "narrative_id": "ethereum_staking",
+    "name": "Ethereum Core Asset and Staking Accumulation",
+    "category": "DeFi",
+    "status": "CONTINUING",
+    "strength": "High",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.55,
+      "strength_change": 0,
+      "confidence_change": 0.09999999999999998
+    },
+    "confidence_score": 0.95,
+    "key_evidence": [
+      "$2.5M in smart money buys for WETH detected, with wallets flagged for 'Building Position' and 'Aggressive Accumulation'.",
+      "Over $1.3B in WETH whale transactions and $9.6M in stETH whale transactions, signaling strong large holder interest in staking-related assets.",
+      "WETH and stETH are prominently listed among top whale transacted symbols in the 'T-24h..now' period."
+    ],
+    "historical_context": "Despite a previously weakening trend 3 hours ago, current on-chain data shows renewed strong accumulation of core Ethereum assets and liquid staking derivatives, indicating sustained interest.",
+    "implications": "Increased holding of WETH and STETH suggests long-term conviction in Ethereum's ecosystem, particularly in its staking yield and LST liquidity. This could indicate preparations for future staking events or yield farming.",
+    "top_tokens": [
+      "WETH",
+      "STETH"
+    ],
+    "retail_considerations": "Accumulation of WETH and STETH by smart money and whales suggests a positive outlook on Ethereum's staking ecosystem. Retail investors might consider participating in liquid staking or holding these assets.",
+    "signal_sources": [
+      "smart_money",
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ],
+    "detected_at": "2026-05-31T21:38:45.249450Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T11:37:59.000Z",
+    "data_window_end": "2026-05-31T15:21:23.000Z",
+    "last_ingested_at": "2026-05-31T15:38:10.734996+00:00",
+    "prompt_built_at": "2026-05-31T21:38:45.249450Z"
+  },
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Whale Stablecoin Accumulation",
+    "category": "Stablecoins",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.55,
+      "strength_change": 0,
+      "confidence_change": 0.09999999999999998
+    },
+    "confidence_score": 0.95,
+    "key_evidence": [
+      "$237M+ in whale transactions for USDC and $127M+ for USDT in the last 24 hours.",
+      "Both USDC and USDT continue to show 'Net Outflow (Accumulation)' signals from token flows, indicating capital being held off-exchange.",
+      "Significant DEX concentration observed for USDT (5.99% on native, 3.73% on fluid) and USDC (2.79% on native, 1.06% on Curve)."
+    ],
+    "historical_context": "This narrative continues to accelerate with significant whale activity and sustained off-exchange accumulation for leading stablecoins, indicating persistent market positioning. Updated 3 hours after prior detection.",
+    "implications": "Large-scale stablecoin accumulation often precedes significant market moves, as whales position themselves for potential buying opportunities or as a defensive play during uncertain times.",
+    "top_tokens": [
+      "USDC",
+      "USDT"
+    ],
+    "retail_considerations": "Whale accumulation of stablecoins could signal impending volatility or a readiness to deploy capital. Retail investors should monitor market conditions for potential entry points or prepare for price swings.",
+    "signal_sources": [
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ],
+    "detected_at": "2026-05-31T21:38:45.249450Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T11:37:59.000Z",
+    "data_window_end": "2026-05-31T15:21:23.000Z",
+    "last_ingested_at": "2026-05-31T15:38:10.734996+00:00",
+    "prompt_built_at": "2026-05-31T21:38:45.249450Z"
+  },
+  {
+    "narrative_id": "cross_chain_liquidity",
+    "name": "Multi-Chain Capital Flows and Rotation",
+    "category": "CrossChain",
+    "status": "CONTINUING",
+    "strength": "Medium",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.525,
+      "strength_change": 0,
+      "confidence_change": 0.050000000000000044
+    },
+    "confidence_score": 0.75,
+    "key_evidence": [
+      "Over $9.1M in total cross-chain bridge activity detected across various protocols and chains in the last 24 hours.",
+      "Significant capital inflows to Ethereum, including $2.3M from Solana (CCTP), $899k from BNB (Celer), and $640k from Polygon (CCTP), indicating 'Capital Returning to L1'.",
+      "Concurrently, capital is moving from Ethereum to Solana ($906k via CCTP) and Arbitrum ($564k via CCTP), signaling multi-directional capital flows."
+    ],
+    "historical_context": "The narrative sustains multi-directional capital movement, with a continued focus on Ethereum inflows from various chains, indicating active liquidity management. Updated 3 hours after prior detection.",
+    "implications": "Active cross-chain bridging points to dynamic capital allocation by market participants, seeking opportunities or managing risk across different blockchain ecosystems. Ethereum remains a central hub for capital movement.",
+    "top_tokens": [
+      "CCTP:SOLANA \u2192 ETHEREUM",
+      "CELER:BNB \u2192 ETHEREUM",
+      "CCTP:POLYGON \u2192 ETHEREUM"
+    ],
+    "retail_considerations": "Capital rotation between chains suggests that participants are chasing new opportunities or optimizing yields. Retail investors should be aware of shifts in chain popularity and liquidity, especially around L1s and major L2s.",
+    "signal_sources": [
+      "bridge_activity"
+    ],
+    "detected_at": "2026-05-31T21:38:45.249450Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T11:37:59.000Z",
+    "data_window_end": "2026-05-31T15:21:23.000Z",
+    "last_ingested_at": "2026-05-31T15:38:10.734996+00:00",
+    "prompt_built_at": "2026-05-31T21:38:45.249450Z"
+  },
+  {
+    "narrative_id": "institutional_bitcoin",
+    "name": "Wrapped Bitcoin DeFi Engagement",
+    "category": "Institutional",
+    "status": "STABLE",
+    "strength": "Low",
+    "momentum": {
+      "trend": "weakening",
+      "momentum_score": 0.4,
+      "strength_change": -1,
+      "confidence_change": -0.2
+    },
+    "confidence_score": 0.45,
+    "key_evidence": [
+      "WBTC continues to show DEX concentration with 6.1% dex_share_pct and a 'Net Outflow (Accumulation)' signal from token flows.",
+      "However, no significant whale or smart money USD activity for WBTC was detected in the last 24 hours, implying reduced active engagement for this period."
+    ],
+    "historical_context": "The narrative continues its previously weakening trend from 3 hours ago, with signs of activity now confined to existing positions rather than new capital inflow for WBTC.",
+    "implications": "While WBTC remains integrated into DeFi, the lack of significant new whale/smart money inflows suggests a pause in fresh institutional-grade Bitcoin engagement within the DeFi ecosystem for this period.",
+    "top_tokens": [
+      "WBTC"
+    ],
+    "retail_considerations": "Reduced new capital flows into WBTC DeFi indicate waning immediate interest from larger players. Retail investors should be cautious, as this may signal a slowdown in Bitcoin's integration into DeFi for the time being.",
+    "signal_sources": [
+      "token_flows",
+      "dex_concentration"
+    ],
+    "detected_at": "2026-05-31T21:38:45.249450Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T11:37:59.000Z",
+    "data_window_end": "2026-05-31T15:21:23.000Z",
+    "last_ingested_at": "2026-05-31T15:38:10.734996+00:00",
+    "prompt_built_at": "2026-05-31T21:38:45.249450Z"
+  }
+]

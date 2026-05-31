@@ -85,7 +85,10 @@ function App() {
   const [view, setView] = useState(() => {
     return localStorage.getItem("kairo-view") || "today";
   });
-  const [activeNarr, setActiveNarr] = useState("l2-rotation");
+  const [activeNarr, setActiveNarr] = useState(() => {
+    const first = window.KAIRO && window.KAIRO.narratives && window.KAIRO.narratives[0];
+    return first ? first.id : "l2-rotation";
+  });
 
   useEffect(() => { localStorage.setItem("kairo-view", view); }, [view]);
 
@@ -141,12 +144,21 @@ function App() {
 
 /* wait for all babel src modules to finish loading before first render —
    type=text/babel src scripts can resolve out of order, so gate the mount */
-function kairoMount() {
+function kairoMount(attempts) {
+  attempts = attempts || 0;
   const ready = window.MorningBrief && window.NarrativeTracker && window.NarrativeHistory
     && window.ConfigScreen && window.useTweaks && window.TweaksPanel && window.Icon && window.KAIRO;
-  if (!ready) { setTimeout(kairoMount, 25); return; }
+  if (!ready) {
+    if (attempts > 400) {
+      const root = document.getElementById("root");
+      if (root) root.innerHTML = '<div style="padding:40px 32px;font-family:ui-sans-serif,system-ui,sans-serif;color:#c46a43;font-size:15px">Kairo failed to load — please refresh the page.</div>';
+      return;
+    }
+    setTimeout(() => kairoMount(attempts + 1), 25);
+    return;
+  }
   ({ Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen,
      useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor } = window);
   ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 }
-kairoMount();
+kairoMount(0);
