@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(tempo-request)",
+      "Bash(curl -fsSL https://tempo.xyz/install)",
+      "Bash(bash)",
+      "Bash(.venv/bin/python *)",
+      "WebFetch(domain:docs.dune.com)",
+      "Bash(.venv/bin/pip show *)",
+      "Bash(DUNE_API_KEY=test_key .venv/bin/python *)",
+      "mcp__dune__getExecutionResults",
+      "mcp__dune__searchTables",
+      "mcp__dune__updateDuneQuery",
+      "mcp__dune__executeQueryById",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('mcpServers',{}\\), indent=2\\)\\)\")",
+      "Bash(claude plugin *)",
+      "Bash(python *)",
+      "Bash(pip install *)",
+      "Bash(pkill -f \"streamlit run\")",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(cp \"/Users/snehaparihar/.claude/projects/-Users-snehaparihar-KairoAgent/d3b532ea-5819-4732-a84f-eabe3647126e/tool-results/webfetch-1780173060066-xfy4z8.bin\" /tmp/kairo_design.gz)",
+      "Bash(gunzip -f /tmp/kairo_design.gz)",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)",
+      "Bash(tar xf *)",
+      "Bash(python3 *)",
+      "Bash(chmod +x /Users/snehaparihar/KairoAgent/scripts/purge.py)"
+    ]
+  }
+}
