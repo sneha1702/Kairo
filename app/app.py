@@ -405,6 +405,63 @@ tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin Panel"])
 
 # Admin tab — evaluated first so user_id / hours_lookback are set before Kairo tab
 with tab_admin:
+    # ── Dune Ingestion Settings ───────────────────────────────────────────────
+    st.subheader("Dune Ingestion Settings")
+
+    from config.config import Config as _Cfg
+
+    _WINDOW_PRESETS: dict[str, int] = {
+        "2 hours":    2,
+        "4 hours (default)": 4,
+        "6 hours":    6,
+        "12 hours":   12,
+        "24 hours / 1 day":  24,
+        "48 hours / 2 days": 48,
+        "1 week":     168,
+        "1 month":    720,
+        "3 months":   2160,
+        "6 months":   4380,
+        "1 year":     8760,
+    }
+
+    current_hours = _Cfg.DUNE_QUERY_WINDOW_HOURS
+    current_label = next(
+        (lbl for lbl, h in _WINDOW_PRESETS.items() if h == current_hours),
+        f"{current_hours} hours (custom)",
+    )
+    st.caption(f"Current query window: **{current_label}**")
+
+    selected_preset = st.selectbox(
+        "Query window (how far back each Dune query looks)",
+        options=list(_WINDOW_PRESETS.keys()),
+        index=list(_WINDOW_PRESETS.values()).index(current_hours)
+              if current_hours in _WINDOW_PRESETS.values() else 1,
+        help="Sets time_window_hours for all Dune SQL queries. Per-query YAML overrides in "
+             "app/ingestion/query/config.yaml still take precedence for individual queries.",
+    )
+
+    custom_hours = st.number_input(
+        "Or enter a custom value (hours)",
+        min_value=1, max_value=8760,
+        value=current_hours,
+        help="Overrides the preset above when you click Save.",
+    )
+
+    if st.button("Save Dune Query Window", use_container_width=True):
+        new_hours = int(custom_hours)
+        try:
+            _Cfg.set_dune_query_window(new_hours)
+            _cached_build_data.clear()
+            st.success(
+                f"Query window updated to **{new_hours}h**. "
+                "Restart the ingestion pipeline (`schedule_runner.py`) for the change to take effect."
+            )
+        except Exception as exc:
+            st.error(f"Failed to save: {exc}")
+
+    st.divider()
+
+    # ── Detection Settings ────────────────────────────────────────────────────
     st.subheader("Detection Settings")
     user_id        = st.text_input("User ID", value="default")
     hours_lookback = st.slider("Hours to analyse", 1, 168, 24)
