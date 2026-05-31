@@ -47,7 +47,9 @@ current_window AS (
         symbol,
         SUM(volume_usd)                 AS current_volume_usd,
         SUM(trade_count)                AS current_trades,
-        SUM(unique_traders)             AS current_unique_traders
+        SUM(unique_traders)             AS current_unique_traders,
+        MIN(hour)                       AS window_start_time,
+        MAX(hour)                       AS window_end_time
     FROM hourly_volume
     WHERE hour >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
     GROUP BY token_address, symbol
