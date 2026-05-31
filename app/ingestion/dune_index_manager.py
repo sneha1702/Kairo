@@ -64,13 +64,15 @@ _INDEX_MAPPINGS: dict = {
     "dune_bridge_activity": {
         "settings": _SETTINGS_DEFAULT,
         "fields": {
-            "direction":      {"type": "keyword"},
-            "bridge":         {"type": "keyword"},
-            "tx_count":       {"type": "integer"},
-            "unique_wallets": {"type": "integer"},
-            "total_eth":      {"type": "double"},
-            "total_usd":      {"type": "double"},
-            "capital_signal": {"type": "keyword"},
+            "direction":         {"type": "keyword"},
+            "bridge":            {"type": "keyword"},
+            "tx_count":          {"type": "integer"},
+            "unique_wallets":    {"type": "integer"},
+            "total_eth":         {"type": "double"},
+            "total_usd":         {"type": "double"},
+            "earliest_tx_time":  {"type": "date"},
+            "latest_tx_time":    {"type": "date"},
+            "capital_signal":    {"type": "keyword"},
         },
     },
     "dune_wallet_concentration": {
