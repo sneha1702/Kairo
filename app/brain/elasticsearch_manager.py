@@ -35,6 +35,7 @@ class ElasticsearchManager:
         """Query the 6 aggregate dune_* indices and return structured context for NarrativeEngine."""
         since = (datetime.now() - timedelta(hours=hours)).isoformat()
         range_filter = {"range": {"ingested_at": {"gte": since}}}
+        self.logger.info("[ES] Fetching Dune signal context — lookback=%dh, since=%s", hours, since)
 
         def _search(index: str, size: int = 50) -> List[Dict]:
             try:
@@ -42,21 +43,26 @@ class ElasticsearchManager:
                     index=index,
                     body={"query": range_filter, "sort": [{"ingested_at": {"order": "desc"}}], "size": size},
                 )
-                return [h["_source"] for h in resp["hits"]["hits"]]
+                docs = [h["_source"] for h in resp["hits"]["hits"]]
+                self.logger.info("[ES] %-32s → %d docs", index, len(docs))
+                return docs
             except Exception as exc:
-                self.logger.warning("Could not query %s: %s", index, exc)
+                self.logger.warning("[ES] Could not query %s: %s", index, exc)
                 return []
 
-        return {
-            "whale_transactions":  _search("dune_whale_transactions"),
-            "smart_money":         _search("dune_smart_money"),
-            "token_flows":         _search("dune_token_flows"),
-            "bridge_activity":     _search("dune_bridge_activity"),
+        context = {
+            "whale_transactions":   _search("dune_whale_transactions"),
+            "smart_money":          _search("dune_smart_money"),
+            "token_flows":          _search("dune_token_flows"),
+            "bridge_activity":      _search("dune_bridge_activity"),
             "wallet_concentration": _search("dune_wallet_concentration", size=50),
-            "volume_spikes":       _search("dune_volume_spikes"),
-            "holder_growth":       _search("dune_holder_growth"),
-            "dex_concentration":   _search("dune_dex_concentration"),
+            "volume_spikes":        _search("dune_volume_spikes"),
+            "holder_growth":        _search("dune_holder_growth"),
+            "dex_concentration":    _search("dune_dex_concentration"),
         }
+        total = sum(len(v) for v in context.values())
+        self.logger.info("[ES] Signal context ready — %d total docs across 8 indices", total)
+        return context
 
     def get_signal_trend(self, hours_per_bucket: int = 24, num_buckets: int = 3) -> List[Dict[str, Any]]:
         """
