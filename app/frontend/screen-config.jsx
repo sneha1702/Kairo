@@ -3,6 +3,81 @@
    ============================================================ */
 let Icon;
 
+const WINDOW_PRESETS = [
+  { label: "2 hours",   hours: 2 },
+  { label: "4 hours",   hours: 4 },
+  { label: "6 hours",   hours: 6 },
+  { label: "12 hours",  hours: 12 },
+  { label: "1 day",     hours: 24 },
+  { label: "2 days",    hours: 48 },
+  { label: "1 week",    hours: 168 },
+  { label: "1 month",   hours: 720 },
+  { label: "3 months",  hours: 2160 },
+  { label: "6 months",  hours: 4380 },
+  { label: "1 year",    hours: 8760 },
+];
+
+function hoursToLabel(h) {
+  const match = WINDOW_PRESETS.find(p => p.hours === h);
+  return match ? match.label : `${h}h`;
+}
+
+function DataRangeAdmin() {
+  const configuredHours = window.KAIRO?.config?.dune_query_window_hours ?? 4;
+
+  return (
+    <article className="card" style={{ padding: "var(--card-pad)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}>
+        <Icon name="spark2" size={16} stroke={1.8} />
+        <span className="eyebrow">Admin — Data Range</span>
+      </div>
+
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ fontSize: 13.5, color: "var(--ink-3)", marginBottom: 6 }}>
+          Current ingestion window
+        </div>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          padding: "8px 16px", borderRadius: "var(--r-sm)",
+          background: "var(--accent-soft)", border: "1px solid color-mix(in oklch, var(--accent) 30%, var(--hairline))",
+        }}>
+          <span style={{ fontSize: 17, fontWeight: 700, color: "var(--accent-ink)" }}>
+            {hoursToLabel(configuredHours)}
+          </span>
+          <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+            ({configuredHours}h)
+          </span>
+        </div>
+      </div>
+
+      <div style={{ fontSize: 13.5, color: "var(--ink-3)", marginBottom: 10 }}>
+        Available presets
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+        {WINDOW_PRESETS.map(p => {
+          const active = p.hours === configuredHours;
+          return (
+            <span key={p.hours} style={{
+              padding: "5px 13px", borderRadius: "var(--r-sm)", fontSize: 13.5, fontWeight: 600,
+              background: active ? "var(--accent)" : "var(--surface-2)",
+              color: active ? "var(--paper)" : "var(--ink-2)",
+              border: `1px solid ${active ? "var(--accent)" : "var(--hairline)"}`,
+            }}>
+              {p.label}
+            </span>
+          );
+        })}
+      </div>
+
+      <p style={{ fontSize: 13.5, color: "var(--ink-3)", lineHeight: 1.6 }}>
+        To change the query window, use the <strong style={{ color: "var(--ink-2)" }}>Admin Panel → Dune Ingestion Settings</strong> in
+        the Streamlit interface, or set the <code style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>DUNE_QUERY_WINDOW_HOURS</code> env var.
+        Restart the ingestion pipeline after saving.
+      </p>
+    </article>
+  );
+}
+
 const PLANS = [
   {
     id: "free",
