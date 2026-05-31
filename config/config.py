@@ -2,12 +2,31 @@
 Configuration management for the Narrative Evolution Agent.
 """
 
+import json
 import os
+from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+_CONFIG_DIR = Path(__file__).parent
+
+
+def _load_dune_params() -> dict:
+    """Load runtime-overridable Dune params from dune_params.json."""
+    params_file = _CONFIG_DIR / "dune_params.json"
+    if params_file.exists():
+        try:
+            data = json.loads(params_file.read_text())
+            return {k: v for k, v in data.items() if not k.startswith("_")}
+        except Exception:
+            pass
+    return {}
+
+
+_dune_params = _load_dune_params()
 
 
 class Config:
