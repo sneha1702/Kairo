@@ -52,13 +52,15 @@ _INDEX_MAPPINGS: dict = {
     "dune_token_flows": {
         "settings": _SETTINGS_DEFAULT,
         "fields": {
-            "token":          {"type": "keyword"},
-            "inflow_tokens":  {"type": "double"},
-            "outflow_tokens": {"type": "double"},
-            "inflow_usd":     {"type": "double"},
-            "outflow_usd":    {"type": "double"},
-            "net_flow_usd":   {"type": "double"},
-            "signal":         {"type": "keyword"},
+            "token":               {"type": "keyword"},
+            "inflow_tokens":       {"type": "double"},
+            "outflow_tokens":      {"type": "double"},
+            "inflow_usd":          {"type": "double"},
+            "outflow_usd":         {"type": "double"},
+            "net_flow_usd":        {"type": "double"},
+            "earliest_flow_time":  {"type": "date"},
+            "latest_flow_time":    {"type": "date"},
+            "signal":              {"type": "keyword"},
         },
     },
     "dune_bridge_activity": {
