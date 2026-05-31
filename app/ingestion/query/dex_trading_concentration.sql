@@ -11,7 +11,9 @@ WITH token_dex_volume AS (
         SUM(amount_usd)                                     AS volume_usd,
         COUNT(*)                                            AS trade_count,
         COUNT(DISTINCT taker)                               AS unique_traders,
-        AVG(amount_usd)                                     AS avg_trade_size_usd
+        AVG(amount_usd)                                     AS avg_trade_size_usd,
+        MIN(block_time)                                     AS earliest_trade_time,
+        MAX(block_time)                                     AS latest_trade_time
     FROM dex.trades
     WHERE blockchain = 'ethereum'
       AND block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
