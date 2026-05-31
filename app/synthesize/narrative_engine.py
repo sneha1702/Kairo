@@ -472,21 +472,25 @@ Each object MUST have EXACTLY these fields:
             _PROMPT_DIR.mkdir(parents=True, exist_ok=True)
             prompt_file = _PROMPT_DIR / f"prompt_{ts}.txt"
             prompt_file.write_text(prompt, encoding="utf-8")
+            logger.info("[GEMINI] Prompt saved → %s (%d chars)", prompt_file, len(prompt))
         except Exception as exc:
-            print(f"Warning: could not save prompt: {exc}")
+            logger.warning("[GEMINI] Could not save prompt: %s", exc)
 
+        logger.info("[GEMINI] Sending request to %s", self.model_name)
         response = self.client.models.generate_content(
             model=self.model_name,
             contents=prompt,
         )
+        raw_response = getattr(response, "text", "") or ""
+        logger.info("[GEMINI] Response received — %d chars", len(raw_response))
 
         # ── Save raw Gemini response alongside the prompt ──────────────────────
         try:
-            raw_response = getattr(response, "text", "") or ""
             response_file = _PROMPT_DIR / f"response_{ts}.txt"
             response_file.write_text(raw_response, encoding="utf-8")
+            logger.info("[GEMINI] Response saved  → %s", response_file)
         except Exception as exc:
-            print(f"Warning: could not save response: {exc}")
+            logger.warning("[GEMINI] Could not save response: %s", exc)
 
         try:
             raw_text = getattr(response, "text", "") or ""
