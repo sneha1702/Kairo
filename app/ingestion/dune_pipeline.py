@@ -177,12 +177,21 @@ class DuneIngestionPipeline:
 
         cfg = self._raw_config or {}
         globals_ = cfg.get("globals") or {}
-        queries = cfg.get("queries") or {}
+        queries_cfg = cfg.get("queries") or {}
         names = query_names or list(QUERY_TO_INDEX.keys())
+
+        # Config.DUNE_QUERY_WINDOW_HOURS is the authoritative global time window.
+        # Precedence: per-query YAML override > Config value > YAML globals fallback.
+        effective_global_hours = Config.DUNE_QUERY_WINDOW_HOURS
+
         result = []
         for name in names:
-            params = {**globals_, **queries.get(name, {})}
-            cadence = int(params.get("time_window_hours", 24))
+            per_query = queries_cfg.get(name, {})
+            # Start from YAML globals, inject the Config-driven time window, then
+            # apply per-query overrides (which can still override time_window_hours
+            # for queries that genuinely need a different window).
+            params = {**globals_, "time_window_hours": effective_global_hours, **per_query}
+            cadence = int(params.get("time_window_hours", effective_global_hours))
             result.append(QueryConfig(
                 query_name=name,
                 sql_path=self.query_dir / f"{name}.sql",
