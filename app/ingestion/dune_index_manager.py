@@ -87,6 +87,7 @@ _INDEX_MAPPINGS: dict = {
             "balance":        {"type": "double"},
             "pct_of_supply":  {"type": "double"},
             "cumulative_pct": {"type": "double"},
+            "snapshot_time":  {"type": "date"},
             "token_address":  {"type": "keyword"},
         },
     },
