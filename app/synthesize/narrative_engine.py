@@ -493,14 +493,14 @@ Each object MUST have EXACTLY these fields:
             logger.warning("[GEMINI] Could not save response: %s", exc)
 
         try:
-            raw_text = getattr(response, "text", "") or ""
-            response_text = str(raw_text).strip()
+            response_text = raw_response.strip()
             if response_text.startswith("```"):
                 response_text = response_text.split("```")[1]
                 if response_text.startswith("json"):
                     response_text = response_text[4:]
 
             narratives = json.loads(response_text)
+            logger.info("[GEMINI] Parsed %d narratives from response", len(narratives))
 
             for narrative in narratives:
                 narrative["detected_at"] = datetime.now().isoformat()
@@ -508,8 +508,8 @@ Each object MUST have EXACTLY these fields:
 
             return narratives
         except json.JSONDecodeError as e:
-            print(f"Error parsing Gemini response: {e}")
-            print(f"Raw response: {getattr(response, 'text', None)}")
+            logger.error("[GEMINI] Failed to parse response JSON: %s", e)
+            logger.debug("[GEMINI] Raw response: %s", raw_response)
             return []
 
     # ── Momentum ───────────────────────────────────────────────────────────────
