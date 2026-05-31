@@ -135,5 +135,6 @@ class ElasticsearchManager:
                 "spike_top_symbols":   _top_symbols(spikes, "volume_multiplier"),
             })
 
+        self.logger.info("[ES] Signal trend ready — %d buckets", len(buckets))
         return buckets
 
