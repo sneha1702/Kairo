@@ -24,7 +24,10 @@
       "Read(//private/tmp/**)",
       "Bash(tar xf *)",
       "Bash(python3 *)",
-      "Bash(chmod +x /Users/snehaparihar/KairoAgent/scripts/purge.py)"
+      "Bash(chmod +x /Users/snehaparihar/KairoAgent/scripts/purge.py)",
+      "Bash(git -C /Users/snehaparihar/KairoAgent status --porcelain)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
