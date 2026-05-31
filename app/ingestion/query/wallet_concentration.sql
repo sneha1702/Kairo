@@ -64,11 +64,12 @@ ranked_wallets AS (
 SELECT
     rank,
     address,
-    COALESCE(label, 'Unknown')              AS label,
-    COALESCE(address_type, 'wallet')        AS address_type,
-    ROUND(balance, 4)                       AS balance,
-    ROUND(pct_of_supply, 4)                 AS pct_of_supply,
-    ROUND(SUM(pct_of_supply) OVER (ORDER BY rank), 2) AS cumulative_pct
+    COALESCE(label, 'Unknown')                          AS label,
+    COALESCE(address_type, 'wallet')                    AS address_type,
+    ROUND(balance, 4)                                   AS balance,
+    ROUND(pct_of_supply, 4)                             AS pct_of_supply,
+    ROUND(SUM(pct_of_supply) OVER (ORDER BY rank), 2)   AS cumulative_pct,
+    CURRENT_TIMESTAMP                                   AS snapshot_time
 FROM ranked_wallets
 WHERE rank <= 50
 ORDER BY rank
