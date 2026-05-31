@@ -115,6 +115,8 @@ _INDEX_MAPPINGS: dict = {
             "growth_rate_pct":              {"type": "double"},
             "total_holders_all_time":       {"type": "integer"},
             "new_holders_pct_of_total":     {"type": "double"},
+            "window_start_time":            {"type": "date"},
+            "window_end_time":              {"type": "date"},
             "growth_signal":                {"type": "keyword"},
             "token_address":                {"type": "keyword"},
         },
