@@ -1,0 +1,4 @@
+{
+  "query_window_hours": 4,
+  "_comment": "Runtime-configurable Dune ingestion params. Edit via the Admin Panel or set DUNE_QUERY_WINDOW_HOURS env var. Env var takes precedence."
+}
