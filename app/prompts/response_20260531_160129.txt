@@ -1,0 +1,138 @@
+```json
+[
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Major Stablecoin Accumulation by Whales",
+    "category": "Stablecoins",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "$4.95B USDC, $599M DAI, and an unspecified amount of USDT observed in whale transactions and token accumulation flows.",
+      "Overall whale transaction volume increased significantly from $4.85B (T-48h..T-24h) to $12.79B (T-24h..now), indicating heightened activity in stablecoin movements.",
+      "USDC, DAI, and USDT also show moderate to high DEX liquidity concentration."
+    ],
+    "historical_context": "This is the initial detection of significant stablecoin accumulation activity.",
+    "implications": "Large holders are increasing their stablecoin positions, potentially indicating a flight to safety, preparation for future investments, or increased DeFi yield farming activity. The accelerating whale volume suggests this trend is gaining traction.",
+    "top_tokens": [
+      "USDC",
+      "DAI",
+      "USDT"
+    ],
+    "retail_considerations": "Retail investors should be aware of increased stablecoin demand, which can precede market volatility or signal smart money positioning for future opportunities. This could also suggest higher stablecoin yields in DeFi.",
+    "signal_sources": [
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ]
+  },
+  {
+    "narrative_id": "institutional_bitcoin",
+    "name": "Whale Accumulation in Wrapped Bitcoin (WBTC)",
+    "category": "Institutional",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "$925M WBTC detected in whale transactions and showing net outflow (accumulation) from exchanges.",
+      "Total whale transaction volume across all assets surged from $4.85B to $12.79B in the last 24 hours, with WBTC being a top symbol, implying strong institutional or large holder interest.",
+      "WBTC also exhibits significant DEX liquidity concentration (17.28%)."
+    ],
+    "historical_context": "This is the initial detection of substantial whale-led Wrapped Bitcoin accumulation.",
+    "implications": "Large investors are actively accumulating Wrapped Bitcoin, often a proxy for institutional Bitcoin exposure on Ethereum. This suggests growing confidence in Bitcoin's value or its utility within the DeFi ecosystem.",
+    "top_tokens": [
+      "WBTC"
+    ],
+    "retail_considerations": "Whale accumulation of WBTC could signal positive long-term sentiment for Bitcoin, potentially influencing the broader crypto market. It also highlights the growing use of Bitcoin in DeFi.",
+    "signal_sources": [
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ]
+  },
+  {
+    "narrative_id": "ethereum_staking",
+    "name": "Significant Whale Activity in Liquid Staked Ethereum (stETH)",
+    "category": "DeFi",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "$290M STETH observed in whale transactions and showing net outflow (accumulation) from exchanges.",
+      "STETH has an exceptionally high DEX concentration of 99.02%, indicating deep liquidity for the asset within decentralized exchanges.",
+      "Overall whale transaction volume, including stETH, accelerated from $4.85B to $12.79B in the last 24 hours."
+    ],
+    "historical_context": "This is the initial detection of significant whale interest and activity around liquid staked Ethereum.",
+    "implications": "Whales are actively accumulating STETH, suggesting continued strong conviction in Ethereum's staking yield and the broader liquid staking derivative ecosystem. High DEX concentration indicates robust trading and liquidity provision for stETH.",
+    "top_tokens": [
+      "STETH"
+    ],
+    "retail_considerations": "Increased whale activity in STETH suggests a healthy and growing liquid staking market for Ethereum. Retail investors might see this as validation for participating in ETH staking through liquid staking protocols.",
+    "signal_sources": [
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ]
+  },
+  {
+    "narrative_id": "defi_bluechip",
+    "name": "Smart Money & Whale Interest in Core DeFi Bluechips",
+    "category": "DeFi",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": "Stable",
+    "confidence_score": 0.80,
+    "key_evidence": [
+      "Smart money wallets have made top buys totaling $61.2M in WETH, indicating strategic positioning.",
+      "LINK experienced a 2.07x volume spike compared to its baseline, alongside token accumulation flows and DEX concentration.",
+      "UNI and MKR also show net token outflow (accumulation), indicating buying pressure from various entities."
+    ],
+    "historical_context": "This is the initial detection of notable capital flows into established DeFi assets.",
+    "implications": "Smart money and significant volume spikes in WETH and LINK, alongside accumulation in other bluechip DeFi tokens, suggest a bullish outlook from sophisticated participants on the core DeFi ecosystem. Capital is flowing into foundational DeFi assets.",
+    "top_tokens": [
+      "WETH",
+      "LINK",
+      "UNI",
+      "MKR"
+    ],
+    "retail_considerations": "When smart money and volume spikes occur in bluechip DeFi tokens, it often signals growing confidence in the sector. Retail investors may see this as a potential entry point or a confirmation of DeFi's long-term viability.",
+    "signal_sources": [
+      "smart_money",
+      "volume_spikes",
+      "token_flows",
+      "dex_concentration"
+    ]
+  },
+  {
+    "narrative_id": "l2_capital_rotation",
+    "name": "Massive Capital Rotation to Layer 2 Networks",
+    "category": "L2",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "Over $1.8B in total bridge activity observed, with a significant increase from $1.4B to $1.8B in the last 24 hours.",
+      "A single bridge route, Agglayer: Ethereum → Silicon_Network, accounts for an exceptional $1.7B in capital movement to an L2.",
+      "Additional substantial flows detected from Ethereum to Polygon and Arbitrum, indicating a broad trend of capital deployment into L2s.",
+      "Minor, but notable, capital return flows to Ethereum from Aptos, Solana, Arbitrum, Base, and BNB suggest dynamic cross-chain activity and potential rebalancing."
+    ],
+    "historical_context": "This is the initial detection of a high-magnitude capital rotation towards Layer 2 solutions, with clear acceleration.",
+    "implications": "There is a strong and accelerating trend of capital moving from Ethereum to various Layer 2 networks. This indicates growing adoption and confidence in L2s for scaling and transaction efficiency, potentially driving activity and liquidity within these ecosystems.",
+    "top_tokens": [
+      "ETH",
+      "MATIC",
+      "ARB",
+      "SOL",
+      "APT"
+    ],
+    "retail_considerations": "The significant movement of capital to L2s suggests these networks are becoming primary hubs for activity. Retail investors should evaluate opportunities within specific L2 ecosystems, anticipating increased transaction volume and dApp usage on these chains.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  }
+]
+```

@@ -111,6 +111,9 @@ class NarrativeTracker:
 
     def save_narratives(self, narratives: List[Dict[str, Any]], user_id: str = "default") -> None:
         now = datetime.now(timezone.utc)
+        ts = now.strftime("%Y%m%d_%H%M%S")
+        logger.info("[MONGO] Persisting %d narratives for user=%s", len(narratives), user_id)
+
         for narrative in narratives:
             narrative_id = make_narrative_id(narrative)
 
@@ -132,7 +135,7 @@ class NarrativeTracker:
                 doc["detected_at"] = now
 
             # Only set detected_at on first insert; preserve original on update
-            self.db.narratives.update_one(
+            result = self.db.narratives.update_one(
                 {"narrative_id": narrative_id, "user_id": user_id},
                 {
                     "$set": {k: v for k, v in doc.items() if k != "detected_at"},
@@ -140,7 +143,13 @@ class NarrativeTracker:
                 },
                 upsert=True,
             )
-            logger.debug("Upserted narrative %s for user %s", narrative_id, user_id)
+            action = "inserted" if result.upserted_id else "updated"
+            logger.info(
+                "[MONGO] Narrative %-40s %s (status=%s, confidence=%.2f)",
+                narrative_id, action,
+                narrative.get("status", "?"),
+                narrative.get("confidence_score", 0),
+            )
 
             # Append snapshot to time series
             momentum = narrative.get("momentum") or {}
@@ -158,7 +167,25 @@ class NarrativeTracker:
                     "user_id":          user_id,
                 })
             except Exception as exc:
-                logger.warning("Could not insert history snapshot for %s: %s", narrative_id, exc)
+                logger.warning("[MONGO] Could not insert history snapshot for %s: %s", narrative_id, exc)
+
+        # ── Persist snapshot to outputs/ ──────────────────────────────────────
+        try:
+            _OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+            output_file = _OUTPUT_DIR / f"narratives_{ts}.json"
+
+            def _default(obj: Any) -> str:
+                if isinstance(obj, datetime):
+                    return obj.isoformat()
+                return str(obj)
+
+            output_file.write_text(
+                json.dumps(narratives, indent=2, default=_default),
+                encoding="utf-8",
+            )
+            logger.info("[MONGO] Narratives snapshot saved → %s", output_file)
+        except Exception as exc:
+            logger.warning("[MONGO] Could not write narratives snapshot: %s", exc)
 
     # ── Read ───────────────────────────────────────────────────────────────────
 

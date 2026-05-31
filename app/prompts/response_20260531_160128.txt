@@ -1,0 +1,79 @@
+```json
+[
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Stablecoin Accumulation & Positioning",
+    "category": "Stablecoins",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.95,
+    "key_evidence": [
+      "$4.95B USDC, $599M DAI, and USDT detected in whale transactions and showing net outflow (accumulation).",
+      "USDC, DAI, USDT show moderate to high DEX concentration.",
+      "Whale activity involving these stablecoins has accelerated from $4.85B (T-48h) to $12.8B (T-24h) in the last 48 hours."
+    ),
+    "historical_context": "First detection of this narrative.",
+    "implications": "Significant capital is being positioned into stable assets, potentially for future deployment or as a safe haven. This can indicate cautious market sentiment or preparation for large purchases.",
+    "top_tokens": ["USDC", "DAI", "USDT"],
+    "retail_considerations": "Increased stablecoin holdings by large players might precede market volatility or signal readiness for new investment opportunities. Watch for shifts in sentiment or deployment.",
+    "signal_sources": ["whale_transactions", "token_flows", "dex_concentration"]
+  },
+  {
+    "narrative_id": "defi_bluechip",
+    "name": "DeFi Bluechip Capital Activity",
+    "category": "DeFi",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Stable",
+    "confidence_score": 0.90,
+    "key_evidence": [
+      "$925M WBTC and $290M STETH detected in significant whale transactions, combined with token accumulation flows and high DEX concentration.",
+      "$61M WETH accumulated by smart money wallets and shows DEX concentration, despite a recent decline in holder growth.",
+      "LINK experienced a 2.07x volume spike and shows high DEX concentration.",
+      "Whale interest in WBTC and STETH has significantly accelerated over the last 48 hours."
+    ],
+    "historical_context": "First detection of this narrative.",
+    "implications": "Established DeFi assets are attracting significant capital from whales and smart money, indicating confidence in core DeFi protocols or strategic positioning within the ecosystem. The mixed smart money and volume spike trends suggest a nuanced picture, with some consolidation.",
+    "top_tokens": ["WBTC", "STETH", "WETH", "LINK"],
+    "retail_considerations": "Large investors are positioning in fundamental DeFi assets. While WETH holder growth is declining, smart money is still active, suggesting continued belief in its utility. LINK's volume spike indicates heightened interest.",
+    "signal_sources": ["whale_transactions", "smart_money", "token_flows", "dex_concentration", "volume_spikes"]
+  },
+  {
+    "narrative_id": "l2_capital_rotation",
+    "name": "Major Capital Rotation into Layer 2 Ecosystems",
+    "category": "L2",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Accelerating",
+    "confidence_score": 0.90,
+    "key_evidence": [
+      "Massive $1.7B bridged from Ethereum to 'Silicon_Network' via Agglayer and $15.5M from Ethereum to Polygon, indicating substantial capital flow into Layer 2 solutions.",
+      "Overall bridge activity has significantly accelerated from $1.44B (T-48h) to $1.85B (T-24h) in the last 48 hours, with transaction count increasing from 567 to 963."
+    ],
+    "historical_context": "First detection of this narrative.",
+    "implications": "Investors are aggressively moving capital into Layer 2 ecosystems, signaling anticipation of growth, lower transaction costs, or new opportunities specific to these networks. The 'Silicon_Network' (likely a placeholder for a new or emerging L2) is attracting a very large share.",
+    "top_tokens": ["AGGLAYER:ETHEREUM → SILICON_NETWORK", "POLYGON:ETHEREUM → POLYGON"],
+    "retail_considerations": "This trend suggests increasing adoption and utility for Layer 2s. Explore opportunities on these scaling solutions for potentially lower fees and faster transactions, but be aware of the specific L2's risks.",
+    "signal_sources": ["bridge_activity"]
+  },
+  {
+    "narrative_id": "cross_chain_liquidity",
+    "name": "Cross-Chain Capital Rebalancing",
+    "category": "CrossChain",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": "Accelerating",
+    "confidence_score": 0.55,
+    "key_evidence": [
+      "$14.6M bridged from Aptos to Ethereum and $9.9M from Solana to Ethereum via CCTP, indicating notable capital movement between diverse blockchain ecosystems.",
+      "Overall bridge activity has accelerated from $1.44B (T-48h) to $1.85B (T-24h) in the last 48 hours."
+    ],
+    "historical_context": "First detection of this narrative.",
+    "implications": "Capital is actively being reallocated between different blockchain platforms, potentially driven by shifts in yield opportunities, arbitrage, or specific ecosystem developments. Flow back to Ethereum suggests a gravitation towards L1 liquidity.",
+    "top_tokens": ["CCTP:APTOS → ETHEREUM", "CCTP:SOLANA → ETHEREUM"],
+    "retail_considerations": "Observing these flows can highlight where market participants are seeking new opportunities or consolidating assets. Be mindful of gas fees and bridging risks when moving assets cross-chain.",
+    "signal_sources": ["bridge_activity"]
+  }
+]
+```

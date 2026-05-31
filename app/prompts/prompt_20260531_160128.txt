@@ -513,10 +513,10 @@ SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
     "count": 50,
     "total_usd": 6764535377.03,
     "top_symbols": [
+      "WBTC",
       "USDC",
-      "stETH",
       "DAI",
-      "WBTC"
+      "stETH"
     ]
   },
   "wallet_concentration": {
