@@ -134,21 +134,51 @@ class NarrativeTracker:
             elif not isinstance(doc.get("detected_at"), datetime):
                 doc["detected_at"] = now
 
+            # Normalise provenance timestamp strings to datetime
+            for ts_field in ("data_window_start", "data_window_end", "last_ingested_at", "prompt_built_at"):
+                raw = doc.get(ts_field)
+                if isinstance(raw, str) and raw:
+                    try:
+                        doc[ts_field] = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+                    except (ValueError, TypeError):
+                        doc[ts_field] = None
+
+            # Evolution log entry — appended on every update, capped at 100 entries
+            evolution_entry = {
+                "updated_at":        now,
+                "status":            narrative.get("status"),
+                "confidence_score":  narrative.get("confidence_score"),
+                "strength":          narrative.get("strength"),
+                "momentum_trend":    (narrative.get("momentum") or {}).get("trend", ""),
+                "data_window_start": doc.get("data_window_start"),
+                "data_window_end":   doc.get("data_window_end"),
+                "last_ingested_at":  doc.get("last_ingested_at"),
+                "key_evidence":      (narrative.get("key_evidence") or [])[:3],
+            }
+
             # Only set detected_at on first insert; preserve original on update
             result = self.db.narratives.update_one(
                 {"narrative_id": narrative_id, "user_id": user_id},
                 {
                     "$set": {k: v for k, v in doc.items() if k != "detected_at"},
                     "$setOnInsert": {"detected_at": doc["detected_at"]},
+                    "$push": {
+                        "evolution_log": {
+                            "$each":  [evolution_entry],
+                            "$slice": -100,   # keep last 100 evolution snapshots
+                        }
+                    },
                 },
                 upsert=True,
             )
             action = "inserted" if result.upserted_id else "updated"
             logger.info(
-                "[MONGO] Narrative %-40s %s (status=%s, confidence=%.2f)",
+                "[MONGO] Narrative %-40s %s (status=%s, confidence=%.2f, data_window=%s→%s)",
                 narrative_id, action,
                 narrative.get("status", "?"),
                 narrative.get("confidence_score", 0),
+                narrative.get("data_window_start", "?"),
+                narrative.get("data_window_end", "?"),
             )
 
             # Append snapshot to time series
@@ -156,15 +186,18 @@ class NarrativeTracker:
             momentum_score = momentum.get("momentum_score", 0) if isinstance(momentum, dict) else 0
             try:
                 self.db.narrative_history.insert_one({
-                    "recorded_at":      now,
-                    "narrative_id":     narrative_id,   # metaField
-                    "narrative_name":   narrative.get("name"),
-                    "category":         narrative.get("category"),
-                    "status":           narrative.get("status"),
-                    "strength":         narrative.get("strength"),
-                    "confidence_score": narrative.get("confidence_score"),
-                    "momentum_score":   momentum_score,
-                    "user_id":          user_id,
+                    "recorded_at":       now,
+                    "narrative_id":      narrative_id,   # metaField
+                    "narrative_name":    narrative.get("name"),
+                    "category":          narrative.get("category"),
+                    "status":            narrative.get("status"),
+                    "strength":          narrative.get("strength"),
+                    "confidence_score":  narrative.get("confidence_score"),
+                    "momentum_score":    momentum_score,
+                    "data_window_start": doc.get("data_window_start"),
+                    "data_window_end":   doc.get("data_window_end"),
+                    "last_ingested_at":  doc.get("last_ingested_at"),
+                    "user_id":           user_id,
                 })
             except Exception as exc:
                 logger.warning("[MONGO] Could not insert history snapshot for %s: %s", narrative_id, exc)
