@@ -89,6 +89,8 @@ SELECT
     ROUND(tdv.avg_trade_size_usd, 2)    AS avg_trade_usd,
     ROUND(tdv.volume_usd * 100.0 / NULLIF(tb.total_volume_usd, 0), 2) AS dex_share_pct,
     c.top10_pct                         AS top10_wallets_share_pct,
+    tdv.earliest_trade_time,
+    tdv.latest_trade_time,
     CASE
         WHEN c.top10_pct > 80 THEN '🐳 Highly Concentrated (Bot/Whale Dominated)'
         WHEN c.top10_pct > 60 THEN '⚠️ Concentrated Trading'
