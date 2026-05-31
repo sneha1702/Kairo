@@ -12,6 +12,8 @@ SELECT
         SUM(CASE WHEN flow_type = 'inflow'  THEN amount_usd ELSE 0 END) -
         SUM(CASE WHEN flow_type = 'outflow' THEN amount_usd ELSE 0 END)
     , 2)                                                                        AS net_flow_usd,
+    MIN(block_time)                                                             AS earliest_flow_time,
+    MAX(block_time)                                                             AS latest_flow_time,
     CASE
         WHEN SUM(CASE WHEN flow_type = 'inflow'  THEN amount_usd ELSE 0 END) -
              SUM(CASE WHEN flow_type = 'outflow' THEN amount_usd ELSE 0 END) > 0
