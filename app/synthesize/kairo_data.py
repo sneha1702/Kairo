@@ -709,7 +709,7 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
         detected_dt = top.get("detected_at")
 
         for i, ev in enumerate(reversed(key_evidence[:5])):
-            ep_day = max(1, day - i)
+            ep_day = i + 1
             try:
                 if detected_dt:
                     if isinstance(detected_dt, str):
