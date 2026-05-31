@@ -7,6 +7,7 @@ WITH deposits AS (
     SELECT
         CONCAT('Ethereum → ', withdrawal_chain)   AS direction,
         bridge_name                               AS bridge,
+        block_time,
         tx_hash,
         sender,
         deposit_amount_usd                        AS usd_value
@@ -21,6 +22,7 @@ withdrawals AS (
     SELECT
         CONCAT(deposit_chain, ' → Ethereum')      AS direction,
         bridge_name                               AS bridge,
+        block_time,
         tx_hash,
         sender,
         withdrawal_amount_usd                     AS usd_value
@@ -39,15 +41,17 @@ all_flows AS (
 SELECT
     direction,
     bridge,
-    COUNT(*)                    AS tx_count,
-    COUNT(DISTINCT sender)      AS unique_wallets,
-    CAST(NULL AS DOUBLE)        AS total_eth,
-    ROUND(SUM(usd_value), 2)    AS total_usd,
+    COUNT(*)                            AS tx_count,
+    COUNT(DISTINCT sender)              AS unique_wallets,
+    CAST(NULL AS DOUBLE)                AS total_eth,
+    ROUND(SUM(usd_value), 2)            AS total_usd,
+    MIN(block_time)                     AS earliest_tx_time,
+    MAX(block_time)                     AS latest_tx_time,
     CASE
         WHEN direction LIKE 'Ethereum →%'
             THEN '🟡 Capital Moving to L2'
         ELSE '🔵 Capital Returning to L1'
-    END                         AS capital_signal
+    END                                 AS capital_signal
 FROM all_flows
 GROUP BY direction, bridge
 ORDER BY total_usd DESC
