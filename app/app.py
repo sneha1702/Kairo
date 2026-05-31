@@ -127,8 +127,8 @@ def _cached_build_data(user_id: str, hours: int = 24) -> dict:
         )
     except Exception as exc:
         logger.exception("_cached_build_data failed: %s", exc)
-        from app.synthesize.kairo_data import _fallback_data
-        return _fallback_data()
+        from app.synthesize.kairo_data import _empty_data
+        return _empty_data()
 
 
 # ---------------------------------------------------------------------------
