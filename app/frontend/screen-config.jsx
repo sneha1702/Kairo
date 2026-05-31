@@ -266,6 +266,8 @@ function ConfigScreen() {
           useful in fast-moving market conditions.
         </p>
       </article>
+
+      <DataRangeAdmin />
     </div>
   );
 }

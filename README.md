@@ -433,3 +433,15 @@ python -m compileall .
 
 2. Compile specific script
 python3 -m py_compile scripts/purge.py
+
+3. Run Purge
+  poetry run python3 app/scripts/purge.py --all             # purge both ES and MongoDB
+  poetry run python3 app/scripts/purge.py --elastic         # purge ES indices only
+  poetry run python3 app/scripts/purge.py --mongo           # purge MongoDB collections only
+  poetry run python3 app/scripts/purge.py --all --dry-run   # preview without deleting
+
+
+4. Run elastic ingestion
+poetry run python3 app/ingestion/dune_pipeline.py
+
+4. Run p

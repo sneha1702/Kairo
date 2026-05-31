@@ -6,7 +6,7 @@
 # (set via DUNE_QUERY_WINDOW_HOURS env var or config/dune_params.json, default: 4).
 # The value here is only used when the pipeline is invoked outside of Python (e.g. run_query.sh).
 globals:
-  time_window_hours: 4           # fallback for shell usage; Python pipeline uses Config
+  time_window_hours: 48           # fallback for shell usage; Python pipeline uses Config
   min_usd_value: 100000         # 100000 = $100k threshold, 500000 = $500k
   min_buy_usd: 10000            # minimum single buy size for smart money filter
   spike_multiplier: 2.0         # volume spike = N× the 7-day hourly average
