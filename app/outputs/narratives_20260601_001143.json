@@ -1,0 +1,183 @@
+[
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Major Stablecoin Accumulation by Whales",
+    "category": "Stablecoins",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": {
+      "trend": "new",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0
+    },
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "Whale transactions totaled $6.4B, with USDC ($5.1B), DAI ($893.5M), and WBTC ($418.5M) being top symbols.",
+      "USDC, DAI, and USDT all show net outflow (accumulation) via token flows.",
+      "USDC and USDT exhibit moderate DEX concentration (4.94% and 5.87% respectively on Dodo)."
+    ],
+    "historical_context": "This is a new detection of significant stablecoin accumulation activity by large holders in the last 24 hours.",
+    "implications": "Indicates large capital preparing for future deployment or taking a defensive stance in stablecoins. The inclusion of WBTC suggests some exposure to Bitcoin alongside stables.",
+    "top_tokens": [
+      "USDC",
+      "DAI",
+      "USDT"
+    ],
+    "retail_considerations": "Significant whale moves in stablecoins can precede major market movements. Retail investors might observe where this capital eventually flows.",
+    "signal_sources": [
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ],
+    "detected_at": "2026-06-01T00:11:43.465435Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T00:06:47.000Z",
+    "data_window_end": "2026-05-31T23:27:47.000Z",
+    "last_ingested_at": "2026-06-01T00:10:33.812611+00:00",
+    "prompt_built_at": "2026-06-01T00:11:43.465435Z"
+  },
+  {
+    "narrative_id": "ethereum_staking",
+    "name": "Smart Money Accumulating WETH for Ethereum Ecosystem",
+    "category": "DeFi",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": {
+      "trend": "new",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0
+    },
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "$58.3M in WETH accumulated by 40 smart money wallets via repeated buys.",
+      "WETH shows net outflow (accumulation) via token flows.",
+      "WETH has moderate DEX concentration (1.43% on Dodo)."
+    ],
+    "historical_context": "This is a new detection of concentrated smart money accumulation in WETH within the last 24 hours.",
+    "implications": "Suggests smart money anticipates positive developments or opportunities within the Ethereum ecosystem, possibly related to DeFi yield or staking strategies.",
+    "top_tokens": [
+      "WETH"
+    ],
+    "retail_considerations": "Smart money accumulation in WETH can signal upcoming rallies or strong conviction in Ethereum's future. Retail investors should monitor WETH-related DeFi protocols.",
+    "signal_sources": [
+      "smart_money",
+      "token_flows",
+      "dex_concentration"
+    ],
+    "detected_at": "2026-06-01T00:11:43.465435Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T00:06:47.000Z",
+    "data_window_end": "2026-05-31T23:27:47.000Z",
+    "last_ingested_at": "2026-06-01T00:10:33.812611+00:00",
+    "prompt_built_at": "2026-06-01T00:11:43.465435Z"
+  },
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Active Cross-Chain Capital Rebalancing",
+    "category": "CrossChain",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": {
+      "trend": "new",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0
+    },
+    "confidence_score": 0.75,
+    "key_evidence": [
+      "Over $71.1M in total bridge activity observed in the last 24 hours.",
+      "$15.7M moved from Aptos to Ethereum and $9.8M from Solana to Ethereum via CCTP, indicating capital returning to L1.",
+      "$7.7M moved from Ethereum to Polygon, signaling capital deployment into L2s."
+    ],
+    "historical_context": "This is a new detection of significant capital movement between different chains and L2s in the last 24 hours.",
+    "implications": "Funds are actively being repositioned across the crypto ecosystem, potentially in response to changing yield opportunities, network fees, or upcoming protocol launches on specific chains.",
+    "top_tokens": [
+      "APTOS",
+      "SOLANA",
+      "ETHEREUM",
+      "POLYGON"
+    ],
+    "retail_considerations": "Investors should monitor which chains are gaining or losing capital to identify emerging narratives or shifts in ecosystem focus. High bridging activity can precede shifts in liquidity and asset prices on destination chains.",
+    "signal_sources": [
+      "bridge_activity"
+    ],
+    "detected_at": "2026-06-01T00:11:43.465435Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T00:06:47.000Z",
+    "data_window_end": "2026-05-31T23:27:47.000Z",
+    "last_ingested_at": "2026-06-01T00:10:33.812611+00:00",
+    "prompt_built_at": "2026-06-01T00:11:43.465435Z"
+  },
+  {
+    "narrative_id": "defi_bluechip",
+    "name": "Renewed Interest in DeFi Bluechip Token Maker (MKR)",
+    "category": "DeFi",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": {
+      "trend": "new",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0
+    },
+    "confidence_score": 0.65,
+    "key_evidence": [
+      "MKR experienced a 1.76x volume spike on DEXes.",
+      "MKR shows net outflow (accumulation) through token flows."
+    ],
+    "historical_context": "This is a new detection of increased activity and accumulation for Maker (MKR) within the last 24 hours.",
+    "implications": "Suggests a potential resurgence of interest in established DeFi protocols like Maker, possibly driven by governance developments, yield opportunities, or broader sector rotation.",
+    "top_tokens": [
+      "MKR"
+    ],
+    "retail_considerations": "Bluechip DeFi tokens can offer relatively stable exposure to the sector. Increased accumulation by whales may indicate a belief in the long-term value proposition or upcoming catalyst.",
+    "signal_sources": [
+      "volume_spikes",
+      "token_flows"
+    ],
+    "detected_at": "2026-06-01T00:11:43.465435Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T00:06:47.000Z",
+    "data_window_end": "2026-05-31T23:27:47.000Z",
+    "last_ingested_at": "2026-06-01T00:10:33.812611+00:00",
+    "prompt_built_at": "2026-06-01T00:11:43.465435Z"
+  },
+  {
+    "narrative_id": "institutional_bitcoin",
+    "name": "Whale Accumulation in Wrapped Bitcoin",
+    "category": "Institutional",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": {
+      "trend": "new",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0
+    },
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "$418.5M in WBTC whale transactions detected.",
+      "WBTC shows net outflow (accumulation) via token flows.",
+      "WBTC has moderate DEX concentration (10.59%)."
+    ],
+    "historical_context": "This is a new detection of significant whale activity focusing on Wrapped Bitcoin within the last 24 hours.",
+    "implications": "Large holders are accumulating Wrapped Bitcoin, potentially for DeFi strategies on Ethereum or simply as a way to hold Bitcoin exposure on-chain. This often reflects institutional or large-fund interest.",
+    "top_tokens": [
+      "WBTC"
+    ],
+    "retail_considerations": "Whale accumulation of WBTC could signal a bullish sentiment for Bitcoin, especially within the DeFi ecosystem. Retail investors might see this as a precursor to broader market uptrends for BTC.",
+    "signal_sources": [
+      "whale_transactions",
+      "token_flows",
+      "dex_concentration"
+    ],
+    "detected_at": "2026-06-01T00:11:43.465435Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-31T00:06:47.000Z",
+    "data_window_end": "2026-05-31T23:27:47.000Z",
+    "last_ingested_at": "2026-06-01T00:10:33.812611+00:00",
+    "prompt_built_at": "2026-06-01T00:11:43.465435Z"
+  }
+]
