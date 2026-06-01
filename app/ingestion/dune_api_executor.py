@@ -38,11 +38,15 @@ class DuneApiError(Exception):
 
 
 class DuneExecutionError(DuneApiError):
-    def __init__(self, query_name: str, state: str, raw: str):
-        super().__init__(f"[{query_name}] Dune state={state}")
+    def __init__(self, query_name: str, state: str, data: dict):
+        # Surface the error detail so failures are diagnosable from the log
+        error_detail = data.get("error", "") or data.get("errors", "") or ""
+        if not error_detail:
+            error_detail = str(data)[:300]
+        super().__init__(f"[{query_name}] Dune state={state} — {error_detail}")
         self.query_name = query_name
         self.state = state
-        self.raw = raw
+        self.raw = str(data)
 
 
 class DuneTimeoutError(DuneApiError):
