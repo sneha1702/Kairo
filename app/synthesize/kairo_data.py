@@ -689,7 +689,8 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
             forces = ["smart-money"]
         assets = (top.get("top_tokens") or [])[:3]
         summary = (
-            top.get("retail_considerations")
+            top.get("plain_english_summary")
+            or top.get("retail_considerations")
             or top.get("implications")
             or f"The {name} narrative has been active for {day} day{'s' if day != 1 else ''}."
         )
