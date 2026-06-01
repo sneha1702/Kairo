@@ -700,6 +700,9 @@ Each object MUST have EXACTLY these fields:
                 narrative["data_window_end"]    = data_window_end
                 narrative["last_ingested_at"]   = last_ingested_at
                 narrative["prompt_built_at"]    = built_at
+                narrative["evidence_timestamps"] = self._build_evidence_timestamps(
+                    narrative, dune_context or {}
+                )
 
             return narratives
         except json.JSONDecodeError as e:
