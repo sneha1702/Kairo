@@ -123,7 +123,15 @@ function NarrativeRail({ onDrill }) {
               <ForceTag id={n.force} size="sm" />
               <span className="mono" style={{ fontSize: 12, color: "var(--ink-3)" }}>Day {n.day}</span>
             </div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 10, lineHeight: 1.3 }}>{n.title}</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, lineHeight: 1.3 }}>{n.title}</h3>
+            {(n.phase || n.summary_line) && (
+              <div style={{ marginBottom: 10, display: "flex", flexDirection: "column", gap: 5 }}>
+                {n.phase && <PhaseChip phase={n.phase} />}
+                {n.summary_line && (
+                  <p style={{ fontSize: 13, color: "var(--ink-3)", lineHeight: 1.5, margin: 0 }}>{n.summary_line}</p>
+                )}
+              </div>
+            )}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <StatusBadge status={n.status} size="sm" />
               <span className="mono" style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>{n.strength.toFixed(1)}</span>
@@ -131,6 +139,11 @@ function NarrativeRail({ onDrill }) {
             {n.assets && n.assets.length > 0 && (
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
                 {n.assets.map(a => <Asset key={a} sym={a} />)}
+              </div>
+            )}
+            {n.smart_money_intent && (
+              <div style={{ marginBottom: 8 }}>
+                <SmartIntentBadge intent={n.smart_money_intent} />
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 5, color: "var(--accent-ink)", fontSize: 13, fontWeight: 600, marginTop: 4 }}>
