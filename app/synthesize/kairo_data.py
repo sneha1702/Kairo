@@ -899,21 +899,40 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
 
         supporting_facts = _build_supporting_facts(dune_context, top)
 
+        phase = _derive_narrative_phase(top, day, conf)
+        smart_intent = _derive_smart_money_intent(top)
+
+        pls = (top.get("plain_english_summary") or "").strip()
+        first_dot = pls.find(". ")
+        what_happening = (pls[:first_dot + 1] if first_dot != -1 else pls)[:280]
+
+        retail = top.get("retail_considerations") or ""
+        _meaning, _watch_for, _risk_note = _parse_retail_considerations(retail)
+        why_matters = (top.get("implications") or _meaning or "")[:400].strip()
+        risk_note = (top.get("data_caveat") or _risk_note or "")[:250].strip()
+        watch_for = (_watch_for or "")[:220].strip()
+
         return {
-            "title":            name,
-            "day":              day,
-            "status":           status,
-            "strength":         strength,
-            "delta":            "+0.4",
-            "summary":          str(summary)[:500],
-            "forces":           forces,
-            "assets":           assets,
-            "curve":            curve,
-            "episodes":         episodes,
-            "supportingFacts":  supporting_facts,
-            "category":         top.get("category") or "Market",
-            "confidence_score": conf,
-            "implications":     (top.get("implications") or "")[:500],
+            "title":             name,
+            "day":               day,
+            "status":            status,
+            "strength":          strength,
+            "delta":             "+0.4",
+            "summary":           str(summary)[:500],
+            "forces":            forces,
+            "assets":            assets,
+            "curve":             curve,
+            "episodes":          episodes,
+            "supportingFacts":   supporting_facts,
+            "category":          top.get("category") or "Market",
+            "confidence_score":  conf,
+            "implications":      (top.get("implications") or "")[:500],
+            "phase":             phase,
+            "smart_money_intent": smart_intent,
+            "what_happening":    what_happening,
+            "why_matters":       why_matters,
+            "risk_note":         risk_note,
+            "watch_for":         watch_for,
         }
     except Exception as exc:
         logger.warning("_build_tracker error: %s", exc)
