@@ -667,6 +667,86 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
 # Tracker builders
 # ---------------------------------------------------------------------------
 
+_SIGNAL_PLAIN_ENGLISH: dict[str, str] = {
+    "smart_money": (
+        "Large, experienced traders are building a position through repeated buys on decentralized exchanges. "
+        "When sophisticated wallets accumulate deliberately over time rather than in a single trade, "
+        "it often signals conviction ahead of broader market participation."
+    ),
+    "whale": (
+        "Major holders are moving very large sums on-chain — transfers that represent deliberate positioning "
+        "by entities with significant market influence. These aren't routine transactions."
+    ),
+    "bridge": (
+        "Capital is crossing between different blockchain networks. "
+        "Moving funds cross-chain requires effort and cost, so large bridge flows signal intentional "
+        "capital reallocation — money following opportunity, not noise."
+    ),
+    "volume": (
+        "Trading volume has spiked well above the recent average, indicating unusually high activity. "
+        "A volume spike can draw broader attention to an asset and often precedes sustained momentum."
+    ),
+    "accumulation": (
+        "Tokens are flowing off exchanges into private wallets — the classic accumulation pattern. "
+        "When holders withdraw rather than leave assets available to sell, it reduces near-term selling pressure."
+    ),
+    "holder": (
+        "The number of unique wallets holding this asset is growing. "
+        "Broad holder growth means ownership is spreading — a healthy sign for a developing narrative."
+    ),
+    "dex": (
+        "A meaningful share of this token's trading is concentrated on specific decentralized exchanges. "
+        "High concentration by informed traders tends to precede wider market awareness."
+    ),
+}
+
+
+def _detect_signal_context(evidence_text: str) -> str:
+    """Pick the most relevant plain-English signal explanation based on the evidence text."""
+    ev = evidence_text.lower()
+    if "smart money" in ev or ("wallet" in ev and ("bought" in ev or "buys" in ev or "buy" in ev)):
+        return _SIGNAL_PLAIN_ENGLISH["smart_money"]
+    if "whale" in ev or "large holder" in ev:
+        return _SIGNAL_PLAIN_ENGLISH["whale"]
+    if "bridge" in ev or "bridged" in ev or "→" in evidence_text or "->" in ev:
+        return _SIGNAL_PLAIN_ENGLISH["bridge"]
+    if "volume" in ev or "spike" in ev or "multiplier" in ev or "×" in evidence_text:
+        return _SIGNAL_PLAIN_ENGLISH["volume"]
+    if "accumulation" in ev or "outflow" in ev or "withdrawing" in ev:
+        return _SIGNAL_PLAIN_ENGLISH["accumulation"]
+    if "holder" in ev or "new wallet" in ev or "growth" in ev:
+        return _SIGNAL_PLAIN_ENGLISH["holder"]
+    if "dex" in ev or "concentration" in ev or "exchange" in ev:
+        return _SIGNAL_PLAIN_ENGLISH["dex"]
+    return ""
+
+
+def _build_episode_body(evidence_text: str, narrative: dict, idx: int) -> str:
+    """
+    Build a plain-English body for a timeline episode.
+    headline = the raw data fact; body = what it means + why the narrative matters.
+    """
+    name = narrative.get("name", "this narrative")
+    plain_summary  = (narrative.get("plain_english_summary") or "").strip()
+    implications   = (narrative.get("implications") or "").strip()
+    signal_context = _detect_signal_context(evidence_text)
+
+    # Rotate the "why it matters" text across episodes so they don't all read identically
+    narrative_context_pool = [x for x in [plain_summary, implications] if x and len(x) > 20]
+    if narrative_context_pool:
+        narrative_context = narrative_context_pool[idx % len(narrative_context_pool)]
+    else:
+        narrative_context = f"This signal contributes to the {name} narrative — sustained capital positioning across multiple data sources."
+
+    # Lead with signal meaning, close with narrative-level context
+    parts = []
+    if signal_context:
+        parts.append(signal_context)
+    if narrative_context:
+        parts.append(narrative_context)
+    return " ".join(parts)[:520]
+
+
 def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
     if not top:
         return _empty_tracker()
