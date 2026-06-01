@@ -326,6 +326,73 @@ class NarrativeEngine:
             t["dex_share_pct"]     = round(t["dex_share_pct"], 2)
         return result[:20]  # top 20 tokens by conviction
 
+    # ── Per-token evidence timestamp extraction ────────────────────────────────
+
+    @staticmethod
+    def _build_evidence_timestamps(narrative: Dict, dune_context: Dict) -> Dict:
+        """
+        For each of the narrative's top_tokens, collect the individual on-chain
+        timestamps from dune_context so MongoDB preserves full lineage:
+        when each whale tx was placed, when smart money first/last bought, etc.
+        """
+        top_tokens = {t.upper() for t in (narrative.get("top_tokens") or [])}
+        if not top_tokens or not dune_context:
+            return {}
+
+        result: Dict[str, Any] = {}
+
+        def _sym(rec: Dict, *keys: str) -> str:
+            for k in keys:
+                v = rec.get(k)
+                if v:
+                    return str(v).upper()
+            return ""
+
+        for tok in top_tokens:
+            entry: Dict[str, Any] = {}
+
+            whale_times = sorted(
+                {r.get("block_time") for r in dune_context.get("whale_transactions", [])
+                 if _sym(r, "symbol") == tok and r.get("block_time")}
+            )
+            if whale_times:
+                entry["whale_tx_block_times"] = whale_times[:10]
+
+            sm = [r for r in dune_context.get("smart_money", []) if _sym(r, "symbol") == tok]
+            if sm:
+                first_buys = [r.get("first_buy") for r in sm if r.get("first_buy")]
+                last_buys  = [r.get("last_buy")  for r in sm if r.get("last_buy")]
+                if first_buys:
+                    entry["smart_money_first_buy"] = min(first_buys)
+                if last_buys:
+                    entry["smart_money_last_buy"] = max(last_buys)
+
+            sp = [r for r in dune_context.get("volume_spikes", []) if _sym(r, "symbol") == tok]
+            if sp:
+                entry["volume_spike_window_start"] = sp[0].get("window_start_time")
+                entry["volume_spike_window_end"]   = sp[0].get("window_end_time")
+
+            tf = [r for r in dune_context.get("token_flows", [])
+                  if _sym(r, "token") == tok]
+            if tf:
+                entry["flow_earliest"] = min((r.get("earliest_flow_time") for r in tf if r.get("earliest_flow_time")), default=None)
+                entry["flow_latest"]   = max((r.get("latest_flow_time")   for r in tf if r.get("latest_flow_time")),   default=None)
+
+            if entry:
+                result[tok] = entry
+
+        # Bridge flows are not token-specific; store global window for the narrative
+        bridges = dune_context.get("bridge_activity", [])
+        if bridges:
+            b_starts = [r.get("earliest_tx_time") for r in bridges if r.get("earliest_tx_time")]
+            b_ends   = [r.get("latest_tx_time")   for r in bridges if r.get("latest_tx_time")]
+            if b_starts:
+                result["_bridge_earliest_tx"] = min(b_starts)
+            if b_ends:
+                result["_bridge_latest_tx"] = max(b_ends)
+
+        return result
+
     # ── Core detection ─────────────────────────────────────────────────────────
 
     def detect_narratives(
