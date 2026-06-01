@@ -176,15 +176,16 @@ class NarrativeTracker:
 
             # Evolution log entry — appended on every update, capped at 100 entries
             evolution_entry = {
-                "updated_at":        now,
-                "status":            narrative.get("status"),
-                "confidence_score":  narrative.get("confidence_score"),
-                "strength":          narrative.get("strength"),
-                "momentum_trend":    (narrative.get("momentum") or {}).get("trend", ""),
-                "data_window_start": doc.get("data_window_start"),
-                "data_window_end":   doc.get("data_window_end"),
-                "last_ingested_at":  doc.get("last_ingested_at"),
-                "key_evidence":      (narrative.get("key_evidence") or [])[:3],
+                "updated_at":          now,
+                "status":              narrative.get("status"),
+                "confidence_score":    narrative.get("confidence_score"),
+                "strength":            narrative.get("strength"),
+                "momentum_trend":      (narrative.get("momentum") or {}).get("trend", ""),
+                "data_window_start":   doc.get("data_window_start"),
+                "data_window_end":     doc.get("data_window_end"),
+                "last_ingested_at":    doc.get("last_ingested_at"),
+                "key_evidence":        (narrative.get("key_evidence") or [])[:3],
+                "evidence_timestamps": doc.get("evidence_timestamps"),
             }
 
             # Only set detected_at on first insert; preserve original on update
