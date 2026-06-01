@@ -1,10 +1,34 @@
 {
-  "whale_transaction_filter": 7614954,
-  "token_inflow_outflow": 7614955,
-  "bridge_activity": 7614956,
-  "smart_money_accumulation": 7614957,
-  "wallet_concentration": 7614958,
-  "volume_spike_detection": 7614959,
-  "dex_trading_concentration": 7614960,
-  "new_holder_growth": 7614961
+  "whale_transaction_filter": {
+    "id": 7614954,
+    "sql_hash": "d20af0e9155d273a"
+  },
+  "token_inflow_outflow": {
+    "id": 7614955,
+    "sql_hash": "43e67af0b1dcd4a3"
+  },
+  "bridge_activity": {
+    "id": 7614956,
+    "sql_hash": "5dc98b4e020d0b26"
+  },
+  "smart_money_accumulation": {
+    "id": 7614957,
+    "sql_hash": "a89db63c039e3d25"
+  },
+  "wallet_concentration": {
+    "id": 7614958,
+    "sql_hash": "6bd904c669b4ccc6"
+  },
+  "volume_spike_detection": {
+    "id": 7614959,
+    "sql_hash": "72e66cef90050907"
+  },
+  "dex_trading_concentration": {
+    "id": 7614960,
+    "sql_hash": "c6451f13358361ae"
+  },
+  "new_holder_growth": {
+    "id": 7614961,
+    "sql_hash": "0a8052f56ff2c97d"
+  }
 }
