@@ -287,7 +287,8 @@ def _build_story(top: dict, dune_context: dict) -> dict:
             why = "On-chain signals show sustained positioning in this narrative."
 
         expanded = (
-            top.get("retail_considerations")
+            top.get("plain_english_summary")
+            or top.get("retail_considerations")
             or top.get("expanded")
             or "This narrative has been building across multiple signal types. Whale wallet data and flow analysis support the current trend direction."
         )
