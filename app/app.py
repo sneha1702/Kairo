@@ -734,7 +734,8 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 dune_context = _es.get_dune_signal_context(hours=_hours)
 
                 progress.progress(25, text="Fetching signal trend…")
-                signal_trend = _es.get_signal_trend(hours_per_bucket=24, num_buckets=3)
+                _bucket_h = max(24, _hours // 3)
+                signal_trend = _es.get_signal_trend(hours_per_bucket=_bucket_h, num_buckets=3)
 
                 progress.progress(35, text="Loading existing narratives from MongoDB…")
                 current_narratives = _tracker.get_current_narratives(_user_id, min_confidence=0.0) if _tracker else []
