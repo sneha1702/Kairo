@@ -368,6 +368,16 @@ def _build_story(top: dict, dune_context: dict) -> dict:
             clean_name = str(name).split("'")[0].split('"')[0].strip().rstrip(",").strip()
             headline = f"{clean_name}."
 
+        pls = (top.get("plain_english_summary") or "").strip()
+        first_dot = pls.find(". ")
+        what_happening = (pls[:first_dot + 1] if first_dot != -1 else pls)[:280]
+
+        retail = top.get("retail_considerations") or ""
+        _meaning, _watch_for, _risk_note = _parse_retail_considerations(retail)
+        why_matters = (top.get("implications") or _meaning or "")[:400].strip()
+        risk_note = (top.get("data_caveat") or _risk_note or "")[:250].strip()
+        watch_for = (_watch_for or "")[:220].strip()
+
         return {
             "eyebrow": f"{top.get('category', 'Market')} Narrative",
             "headline": headline[:200],
@@ -378,6 +388,10 @@ def _build_story(top: dict, dune_context: dict) -> dict:
             "confidence": confidence,
             "confidenceNote": conf_note,
             "trend": {"label": trend_label, "id": trend_id},
+            "what_happening": what_happening,
+            "why_matters": why_matters,
+            "risk_note": risk_note,
+            "watch_for": watch_for,
         }
     except Exception as exc:
         logger.warning("_build_story error: %s", exc)
