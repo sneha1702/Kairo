@@ -168,6 +168,8 @@ function TrackerHeader({ t }) {
               borderRadius: 99, padding: "5px 13px", fontSize: 13, fontWeight: 700,
             }} className="mono">Day {t.day || "—"}</span>
             <StatusBadge status={t.status} />
+            {t.phase && <PhaseChip phase={t.phase} />}
+            {t.smart_money_intent && <SmartIntentBadge intent={t.smart_money_intent} />}
             {t.category && (
               <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-3)", background: "var(--surface-2)",
                 borderRadius: 99, padding: "3px 9px", border: "1px solid var(--hairline)" }}>
