@@ -1,11 +1,179 @@
-You are an advanced state-evolution engine tracking crypto market themes.
-You are given two inputs:
-1. ACTIVE NARRATIVES STATE (From MongoDB): The current themes tracking market behavior.
-2. NEW INCREMENTAL SIGNALS DELTA (From Elastic): Raw on-chain movements over the last few hours.
+**Here are practical sample Dune SQL queries** for the 4 new queries we identified.
 
-Your primary duty is to ENRICH existing narratives with the new incremental data if they are connected, or CREATE a new one only if the theme is distinct.
+These are written in **Dune SQL** (Trino/Spark compatible) and designed to output data that fits directly into the **expanded schema** we defined earlier. You can parameterize them with `{{time_bucket}}` or date filters in your app.
 
-Rules for Processing:
-- Look for asset correlation. If an active narrative is tracking "institutional_ethereum" and the raw data shows a fresh influx of `dune_dex_concentration` on stETH, do NOT create a new narrative. EVOLVE the existing one by changing status to "ACCELERATING", updating the fields, and synthesizing the new math into the `morning_briefing.the_deep_insight` payload.
-- Retain data fidelity: Ensure old critical context isn't wiped out, but blend it seamlessly with the incoming numbers.
-- Translate jargon: Keep formatting beginner-friendly using financial analogies inside the `morning_briefing` blocks.
+---
+
+### 1. `post-bridge-deployment` (Highest Priority)
+
+**Purpose**: Tracks what happens to capital *after* bridging (lending, LP, restaking, etc.). This turns raw bridge flows into **smart money intent**.
+
+```sql
+WITH bridge_events AS (
+    SELECT 
+        block_time,
+        bridge_name,
+        from_chain,
+        to_chain,
+        token_symbol,
+        amount_usd,
+        recipient
+    FROM dune.bridges.cross_chain_transfers  -- Adjust to actual bridge spell/table
+    WHERE block_time >= date('{{start_date}}') 
+      AND block_time < date('{{end_date}}')
+      AND from_chain = 'Ethereum'
+),
+
+post_actions AS (
+    SELECT 
+        b.to_chain,
+        b.token_symbol AS symbol,
+        b.recipient,
+        CASE 
+            WHEN a.protocol = 'Aave' OR a.protocol LIKE '%Aave%' THEN 'lending'
+            WHEN a.protocol LIKE '%Aerodrome%' OR a.protocol LIKE '%Uniswap%' THEN 'dex_lp'
+            WHEN a.protocol LIKE '%EigenLayer%' OR a.protocol LIKE '%restake%' THEN 'restaking'
+            WHEN a.protocol LIKE '%RWA%' THEN 'rwa'
+            ELSE 'other'
+        END AS deployment_type,
+        a.protocol,
+        SUM(a.amount_usd) AS deployed_usd
+    FROM bridge_events b
+    JOIN dune.defi.actions a  -- Use decoded protocol tables or general defi actions
+        ON a.user = b.recipient 
+       AND a.block_time BETWEEN b.block_time AND b.block_time + INTERVAL '72' hour
+    WHERE a.amount_usd > 10000  -- Filter noise
+    GROUP BY 1,2,3,4,5
+)
+
+SELECT 
+    '{{time_bucket}}' AS time_bucket,
+    'smart_deployment' AS category,
+    symbol,
+    to_chain,
+    deployment_type,
+    protocol,
+    SUM(deployed_usd) AS net_flow_usd,
+    SUM(deployed_usd) AS total_usd,
+    ARRAY['post_bridge_deployment', 'smart_money'] AS signals,
+    cardinality(ARRAY['post_bridge_deployment', 'smart_money']) AS signal_count,
+    COUNT(DISTINCT recipient) AS new_wallets
+FROM post_actions
+GROUP BY symbol, to_chain, deployment_type, protocol;
+```
+
+---
+
+### 2. `stablecoin-liquidity-flow`
+
+**Purpose**: Tracks fresh liquidity (mints) vs circulation and cross-chain movement.
+
+```sql
+SELECT 
+    '{{time_bucket}}' AS time_bucket,
+    'stablecoin_flow' AS category,
+    symbol,
+    'Ethereum' AS from_chain,
+    chain AS to_chain,                    -- For cross-chain
+    SUM(CASE WHEN event_type = 'mint' THEN amount_usd ELSE 0 END) AS mint_usd,
+    SUM(CASE WHEN event_type = 'burn' THEN amount_usd ELSE 0 END) AS burn_usd,
+    SUM(net_amount_usd) AS net_flow_usd,
+    SUM(amount_usd) AS total_usd,
+    SUM(bridge_amount_usd) AS bridge_usd,
+    ARRAY['stablecoin_mint', 'stablecoin_flow'] AS signals,
+    2 AS signal_count,
+    holder_growth_pct,                    -- Join from holders table if available
+    0.0 AS acceleration_7d_vs_30d_pct
+FROM dune.stablecoins.flows_enriched          -- Use Dune's stablecoin dataset if available
+WHERE block_date >= date('{{start_date}}')
+  AND symbol IN ('USDC', 'USDT', 'DAI', 'FDUSD')
+GROUP BY symbol, chain, holder_growth_pct;
+```
+
+**Alternative fallback** (if no enriched table):
+Use `erc20.tokens` + mint/burn events from issuer contracts.
+
+---
+
+### 3. `ecosystem-sector-rotation`
+
+**Purpose**: Shows capital rotation across sectors (Lending, DEX, RWA, etc.).
+
+```sql
+WITH sector_tvl AS (
+    SELECT 
+        date_trunc('day', block_time) AS day,
+        sector,                       -- Lending, DEX, RWA, Liquid_Staking, etc.
+        protocol,
+        SUM(net_deposit_usd) AS net_flow_usd,
+        SUM(tvl_usd) AS total_tvl
+    FROM dune.defi.tvl_by_sector         -- Use or build from protocol-specific tables
+    WHERE block_time >= date('{{start_date}}')
+    GROUP BY 1,2,3
+),
+
+previous AS (
+    SELECT 
+        sector,
+        AVG(net_flow_usd) AS avg_30d
+    FROM sector_tvl
+    WHERE day < date('{{start_date}}') - INTERVAL '7' day
+    GROUP BY sector
+)
+
+SELECT 
+    '{{time_bucket}}' AS time_bucket,
+    'ecosystem_rotation' AS category,
+    sector AS symbol,
+    SUM(net_flow_usd) AS net_flow_usd,
+    SUM(total_tvl) AS total_usd,
+    (SUM(net_flow_usd) / NULLIF(AVG(avg_30d), 0) - 1) * 100 AS acceleration_7d_vs_30d_pct,
+    ARRAY['sector_rotation', 'capital_flow'] AS signals,
+    2 AS signal_count
+FROM sector_tvl
+LEFT JOIN previous USING (sector)
+GROUP BY sector;
+```
+
+---
+
+### 4. `protocol-inflow-leaderboard`
+
+**Purpose**: Identifies which specific protocols are winning new capital.
+
+```sql
+SELECT 
+    '{{time_bucket}}' AS time_bucket,
+    'protocol_inflow' AS category,
+    protocol AS symbol,
+    deployment_type,                     -- lending, dex, etc.
+    SUM(net_deposit_usd) AS net_flow_usd,
+    SUM(total_deposit_usd) AS total_usd,
+    (SUM(net_deposit_usd) / NULLIF(LAG(SUM(net_deposit_usd)) OVER (PARTITION BY protocol ORDER BY day), 0) - 1) * 100 AS acceleration_7d_vs_30d_pct,
+    COUNT(DISTINCT user) AS new_wallets,
+    SUM(CASE WHEN wallet_size_usd > 100000 THEN net_deposit_usd ELSE 0 END) AS whale_usd,
+    ARRAY['protocol_inflow', 'whale_deposit'] AS signals,
+    3 AS signal_count,
+    CASE 
+        WHEN SUM(CASE WHEN wallet_size_usd > 1000000 THEN 1 ELSE 0 END) * 1.0 / COUNT(DISTINCT user) > 0.4 
+        THEN 'high_whale_concentration' 
+    END AS risk_flags
+FROM dune.defi.protocol_deposits          -- Build from Aave, Morpho, Aerodrome tables
+WHERE block_time >= date('{{start_date}}')
+GROUP BY protocol, deployment_type
+ORDER BY net_flow_usd DESC
+LIMIT 20;
+```
+
+---
+
+### Implementation Tips
+
+1. **Parameterization**: Use Dune parameters like `{{start_date}}`, `{{end_date}}`, or `{{time_bucket}}`.
+2. **Performance**: Add filters aggressively (`block_time`, specific chains/protocols).
+3. **Union Strategy**: In your app, run all queries and UNION the results into one array matching the schema.
+4. **Acceleration Calculation**: Often easier to calculate in your backend (Python) using previous time buckets stored in memory.
+5. **Real Tables**: Replace placeholder tables (`dune.defi.*`, `dune.bridges.*`) with actual ones available in Dune (e.g., `aave_ethereum.Supply`, `tokens_ethereum.transfers`, etc.).
+
+
+Let me know how to proceed!

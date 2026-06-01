@@ -203,7 +203,7 @@ class DuneApiExecutor:
                 logger.info("[%s] Completed — %d rows", query_name, len(rows))
                 return rows
             if state == "QUERY_STATE_FAILED":
-                raise DuneExecutionError(query_name, state, str(data))
+                raise DuneExecutionError(query_name, state, data)
         raise DuneTimeoutError(query_name, execution_id)
 
     # ── Parameter helpers ────────────────────────────────────────────────────────
