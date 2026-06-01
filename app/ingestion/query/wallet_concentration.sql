@@ -1,27 +1,21 @@
--- Wallet Concentration: Top 50 Wallets % of Supply
--- Shows how concentrated a token's holdings are among top wallets
+-- Wallet Concentration: Top-50 holder supply share per token.
+-- whale_concentration_pct  = top-50 wallets' cumulative supply share.
+-- smart_money_concentration_pct = top-10 wallets' cumulative supply share (proxy).
 -- Parameters: {{token_address}}
 
 WITH token_info AS (
-    SELECT
-        contract_address,
-        symbol,
-        decimals
+    SELECT contract_address, symbol, decimals
     FROM tokens.erc20
     WHERE blockchain = 'ethereum'
       AND contract_address = {{token_address}}
     LIMIT 1
 ),
 
--- Calculate current balance per wallet via net transfers
 wallet_balances AS (
-    SELECT
-        address,
-        SUM(delta) AS balance
+    SELECT address, SUM(delta) AS balance
     FROM (
-        -- Incoming transfers
         SELECT
-            t."to" AS address,
+            t."to"  AS address,
             CAST(t.value AS DOUBLE) / POWER(10, ti.decimals) AS delta
         FROM erc20_ethereum.evt_Transfer t
         CROSS JOIN token_info ti
@@ -29,7 +23,6 @@ wallet_balances AS (
 
         UNION ALL
 
-        -- Outgoing transfers
         SELECT
             t."from" AS address,
             -CAST(t.value AS DOUBLE) / POWER(10, ti.decimals) AS delta
@@ -44,11 +37,10 @@ wallet_balances AS (
 total_supply AS (
     SELECT SUM(balance) AS supply
     FROM wallet_balances
-    WHERE address != 0x0000000000000000000000000000000000000000  -- exclude burn
+    WHERE address != 0x0000000000000000000000000000000000000000
 ),
 
 ranked_wallets AS (
-    -- labels.all is unavailable on the free tier; label/type default to Unknown/wallet
     SELECT
         wb.address,
         'Unknown'                                       AS label,
@@ -59,17 +51,65 @@ ranked_wallets AS (
     FROM wallet_balances wb
     CROSS JOIN total_supply ts
     WHERE wb.address != 0x0000000000000000000000000000000000000000
+),
+
+-- Summary concentration metrics
+concentration_summary AS (
+    SELECT
+        ROUND(SUM(CASE WHEN rank <= 50 THEN pct_of_supply ELSE 0 END), 2) AS whale_concentration_pct,
+        ROUND(SUM(CASE WHEN rank <= 10 THEN pct_of_supply ELSE 0 END), 2) AS smart_money_concentration_pct
+    FROM ranked_wallets
+),
+
+preoutput AS (
+    SELECT
+        ti.symbol,
+        rw.rank,
+        rw.address,
+        rw.label,
+        rw.address_type,
+        ROUND(rw.balance, 4)                                          AS balance,
+        ROUND(rw.pct_of_supply, 4)                                    AS pct_of_supply,
+        ROUND(SUM(rw.pct_of_supply) OVER (ORDER BY rw.rank), 2)       AS cumulative_pct,
+        cs.whale_concentration_pct,
+        cs.smart_money_concentration_pct,
+        CURRENT_TIMESTAMP                                             AS snapshot_time,
+        date_trunc('hour', NOW())                                     AS time_bucket,
+        'smart_deployment'                                            AS category,
+        FILTER(
+            ARRAY[
+                CASE WHEN cs.whale_concentration_pct > 80
+                     THEN 'EXTREME_WHALE_CONCENTRATION' END,
+                CASE WHEN cs.whale_concentration_pct BETWEEN 60 AND 80
+                     THEN 'HIGH_WHALE_CONCENTRATION' END,
+                CASE WHEN cs.smart_money_concentration_pct > 50
+                     THEN 'SMART_MONEY_DOMINANT' END,
+                CASE WHEN cs.whale_concentration_pct < 40
+                     THEN 'DISTRIBUTED_HOLDINGS' END
+            ],
+            x -> x IS NOT NULL
+        )                                                             AS signals
+    FROM ranked_wallets rw
+    CROSS JOIN concentration_summary cs
+    CROSS JOIN token_info ti
+    WHERE rw.rank <= 50
 )
 
 SELECT
+    symbol,
     rank,
     address,
-    COALESCE(label, 'Unknown')                          AS label,
-    COALESCE(address_type, 'wallet')                    AS address_type,
-    ROUND(balance, 4)                                   AS balance,
-    ROUND(pct_of_supply, 4)                             AS pct_of_supply,
-    ROUND(SUM(pct_of_supply) OVER (ORDER BY rank), 2)   AS cumulative_pct,
-    CURRENT_TIMESTAMP                                   AS snapshot_time
-FROM ranked_wallets
-WHERE rank <= 50
+    label,
+    address_type,
+    balance,
+    pct_of_supply,
+    cumulative_pct,
+    whale_concentration_pct,
+    smart_money_concentration_pct,
+    snapshot_time,
+    time_bucket,
+    category,
+    signals,
+    CARDINALITY(signals) AS signal_count
+FROM preoutput
 ORDER BY rank
