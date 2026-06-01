@@ -330,7 +330,7 @@ function SupportingEvidence({ facts, assets }) {
             <span className="eyebrow">Large whale transactions</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
-            {facts.whale_moves.map((m, i) => <WhaleCard key={i} m={m} />)}
+            {whales.map((m, i) => <WhaleCard key={i} m={m} />)}
           </div>
         </div>
       )}
@@ -342,7 +342,7 @@ function SupportingEvidence({ facts, assets }) {
             <span className="eyebrow">Smart money accumulation</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
-            {facts.smart_money_wallets.map((w, i) => <SmartMoneyCard key={i} w={w} />)}
+            {smart.map((w, i) => <SmartMoneyCard key={i} w={w} />)}
           </div>
         </div>
       )}
@@ -354,7 +354,7 @@ function SupportingEvidence({ facts, assets }) {
             <span className="eyebrow">Bridge capital flows</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
-            {facts.bridge_flows.map((b, i) => <BridgeCard key={i} b={b} />)}
+            {bridges.map((b, i) => <BridgeCard key={i} b={b} />)}
           </div>
         </div>
       )}
@@ -366,7 +366,7 @@ function SupportingEvidence({ facts, assets }) {
             <span className="eyebrow">Volume anomalies</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
-            {facts.volume_spikes.map((s, i) => <SpikeCard key={i} s={s} />)}
+            {spikes.map((s, i) => <SpikeCard key={i} s={s} />)}
           </div>
         </div>
       )}
@@ -378,7 +378,7 @@ function SupportingEvidence({ facts, assets }) {
             <span className="eyebrow">Top holder concentration</span>
           </div>
           <div style={{ background: "var(--surface-2)", borderRadius: "var(--r-md)", padding: "4px 18px", border: "1px solid var(--hairline)" }}>
-            {facts.wallet_concentration.map((w, i, arr) => (
+            {conc.map((w, i, arr) => (
               <ConcentrationRow key={i} w={w} last={i === arr.length - 1} />
             ))}
           </div>
