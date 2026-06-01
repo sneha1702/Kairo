@@ -380,10 +380,11 @@ class NarrativeEngine:
         if whale_activity:
             whale_section = f"\nWHALE TRANSACTION ACTIVITY:\n{json.dumps(whale_activity, indent=2)}\n"
 
-        prompt = f"""You are an elite crypto narrative intelligence analyst operating a stateful evolution engine.
+        prompt = f"""You are a crypto narrative intelligence analyst. Your job is to detect and evolve multi-day capital-flow themes from on-chain signals and explain them clearly to everyday investors.
 
-Your task: detect and EVOLVE persistent capital-flow THEMES from on-chain signals.
-A narrative is a multi-day market theme backed by cross-signal evidence — not a one-day token event.
+CORE RULE: Every narrative must be backed by real numbers from the data below.
+CORE RULE: Write as if explaining to someone who is new to crypto — no unexplained jargon.
+CORE RULE: A narrative is a sustained market theme, NOT a one-time token event.
 Output is upserted into MongoDB using narrative_id as the stable key.
 
 ════════════════════════════════════════════════════════
@@ -430,28 +431,37 @@ Higher signal_count = stronger multi-signal conviction.
 Fields: symbol, signal_count, signals[], total_usd, smart_money_usd, whale_usd,
         volume_multiplier, net_flow_usd, bridge_usd, holder_growth_pct, dex_share_pct
 
+DATA QUALITY CHECKS — apply before using any field:
+  • If net_flow_usd = 0 for a token marked "Net Outflow (Accumulation)", treat that signal as WEAK
+    (zero likely means missing data, not confirmed accumulation). Do not cite it as primary evidence.
+  • If the 72h trend (Section 3c) shows zeros for T-72h and T-48h buckets, ALL signals are single-day only.
+    Cap confidence at 0.79 for any narrative in this run, and note in key_evidence that data covers only 24h.
+  • For bridge narratives: top_tokens must list token symbols (e.g. USDC, ETH), NOT chain names.
+    Chain names belong in key_evidence descriptions only.
+
 ════════════════════════════════════════════════════════
 SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
 ════════════════════════════════════════════════════════
 
 {signal_summary_section or "No signal data."}
 {whale_section}
-Signal key:
-  smart_money         → large wallets making repeated DEX buys
-  token_flows         → net CEX inflow/outflow (negative = accumulation)
-  bridge_activity     → capital moving between chains / L2 ecosystems
-  volume_spikes       → abnormal DEX volume vs baseline (multiplier)
-  holder_growth       → new wallet growth rate
-  dex_concentration   → liquidity concentration per DEX/token
-  whale_transactions  → large individual on-chain transfers
-  wallet_concentration→ % of supply held by top wallets
+Signal key (plain-English definitions — use these exact definitions in your output text):
+  smart_money         → large, experienced traders making repeated buys on decentralized exchanges
+  token_flows         → net movement of tokens between exchanges and private wallets (outflow = investors withdrawing to hold, not sell)
+  bridge_activity     → capital crossing between different blockchain networks (e.g. from Solana to Ethereum)
+  volume_spikes       → trading volume that is unusually high compared to recent averages (multiplier = how many times above normal)
+  holder_growth       → rate at which new wallets are acquiring a token
+  dex_concentration   → what share of a token's trading is happening on a single exchange
+  whale_transactions  → very large single transfers (typically $500K+) by major holders
+  wallet_concentration→ how much of a token's total supply is held by the largest wallets
 
 ════════════════════════════════════════════════════════
 SECTION 3c — 72-HOUR SIGNAL TREND (oldest → newest)
 ════════════════════════════════════════════════════════
 
-Use this to detect acceleration/deceleration across time buckets.
+Use this to detect acceleration or deceleration across time buckets.
 Rising whale_usd + rising smart_money_usd across buckets = strengthening conviction.
+If T-72h and T-48h buckets are all zeros, explicitly note in historical_context that this is a first-detection with only 24h of data.
 
 {trend_section}
 
@@ -477,16 +487,38 @@ SCENARIO C — STAGNATING (active narrative, no new signals):
 
 DO NOT return narratives with confidence_score < 0.40.
 DO NOT fabricate signal evidence that is not present in Section 3a or 3b.
+DO NOT cite net_flow_usd = 0 entries as confirmed accumulation evidence.
 
-Evidence quality rules:
-  • signal_count ≥ 3   → confidence 0.80–1.00
-  • signal_count = 2   → confidence 0.60–0.79
-  • signal_count = 1   → confidence 0.40–0.59 only if volume is exceptional
-  • Trend acceleration (Section 3c shows rising metrics) → +0.05 confidence bonus
-  • Themes over tokens: "L2 Capital Rotation" NOT "ARB Buying"
+Evidence quality rules (STRICTLY enforce — override your own judgment if needed):
+  • signal_count ≥ 3   → confidence 0.70–0.85 (cap at 0.79 if data is single-day only)
+  • signal_count = 2   → confidence 0.55–0.70
+  • signal_count = 1   → confidence 0.40–0.54 only if USD volume is exceptional (>$50M)
+  • signal_count = 1 + bridge_activity only → confidence max 0.54 regardless of volume
+  • Trend acceleration (Section 3c shows rising metrics across buckets) → +0.05 bonus
+  • Themes over tokens: "Stablecoin Accumulation Wave" NOT "USDC Buying"
 
 ════════════════════════════════════════════════════════
-SECTION 5 — OUTPUT FORMAT
+SECTION 5 — WRITING TONE GUIDE (read before writing ANY field)
+════════════════════════════════════════════════════════
+
+Target reader: someone who has heard of Bitcoin and Ethereum but is not a DeFi expert.
+
+Rules for ALL text fields (implications, retail_considerations, plain_english_summary):
+  1. NO unexplained acronyms. Write "Ethereum (ETH)" not just "ETH" on first use.
+     Write "decentralized exchange (DEX)" not "DEX". Write "stablecoin (a crypto token pegged to $1)" not "stablecoin".
+  2. Use size anchors for dollar amounts: "$5B (5 billion dollars)" or compare to something familiar.
+  3. Never use: "on-chain", "L1", "L2", "CEX", "DEX concentration", "net outflow" without first defining it.
+  4. key_evidence entries are allowed to use technical shorthand (they are data citations).
+  5. implications must answer: "What does this suggest might happen next in the market?"
+  6. retail_considerations MUST have three parts:
+       - Plain-English explanation of what this narrative means for regular investors
+       - ONE specific thing to watch (e.g. "watch whether ETH price follows smart money positioning")
+       - A risk caveat (e.g. "on-chain signals are early indicators and can reverse quickly — this is not financial advice")
+  7. plain_english_summary must be 2 sentences max: first sentence = what is happening, second = why it might matter.
+     Write as if texting a friend: "Big money wallets are quietly buying ETH. This sometimes happens before price moves up, but it's not guaranteed."
+
+════════════════════════════════════════════════════════
+SECTION 6 — OUTPUT FORMAT
 ════════════════════════════════════════════════════════
 
 Return ONLY a valid JSON array — no markdown, no prose, no explanation.
@@ -496,17 +528,19 @@ Each object MUST have EXACTLY these fields:
 
 {{
   "narrative_id":          "snake_case_stable_id",
-  "name":                  "Human-Readable Title",
+  "name":                  "Human-Readable Title (plain English, no acronyms)",
   "category":              "AI | DeFi | L2 | RWA | Stablecoins | Infrastructure | Gaming | NFT | Memecoin | CrossChain | Institutional | Other",
   "status":                "NEW | CONTINUING | ACCELERATING | REVERSING | STABLE",
   "strength":              "High | Medium | Low",
   "momentum":              "Strengthening | Stable | Weakening",
   "confidence_score":      0.0,
-  "key_evidence":          ["specific observation with numbers, e.g. '$4.2M smart money into ETH in last 24h'"],
-  "historical_context":    "one sentence comparing to prior detections (use hours_since_update from Section 2)",
-  "implications":          "plain-language market implication",
-  "top_tokens":            ["TOKEN1", "TOKEN2"],
-  "retail_considerations": "what a retail investor should know",
+  "key_evidence":          ["specific data citation with numbers, e.g. '$58M bought by 40 large wallets (smart money) in last 24h — 3 independent signals'"],
+  "data_caveat":           "note any data quality issues, e.g. 'all signals from single 24h window; no prior trend to compare' or 'net_flow values were zero — accumulation signal is weak'",
+  "historical_context":    "one sentence: if NEW with no prior data say 'First detection — only 24h of data available, no multi-day trend yet confirmed.' If CONTINUING, compare to prior detection.",
+  "implications":          "What this might mean for the market next — written in plain English, no jargon. 2-3 sentences.",
+  "plain_english_summary": "2 sentences max. What is happening + why it might matter. Written like a text to a non-crypto friend.",
+  "top_tokens":            ["TOKEN_SYMBOL_ONLY — e.g. USDC, ETH, WBTC — never chain names"],
+  "retail_considerations": "Three parts: (1) plain-English meaning for regular investors, (2) one specific thing to watch, (3) risk caveat.",
   "signal_sources":        ["smart_money", "bridge_activity"]
 }}
 """
