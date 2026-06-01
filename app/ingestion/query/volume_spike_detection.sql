@@ -1,6 +1,7 @@
--- Narrative Context: Volume Spike Detection
--- Compares current volume to historical baseline to flag anomalies
--- Parameters: {{time_window_hours}} (e.g. 1, 6, 24), {{spike_multiplier}} (e.g. 2.0 = 2x normal)
+-- Volume Spike Detection: Compares current window to prior window of equal length.
+-- Baseline = prior {{time_window_hours}} period (no hardcoded day windows).
+-- Parameters: {{time_window_hours}}, {{spike_multiplier}}
+-- Note: acceleration_7d_vs_30d_pct is derived by the app from accumulated ES history.
 
 WITH hourly_volume AS (
     SELECT
@@ -12,7 +13,7 @@ WITH hourly_volume AS (
         COUNT(DISTINCT taker)           AS unique_traders
     FROM dex.trades
     WHERE blockchain = 'ethereum'
-      AND block_time >= NOW() - INTERVAL '7' DAY
+      AND block_time >= NOW() - 2 * INTERVAL '{{time_window_hours}}' HOUR
       AND token_bought_address IN (
           0xdAC17F958D2ee523a2206206994597C13D831ec7,
           0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
@@ -28,14 +29,14 @@ WITH hourly_volume AS (
     GROUP BY 1, 2, 3
 ),
 
+-- Prior period: everything before the current window (within the 2x lookback)
 baseline AS (
-    -- 7-day average excluding the last window (to get true baseline)
     SELECT
         token_address,
         symbol,
-        AVG(volume_usd)                 AS avg_hourly_volume,
-        STDDEV(volume_usd)              AS stddev_volume,
-        AVG(trade_count)                AS avg_hourly_trades
+        AVG(volume_usd)      AS avg_hourly_volume,
+        STDDEV(volume_usd)   AS stddev_volume,
+        AVG(trade_count)     AS avg_hourly_trades
     FROM hourly_volume
     WHERE hour < NOW() - INTERVAL '{{time_window_hours}}' HOUR
     GROUP BY token_address, symbol
@@ -45,37 +46,77 @@ current_window AS (
     SELECT
         token_address,
         symbol,
-        SUM(volume_usd)                 AS current_volume_usd,
-        SUM(trade_count)                AS current_trades,
-        SUM(unique_traders)             AS current_unique_traders,
-        MIN(hour)                       AS window_start_time,
-        MAX(hour)                       AS window_end_time
+        SUM(volume_usd)          AS current_volume_usd,
+        SUM(trade_count)         AS current_trades,
+        SUM(unique_traders)      AS current_unique_traders,
+        MIN(hour)                AS window_start_time,
+        MAX(hour)                AS window_end_time
     FROM hourly_volume
     WHERE hour >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
     GROUP BY token_address, symbol
+),
+
+preoutput AS (
+    SELECT
+        cw.symbol,
+        ROUND(cw.current_volume_usd, 2)                                              AS current_volume_usd,
+        ROUND(b.avg_hourly_volume * {{time_window_hours}}, 2)                        AS expected_volume_usd,
+        ROUND(
+            cw.current_volume_usd
+            / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0), 2
+        )                                                                            AS volume_multiplier,
+        cw.current_trades,
+        ROUND(b.avg_hourly_trades * {{time_window_hours}}, 0)                        AS expected_trades,
+        cw.current_unique_traders,
+        cw.window_start_time,
+        cw.window_end_time,
+        date_trunc('hour', NOW())                                                    AS time_bucket,
+        'ecosystem_rotation'                                                         AS category,
+        FILTER(
+            ARRAY[
+                CASE WHEN cw.current_volume_usd
+                          / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0)
+                          >= {{spike_multiplier}} * 2
+                     THEN 'EXTREME_SPIKE' END,
+                CASE WHEN cw.current_volume_usd
+                          / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0)
+                          >= {{spike_multiplier}}
+                     AND cw.current_volume_usd
+                          / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0)
+                          < {{spike_multiplier}} * 2
+                     THEN 'VOLUME_SPIKE' END,
+                CASE WHEN cw.current_volume_usd
+                          / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0)
+                          >= {{spike_multiplier}} * 0.5
+                     AND cw.current_volume_usd
+                          / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0)
+                          < {{spike_multiplier}}
+                     THEN 'ELEVATED_VOLUME' END,
+                CASE WHEN cw.current_volume_usd > b.avg_hourly_volume * {{time_window_hours}}
+                     THEN 'ACCELERATING' END
+            ],
+            x -> x IS NOT NULL
+        )                                                                            AS signals
+    FROM current_window cw
+    JOIN baseline b ON cw.token_address = b.token_address
+    WHERE cw.current_volume_usd
+          / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0)
+          >= {{spike_multiplier}} * 0.5
 )
 
 SELECT
-    cw.symbol,
-    ROUND(cw.current_volume_usd, 2)                         AS current_volume_usd,
-    ROUND(b.avg_hourly_volume * {{time_window_hours}}, 2)   AS expected_volume_usd,
-    ROUND(cw.current_volume_usd /
-          NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0), 2) AS volume_multiplier,
-    cw.current_trades,
-    ROUND(b.avg_hourly_trades * {{time_window_hours}}, 0)   AS expected_trades,
-    cw.current_unique_traders,
-    cw.window_start_time,
-    cw.window_end_time,
-    CASE
-        WHEN cw.current_volume_usd / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0) >= {{spike_multiplier}} * 2
-            THEN '🚨 Extreme Spike (>2x threshold)'
-        WHEN cw.current_volume_usd / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0) >= {{spike_multiplier}}
-            THEN '⚡ Volume Spike Detected'
-        WHEN cw.current_volume_usd / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0) >= {{spike_multiplier}} * 0.5
-            THEN '📊 Elevated Volume'
-        ELSE '✅ Normal Volume'
-    END AS spike_signal
-FROM current_window cw
-JOIN baseline b ON cw.token_address = b.token_address
-WHERE cw.current_volume_usd / NULLIF(b.avg_hourly_volume * {{time_window_hours}}, 0) >= {{spike_multiplier}} * 0.5
+    symbol,
+    current_volume_usd,
+    expected_volume_usd,
+    volume_multiplier,
+    current_trades,
+    expected_trades,
+    current_unique_traders,
+    window_start_time,
+    window_end_time,
+    time_bucket,
+    category,
+    signals,
+    CARDINALITY(signals) AS signal_count
+FROM preoutput
 ORDER BY volume_multiplier DESC
