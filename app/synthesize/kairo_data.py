@@ -624,9 +624,7 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
     try:
         spike_rows = dune_context.get("volume_spikes") or []
         top_tokens = set(t.upper() for t in (narrative.get("top_tokens") or []))
-        relevant = [r for r in spike_rows if (r.get("symbol") or "").upper() in top_tokens] if top_tokens else spike_rows
-        if not relevant:
-            relevant = spike_rows
+        relevant = [r for r in spike_rows if (r.get("symbol") or "").upper() in top_tokens] if top_tokens else []
         top_spikes = sorted(relevant, key=lambda r: _safe_float(r.get("volume_multiplier"), 0), reverse=True)[:3]
         for r in top_spikes:
             mult = _safe_float(r.get("volume_multiplier"), 0)
