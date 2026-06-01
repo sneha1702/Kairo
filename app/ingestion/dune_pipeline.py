@@ -61,6 +61,10 @@ QUERY_TO_INDEX: dict[str, str] = {
     "volume_spike_detection":    "dune_volume_spikes",
     "new_holder_growth":         "dune_holder_growth",
     "dex_trading_concentration": "dune_dex_concentration",
+    "post_bridge_deployment":    "dune_post_bridge_deployment",
+    "stablecoin_liquidity_flow": "dune_stablecoin_flows",
+    "ecosystem_sector_rotation": "dune_sector_rotation",
+    "protocol_inflow_leaderboard": "dune_protocol_inflows",
 }
 
 QUERY_TO_SIGNAL: dict[str, str] = {
@@ -72,11 +76,17 @@ QUERY_TO_SIGNAL: dict[str, str] = {
     "volume_spike_detection":    "VOLUME_SPIKE",
     "new_holder_growth":         "HOLDER_GROWTH",
     "dex_trading_concentration": "DEX_LIQUIDITY",
+    "post_bridge_deployment":    "CAPITAL_DEPLOYMENT",
+    "stablecoin_liquidity_flow": "STABLECOIN_FLOW",
+    "ecosystem_sector_rotation": "SECTOR_ROTATION",
+    "protocol_inflow_leaderboard": "PROTOCOL_INFLOW",
 }
 
 CADENCE_GROUPS: dict[int, list[str]] = {
     6:  ["whale_transaction_filter", "smart_money_accumulation",
-         "volume_spike_detection", "dex_trading_concentration"],
+         "volume_spike_detection", "dex_trading_concentration",
+         "post_bridge_deployment", "stablecoin_liquidity_flow",
+         "ecosystem_sector_rotation", "protocol_inflow_leaderboard"],
     24: ["token_inflow_outflow", "bridge_activity",
          "new_holder_growth", "wallet_concentration"],
 }
