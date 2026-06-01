@@ -134,6 +134,69 @@ def _strip_emoji(text: str) -> str:
     return re.sub(r'^[\U0001F000-\U0001FFFF☀-➿⌀-⏿⚡⚡📈📉🐋🟡🟢🔴]+\s*', '', str(text)).strip()
 
 
+_STATUS_TO_PHASE: dict[str, str] = {
+    "new":           "Discovery",
+    "accelerating":  "Expanding",
+    "continuing":    "Active",
+    "stable":        "Maturing",
+    "reversing":     "Declining",
+    "strengthening": "Expanding",
+    "emerging":      "Discovery",
+    "weakening":     "Maturing",
+    "breaking":      "Declining",
+}
+
+
+def _derive_narrative_phase(narrative: dict, day: int, confidence: float) -> str:
+    status = (narrative.get("status") or "").lower()
+    trend  = ((narrative.get("momentum") or {}).get("trend") or "").lower()
+    phase  = _STATUS_TO_PHASE.get(status) or _STATUS_TO_PHASE.get(trend)
+    if not phase:
+        if confidence >= 0.75 and day >= 3:
+            phase = "Peak"
+        elif day <= 1:
+            phase = "Discovery"
+        else:
+            phase = "Active"
+    return phase
+
+
+def _derive_smart_money_intent(narrative: dict) -> str | None:
+    sources   = [str(s).lower() for s in (narrative.get("signal_sources") or [])]
+    evidence  = " ".join(str(e).lower() for e in (narrative.get("key_evidence") or []))
+    name      = (narrative.get("name") or "").lower()
+    has_bridge = any(s in ("bridge_activity", "bridge") for s in sources)
+    has_smart  = any(s in ("smart_money", "wallet_concentration") for s in sources)
+    if "post_bridge_deployment" in evidence or "lending" in evidence or "deploy" in evidence:
+        return "Deploying"
+    if has_bridge and has_smart:
+        return "Positioning"
+    if has_bridge and ("rotation" in evidence or "rotation" in name):
+        return "Rotating"
+    if has_smart and ("accumulation" in evidence or "accumulating" in evidence):
+        return "Accumulating"
+    if ("reversing" in (narrative.get("status") or "").lower()) or "exit" in evidence:
+        return "Exiting"
+    if has_smart:
+        return "Positioning"
+    if has_bridge:
+        return "Rotating"
+    return None
+
+
+def _parse_retail_considerations(text: str) -> tuple[str, str, str]:
+    """Parse 3-part retail_considerations string → (meaning, watch_for, risk_note)."""
+    if not text or not isinstance(text, str):
+        return ("", "", "")
+    import re
+    parts = re.split(r'[\(\[]?\s*[123]\s*[\)\]]?\s*[.:)]\s*', text)
+    parts = [p.strip().rstrip(".,") for p in parts if p.strip()]
+    meaning   = parts[0] if len(parts) > 0 else ""
+    watch_for = parts[1] if len(parts) > 1 else ""
+    risk_note = parts[2] if len(parts) > 2 else ""
+    return (meaning, watch_for, risk_note)
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
