@@ -323,8 +323,11 @@ def init_services():
 # ---------------------------------------------------------------------------
 
 @st.cache_data(ttl=300)
-def _cached_build_data(user_id: str, hours: int = 24) -> dict:
+def _cached_build_data(user_id: str, hours: int = 0) -> dict:
     """Fetch dune_context from ES and build kairo_data. Safe — always returns a dict."""
+    if hours <= 0:
+        from config.config import Config
+        hours = Config.DUNE_QUERY_WINDOW_HOURS
     try:
         es_manager, _engine, tracker = init_services()
         dune_context: dict = {}
