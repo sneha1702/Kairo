@@ -724,7 +724,7 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     st.subheader("Run Detection")
     if st.button("🔮 Run Detection", use_container_width=True, key="run_detection"):
         _user_id = st.session_state.get("admin_user_id", "default")
-        _hours   = st.session_state.get("admin_hours_lookback", 24)
+        _hours   = st.session_state.get("admin_hours_lookback", _Cfg.DUNE_QUERY_WINDOW_HOURS)
 
         if _es is not None and _engine is not None:
             status   = st.empty()
