@@ -27,37 +27,21 @@ CHECK_INTERVAL_SECONDS  = 300    # check cadence timers every 5 minutes
 
 
 def _run_detection(es_manager, engine, tracker, hours: int, user_id: str = "default") -> None:
-    """Run a full narrative detection cycle and persist results."""
+    """Run a full narrative detection cycle (transform → Gemini → MongoDB)."""
     try:
-        logger.info("[DETECT] Fetching ES signal context — lookback=%dh", hours)
-        dune_context = es_manager.get_dune_signal_context(hours=hours)
-
-        bucket_h = max(24, hours // 3)
-        logger.info("[DETECT] Building signal trend — bucket=%dh × 3", bucket_h)
-        signal_trend = es_manager.get_signal_trend(hours_per_bucket=bucket_h, num_buckets=3)
-
-        current_narratives = tracker.get_current_narratives(user_id, min_confidence=0.0)
-        history_summary    = tracker.get_narratives_summary(user_id)
-
-        logger.info("[DETECT] Calling Gemini for narrative detection")
-        new_narratives = engine.detect_narratives(
-            dune_context=dune_context,
-            historical_narratives=history_summary,
-            signal_trend=signal_trend,
+        from app.synthesize.signal_transformer import run_narrative_generation
+        logger.info("[DETECT] Starting detection via signal_transformer (lookback=%dh)", hours)
+        result = run_narrative_generation(
+            hours=hours,
+            user_id=user_id,
+            es_manager=es_manager,
+            engine=engine,
+            tracker=tracker,
         )
-
-        if new_narratives:
-            enriched = [
-                engine.enrich_narrative(n, previous_narratives=current_narratives)
-                for n in new_narratives
-            ]
-            tracker.save_narratives(enriched, user_id)
-            returned_ids = {n.get("narrative_id") for n in enriched}
-            tracker.mark_stale_narratives(returned_ids, user_id)
-            logger.info("[DETECT] Saved %d narrative(s) to MongoDB", len(enriched))
+        if result:
+            logger.info("[DETECT] Saved %d narrative(s) to MongoDB", len(result))
         else:
             logger.info("[DETECT] No narratives returned by Gemini this cycle")
-
     except Exception as exc:
         logger.error("[DETECT] Detection cycle failed: %s", exc)
 
