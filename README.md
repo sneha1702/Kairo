@@ -420,11 +420,21 @@ Each document gets a _id computed by _make_doc_id from content-based keys (not i
 
 3. What the _id is based on, per query:
 
-┌───────────────────────────┬────────────────────┐
+
+## Dune Query Mapping
+
 
 
 **🔮 Built with ❤️ for crypto researchers and traders**
-
+Your Query,Main Purpose,Key Fields It Should Populate,Category Suggestion,Notes / Output Focus
+bridge-activity,Track capital moving between chains,"symbol, from_chain, to_chain, bridge_usd, net_flow_usd, gross_inflow_usd, gross_outflow_usd, total_usd, acceleration_7d_vs_30d_pct, percentage_of_total, time_bucket",capital_migration,Core for Tier 0. Should return directional bridge flows (e.g. Ethereum → Base).
+dex-trading-concentration,Measure how concentrated trading activity is,"symbol, dex_share_pct, volume_multiplier, whale_concentration_pct, signals",smart_deployment or ecosystem_rotation,Helps detect if volume is organic or whale-driven.
+new-holder-growth,Track organic adoption,"symbol, holder_growth_pct, new_wallets, first_time_users_pct, active_addresses",organic_adoption,Very important for distinguishing whale pumps from real growth.
+smart-money-accumulation,Identify sophisticated capital,"symbol, smart_money_usd, smart_money_concentration_pct, whale_usd, net_flow_usd",smart_deployment,Should tag wallets labeled as smart money (use Arkham/Nansen labels in Dune).
+token-inflow-outflow,Track net token movement,"symbol, net_flow_usd, gross_inflow_usd, gross_outflow_usd, from_chain, to_chain, signals",capital_migration or token_flows,Broad token flow query. Can feed both bridge and exchange flows.
+volume-spike-detection,Detect unusual volume increases,"symbol, volume_multiplier, signals, acceleration_7d_vs_30d_pct",ecosystem_rotation,Good early warning for narrative momentum.
+wallet-concentration,Measure how few wallets dominate activity,"symbol, whale_concentration_pct, smart_money_concentration_pct, signals",smart_deployment,"Critical for risk flags (e.g., ""high whale concentration"")."
+whale-transaction-filter,Filter large transactions,"symbol, whale_usd, smart_money_usd, signals, total_usd",smart_deployment,Should feed both whale and smart money columns.
 
 **Helper commands**
 

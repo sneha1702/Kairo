@@ -92,33 +92,62 @@ class NarrativeEngine:
         if smart_money:
             top_sm = sorted(smart_money, key=lambda x: _num(x.get("total_bought_usd")), reverse=True)[:5]
             summary["smart_money"] = {
-                "wallet_count": len({r.get("wallet") for r in smart_money}),
+                "wallet_min100K_buy_count": sum({r.get("buy_count") for r in smart_money}),
                 "top_buys": [
                     {
-                        "symbol":     r.get("symbol"),
-                        "usd":        r.get("total_bought_usd"),
+                        "symbol":     r.get("symbol"),                        
                         "signal":     r.get("accumulation_signal"),
                         "first_buy":  r.get("first_buy"),
                         "last_buy":   r.get("last_buy"),
+                        "usd":        r.get("total_bought_usd"),
                     }
                     for r in top_sm
                 ],
-                "total_flow_usd": sum(_num(r.get("total_smart_money_flow_usd")) for r in smart_money),
+                "total_flow_usd": _num(next(
+                    (r.get("total_smart_money_flow_usd") for r in smart_money if r.get("total_smart_money_flow_usd") is not None),
+                    0
+                )),
+                "other_wallets_buying_same_token": _num(next(
+                    (r.get("wallets_buying_same_token") for r in smart_money if r.get("wallets_buying_same_token") is not None),
+                    0
+                )),
+                "time_span_hours": _num(next(
+                    (r.get("time_window_hours") for r in smart_money if r.get("time_window_hours") is not None),
+                    0
+                )),
+                "ingested_at": next(
+                    (r.get("ingested_at") for r in smart_money if r.get("ingested_at") is not None),
+                    None
+                )
             }
 
         token_flows = dune_context.get("token_flows", [])
         if token_flows:
             top_inflow = sorted(token_flows, key=lambda x: _num(x.get("net_flow_usd")), reverse=True)[:5]
-            summary["token_flows"] = [
-                {
-                    "token":              r.get("token"),
-                    "net_flow_usd":       r.get("net_flow_usd"),
-                    "signal":             r.get("signal"),
-                    "earliest_flow_time": r.get("earliest_flow_time"),
-                    "latest_flow_time":   r.get("latest_flow_time"),
-                }
-                for r in top_inflow
-            ]
+            summary["token_flows"] = {
+                "top_inflows": [
+                    {
+                        "token":              r.get("token"),
+                        "inflow_usd":       r.get("inflow_usd"),
+                        "outflow_usd":       r.get("outflow_usd"),
+                        "net_flow_usd":       r.get("net_flow_usd"),
+                        "signal":             r.get("signal"),
+                        "earliest_flow_time": r.get("window_start"),
+                        "latest_flow_time":   r.get("ingested_at"),
+                    }
+                    for r in top_inflow
+                ],
+                "time_span_hours": _num(next(
+                    (r.get("time_window_hours") for r in smart_money if r.get("time_window_hours") is not None),
+                    0
+                )),
+                "ingested_at": next(
+                    (r.get("ingested_at") for r in smart_money if r.get("ingested_at") is not None),
+                    None
+                ) 
+            }
+            
+           
 
         bridges = dune_context.get("bridge_activity", [])
         if bridges:

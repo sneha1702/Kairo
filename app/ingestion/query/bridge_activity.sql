@@ -5,11 +5,12 @@
 WITH deposits AS (
     -- Capital moving from Ethereum → any L2
     SELECT
-        CONCAT('Ethereum → ', withdrawal_chain)   AS direction,
+        CONCAT(deposit_chain, '(Ethereum) → ', withdrawal_chain)   AS direction,
         bridge_name                               AS bridge,
         block_time,
         tx_hash,
         sender,
+        recipient,
         deposit_amount_usd                        AS usd_value
     FROM bridges_evms.deposits
     WHERE deposit_chain = 'ethereum'
@@ -20,11 +21,12 @@ WITH deposits AS (
 withdrawals AS (
     -- Capital returning from any L2 → Ethereum
     SELECT
-        CONCAT(deposit_chain, ' → Ethereum')      AS direction,
+        CONCAT(deposit_chain, ' → (Ethereum)', withdrawal_chain)      AS direction,
         bridge_name                               AS bridge,
         block_time,
         tx_hash,
         sender,
+        recipient,                                  
         withdrawal_amount_usd                     AS usd_value
     FROM bridges_evms.withdrawals
     WHERE withdrawal_chain = 'ethereum'
@@ -48,7 +50,7 @@ SELECT
     MIN(block_time)                     AS earliest_tx_time,
     MAX(block_time)                     AS latest_tx_time,
     CASE
-        WHEN direction LIKE 'Ethereum →%'
+        WHEN direction LIKE '%(Ethereum) →%'
             THEN '🟡 Capital Moving to L2'
         ELSE '🔵 Capital Returning to L1'
     END                                 AS capital_signal

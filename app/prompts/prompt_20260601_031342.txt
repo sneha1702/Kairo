@@ -35,7 +35,7 @@ Use this to CONTINUE and ENRICH existing narratives rather than recreating them.
 SECTION 3 — ON-CHAIN SIGNALS
 ════════════════════════════════════════════════════════
 
-Data provenance: on-chain events from 2026-05-29T01:00:11.000Z → 2026-06-01T00:18:35.000Z | last ingested into ES at 2026-06-01T00:42:59.315626+00:00 | prompt built at 2026-06-01T00:48:15.614291Z
+Data provenance: on-chain events from 2026-05-29T01:00:11.000Z → 2026-06-01T00:18:35.000Z | last ingested into ES at 2026-06-01T00:42:59.315626+00:00 | prompt built at 2026-06-01T01:13:42.044912Z
 
 ════════════════════════════════════════════════════════
 SECTION 3a — TOKEN CONFLUENCE TABLE (cross-signal view)
@@ -381,27 +381,37 @@ SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
       {
         "symbol": "WETH",
         "usd": 75421019.54,
-        "signal": "\ud83d\udcc8 Building Position"
+        "signal": "\ud83d\udcc8 Building Position",
+        "first_buy": "2026-05-29T01:00:11.000Z",
+        "last_buy": "2026-05-31T23:04:23.000Z"
       },
       {
         "symbol": "WETH",
         "usd": 69224507.2,
-        "signal": "\ud83d\udcc8 Building Position"
+        "signal": "\ud83d\udcc8 Building Position",
+        "first_buy": "2026-05-29T01:05:35.000Z",
+        "last_buy": "2026-05-31T23:04:23.000Z"
       },
       {
         "symbol": "WETH",
         "usd": 28183123.54,
-        "signal": "\ud83d\udcc8 Building Position"
+        "signal": "\ud83d\udcc8 Building Position",
+        "first_buy": "2026-05-29T02:10:35.000Z",
+        "last_buy": "2026-05-31T21:06:11.000Z"
       },
       {
         "symbol": "WETH",
         "usd": 18431393.29,
-        "signal": "\ud83d\udcc8 Building Position"
+        "signal": "\ud83d\udcc8 Building Position",
+        "first_buy": "2026-05-29T01:24:23.000Z",
+        "last_buy": "2026-05-31T22:25:23.000Z"
       },
       {
         "symbol": "WETH",
         "usd": 3624414.17,
-        "signal": "\ud83d\udd25 Aggressive Accumulation"
+        "signal": "\ud83d\udd25 Aggressive Accumulation",
+        "first_buy": "2026-05-30T02:32:35.000Z",
+        "last_buy": "2026-05-30T02:52:35.000Z"
       }
     ],
     "total_flow_usd": 18707064573.5
@@ -409,28 +419,38 @@ SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
   "token_flows": [
     {
       "token": "AAVE",
-      "net_flow_usd": 0,
-      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+      "net_flow_min100Kusd": 0,
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)",
+      "earliest_flow_time": null,
+      "latest_flow_time": null
     },
-    {
+    { 
       "token": "stETH",
       "net_flow_usd": 0,
-      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)",
+      "earliest_flow_time": null,
+      "latest_flow_time": null
     },
     {
       "token": "WBTC",
       "net_flow_usd": 0,
-      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)",
+      "earliest_flow_time": null,
+      "latest_flow_time": null
     },
     {
       "token": "MKR",
       "net_flow_usd": 0,
-      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)",
+      "earliest_flow_time": null,
+      "latest_flow_time": null
     },
     {
       "token": "USDC",
       "net_flow_usd": 0,
-      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)"
+      "signal": "\ud83d\udfe2 Net Outflow (Accumulation)",
+      "earliest_flow_time": null,
+      "latest_flow_time": null
     }
   ],
   "bridge_activity": {
@@ -440,25 +460,33 @@ SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
         "direction": "Ethereum \u2192 silicon_network",
         "bridge": "Agglayer",
         "usd": 1380927587.09,
-        "signal": "\ud83d\udfe1 Capital Moving to L2"
+        "signal": "\ud83d\udfe1 Capital Moving to L2",
+        "earliest_tx_time": null,
+        "latest_tx_time": null
       },
       {
         "direction": "aptos \u2192 Ethereum",
         "bridge": "CCTP",
         "usd": 29672972.37,
-        "signal": "\ud83d\udd35 Capital Returning to L1"
+        "signal": "\ud83d\udd35 Capital Returning to L1",
+        "earliest_tx_time": null,
+        "latest_tx_time": null
       },
       {
         "direction": "Ethereum \u2192 polygon",
         "bridge": "Polygon",
         "usd": 25943957.35,
-        "signal": "\ud83d\udfe1 Capital Moving to L2"
+        "signal": "\ud83d\udfe1 Capital Moving to L2",
+        "earliest_tx_time": null,
+        "latest_tx_time": null
       },
       {
         "direction": "Ethereum \u2192 lighter",
         "bridge": "Lighter",
         "usd": 22153963.5,
-        "signal": "\ud83d\udfe1 Capital Moving to L2"
+        "signal": "\ud83d\udfe1 Capital Moving to L2",
+        "earliest_tx_time": null,
+        "latest_tx_time": null
       }
     ]
   },
@@ -466,19 +494,25 @@ SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
     {
       "symbol": "MKR",
       "multiplier": 1.22,
-      "signal": "\ud83d\udcca Elevated Volume"
+      "signal": "\ud83d\udcca Elevated Volume",
+      "window_start_time": null,
+      "window_end_time": null
     }
   ],
   "holder_growth": [
     {
       "token_address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
       "growth_rate_pct": null,
-      "signal": "2026-05-29T04:00:00.000Z"
+      "signal": "2026-05-29T04:00:00.000Z",
+      "window_start_time": null,
+      "window_end_time": null
     },
     {
       "token_address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
       "growth_rate_pct": "-0.660000000000000",
-      "signal": "\ud83d\udcc9 Declining Adoption"
+      "signal": "\ud83d\udcc9 Declining Adoption",
+      "window_start_time": null,
+      "window_end_time": null
     }
   ],
   "dex_concentration": [
@@ -486,42 +520,89 @@ SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
       "symbol": "USDC",
       "dex": "fluid",
       "dex_share_pct": 10.21,
-      "signal": "\ud83d\udcca Moderate Concentration"
+      "signal": "\ud83d\udcca Moderate Concentration",
+      "earliest_trade_time": null,
+      "latest_trade_time": null
     },
     {
       "symbol": "USDT",
       "dex": "dodo",
       "dex_share_pct": 5.35,
-      "signal": "\ud83d\udcca Moderate Concentration"
+      "signal": "\ud83d\udcca Moderate Concentration",
+      "earliest_trade_time": null,
+      "latest_trade_time": null
     },
     {
       "symbol": "USDC",
       "dex": "dodo",
       "dex_share_pct": 4.18,
-      "signal": "\ud83d\udcca Moderate Concentration"
+      "signal": "\ud83d\udcca Moderate Concentration",
+      "earliest_trade_time": null,
+      "latest_trade_time": null
     },
     {
       "symbol": "USDT",
       "dex": "native",
       "dex_share_pct": 3.04,
-      "signal": "\ud83d\udcca Moderate Concentration"
+      "signal": "\ud83d\udcca Moderate Concentration",
+      "earliest_trade_time": null,
+      "latest_trade_time": null
     },
     {
       "symbol": "USDC",
       "dex": "ekubo",
       "dex_share_pct": 2.34,
-      "signal": "\ud83d\udcca Moderate Concentration"
+      "signal": "\ud83d\udcca Moderate Concentration",
+      "earliest_trade_time": null,
+      "latest_trade_time": null
     }
   ],
   "whale_transactions": {
     "count": 50,
     "total_usd": 16109219830.37,
     "top_symbols": [
-      "WBTC",
       "USDC",
-      "stETH",
       "USDT",
-      "DAI"
+      "WBTC",
+      "DAI",
+      "stETH"
+    ],
+    "top_txs": [
+      {
+        "symbol": "WBTC",
+        "usd_value": 463919169.57,
+        "block_time": "2026-05-31T03:25:23.000Z",
+        "sender": "0xbbbbbbbbbb\u2026",
+        "receiver": "0x547b5ad9f7\u2026"
+      },
+      {
+        "symbol": "WBTC",
+        "usd_value": 463916263.19,
+        "block_time": "2026-05-31T02:24:35.000Z",
+        "sender": "0x547b5ad9f7\u2026",
+        "receiver": "0xbbbbbbbbbb\u2026"
+      },
+      {
+        "symbol": "WBTC",
+        "usd_value": 463087527.43,
+        "block_time": "2026-05-30T19:51:35.000Z",
+        "sender": "0xbbbbbbbbbb\u2026",
+        "receiver": "0x547b5ad9f7\u2026"
+      },
+      {
+        "symbol": "WBTC",
+        "usd_value": 462623276.57,
+        "block_time": "2026-05-31T05:35:47.000Z",
+        "sender": "0x547b5ad9f7\u2026",
+        "receiver": "0xbbbbbbbbbb\u2026"
+      },
+      {
+        "symbol": "WBTC",
+        "usd_value": 462619096.67,
+        "block_time": "2026-05-30T15:23:47.000Z",
+        "sender": "0xbbbbbbbbbb\u2026",
+        "receiver": "0x547b5ad9f7\u2026"
+      }
     ]
   },
   "wallet_concentration": {
@@ -529,15 +610,18 @@ SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
     "sample": [
       {
         "rank": 2,
-        "pct_of_supply": 8.082
+        "pct_of_supply": 8.082,
+        "snapshot_time": null
       },
       {
         "rank": 3,
-        "pct_of_supply": 4.4333
+        "pct_of_supply": 4.4333,
+        "snapshot_time": null
       },
       {
         "rank": 10,
-        "pct_of_supply": 1.2159
+        "pct_of_supply": 1.2159,
+        "snapshot_time": null
       }
     ]
   }
