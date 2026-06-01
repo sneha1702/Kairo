@@ -517,6 +517,11 @@ class NarrativeEngine:
         if signal_trend:
             trend_section = json.dumps(signal_trend, indent=2, default=_default)
 
+        # ── Section 3d: unified capital signal schema ──────────────────────────
+        unified_section = "No unified signal data available."
+        if unified_signals:
+            unified_section = json.dumps(unified_signals, indent=2, default=_default)
+
         whale_section = ""
         if whale_activity:
             whale_section = f"\nWHALE TRANSACTION ACTIVITY:\n{json.dumps(whale_activity, indent=2)}\n"
