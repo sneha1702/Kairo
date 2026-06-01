@@ -134,6 +134,37 @@ class NarrativeTracker:
             elif not isinstance(doc.get("detected_at"), datetime):
                 doc["detected_at"] = now
 
+            # Normalise evidence_timestamps: flatten per-token ISO strings to datetime
+            raw_et = doc.get("evidence_timestamps")
+            if isinstance(raw_et, dict):
+                _normalized_et: dict = {}
+                for tok, tok_data in raw_et.items():
+                    if not isinstance(tok_data, dict):
+                        _normalized_et[tok] = tok_data
+                        continue
+                    _tok_norm: dict = {}
+                    for k, v in tok_data.items():
+                        if isinstance(v, str) and len(v) >= 10:
+                            try:
+                                _tok_norm[k] = datetime.fromisoformat(v.replace("Z", "+00:00"))
+                            except (ValueError, TypeError):
+                                _tok_norm[k] = v
+                        elif isinstance(v, list):
+                            _parsed = []
+                            for item in v:
+                                if isinstance(item, str) and len(item) >= 10:
+                                    try:
+                                        _parsed.append(datetime.fromisoformat(item.replace("Z", "+00:00")))
+                                    except (ValueError, TypeError):
+                                        _parsed.append(item)
+                                else:
+                                    _parsed.append(item)
+                            _tok_norm[k] = _parsed
+                        else:
+                            _tok_norm[k] = v
+                    _normalized_et[tok] = _tok_norm
+                doc["evidence_timestamps"] = _normalized_et
+
             # Normalise provenance timestamp strings to datetime
             for ts_field in ("data_window_start", "data_window_end", "last_ingested_at", "prompt_built_at"):
                 raw = doc.get(ts_field)
