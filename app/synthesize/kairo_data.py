@@ -184,6 +184,16 @@ def _derive_smart_money_intent(narrative: dict) -> str | None:
     return None
 
 
+def _shorten_headline(ev_str: str) -> str:
+    """Extract a short punchy headline from a long evidence string (≤ ~80 chars)."""
+    s = ev_str.strip()
+    for sep in ('. ', ': ', ' — ', ', '):
+        idx = s.find(sep)
+        if 0 < idx < 88:
+            return s[:idx + (1 if sep == '. ' else 0)].strip()
+    return (s[:82] + "…") if len(s) > 82 else s
+
+
 def _parse_retail_considerations(text: str) -> tuple[str, str, str]:
     """Parse 3-part retail_considerations string → (meaning, watch_for, risk_note)."""
     if not text or not isinstance(text, str):
