@@ -3,7 +3,7 @@ DuneIngestionPipeline: saves SQL queries to Dune and bulk-indexes results into
 dedicated Elasticsearch indices via the Dune free-tier REST API.
 
 CLI usage:
-  python dune_pipeline.py                              # run all 8 queries
+  python dune_pipeline.py                              # run all 12 queries
   python dune_pipeline.py --queries whale_transaction_filter volume_spike_detection
   python dune_pipeline.py --cadence 6                  # only 6h-cadence queries
   python dune_pipeline.py --dry-run                    # print SQL, skip execution
