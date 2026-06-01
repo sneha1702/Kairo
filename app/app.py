@@ -654,7 +654,7 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     # ── Detection Settings ────────────────────────────────────────────────────
     st.subheader("Detection Settings")
     st.text_input("User ID", value="default", key="admin_user_id")
-    st.slider("Hours to analyse", 1, 168, 24, key="admin_hours_lookback")
+    st.slider("Hours to analyse", 1, 168, min(168, _Cfg.DUNE_QUERY_WINDOW_HOURS), key="admin_hours_lookback")
 
     st.divider()
 
