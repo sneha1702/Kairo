@@ -288,13 +288,25 @@ function FactRow({ label, value, mono, link }) {
 }
 
 /* ---- Supporting evidence section ---- */
-function SupportingEvidence({ facts }) {
+function SupportingEvidence({ facts, assets }) {
   if (!facts) return null;
-  const hasWhales = facts.whale_moves && facts.whale_moves.length > 0;
-  const hasSmart  = facts.smart_money_wallets && facts.smart_money_wallets.length > 0;
-  const hasBridge = facts.bridge_flows && facts.bridge_flows.length > 0;
-  const hasSpikes = facts.volume_spikes && facts.volume_spikes.length > 0;
-  const hasConc   = facts.wallet_concentration && facts.wallet_concentration.length > 0;
+  const assetSet = new Set((assets || []).map(a => a.toUpperCase()));
+  const filterBySymbol = (arr) =>
+    assetSet.size > 0
+      ? (arr || []).filter(r => assetSet.has((r.symbol || "").toUpperCase()))
+      : (arr || []);
+
+  const whales  = filterBySymbol(facts.whale_moves);
+  const smart   = filterBySymbol(facts.smart_money_wallets);
+  const spikes  = filterBySymbol(facts.volume_spikes);
+  const bridges = facts.bridge_flows || [];
+  const conc    = facts.wallet_concentration || [];
+
+  const hasWhales = whales.length > 0;
+  const hasSmart  = smart.length > 0;
+  const hasBridge = bridges.length > 0;
+  const hasSpikes = spikes.length > 0;
+  const hasConc   = conc.length > 0;
 
   if (!hasWhales && !hasSmart && !hasBridge && !hasSpikes && !hasConc) {
     return (
