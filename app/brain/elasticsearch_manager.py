@@ -31,7 +31,7 @@ class ElasticsearchManager:
         return self.es
     
     
-    def get_dune_signal_context(self, hours: int = 24) -> Dict[str, Any]:
+    def get_dune_signal_context(self, hours: int = 168) -> Dict[str, Any]:
         """Query the 6 aggregate dune_* indices and return structured context for NarrativeEngine."""
         since = (datetime.now() - timedelta(hours=hours)).isoformat()
         range_filter = {"range": {"ingested_at": {"gte": since}}}
