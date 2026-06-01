@@ -696,14 +696,29 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
             usd = _safe_float(r.get("total_usd"), 0)
             if usd < 1_000:
                 continue
+            from_chain  = r.get("from_chain") or ""
+            to_chain    = r.get("to_chain") or ""
+            bridge_name = r.get("bridge_name") or r.get("bridge") or ""
+            symbol      = r.get("symbol") or ""
+            direction   = f"{from_chain} → {to_chain}" if (from_chain and to_chain) else (from_chain or to_chain or "")
+            net_flow    = _safe_float(r.get("net_flow_usd"), 0)
+            pct         = _safe_float(r.get("percentage_of_total"), 0)
+            accel       = _safe_float(r.get("acceleration_7d_vs_30d_pct"), 0)
             facts["bridge_flows"].append({
-                "bridge":     r.get("bridge") or "—",
-                "direction":  r.get("direction") or "—",
-                "usd":        usd,
-                "usd_fmt":    _fmt_usd(usd).lstrip("+"),
-                "tx_count":   r.get("tx_count") or 0,
-                "wallets":    r.get("unique_wallets") or 0,
-                "signal":     _strip_emoji(r.get("capital_signal") or ""),
+                "bridge":        bridge_name,
+                "from_chain":    from_chain,
+                "to_chain":      to_chain,
+                "symbol":        symbol,
+                "direction":     direction,
+                "usd":           usd,
+                "usd_fmt":       _fmt_usd(usd).lstrip("+"),
+                "net_flow_usd":  net_flow,
+                "net_flow_fmt":  _fmt_usd(net_flow) if net_flow != 0 else "",
+                "tx_count":      r.get("tx_count") or 0,
+                "wallets":       r.get("unique_wallets") or r.get("wallets") or 0,
+                "percentage":    pct,
+                "acceleration":  accel,
+                "signal":        _strip_emoji(r.get("capital_signal") or r.get("signal") or ""),
             })
     except Exception as exc:
         logger.warning("_build_supporting_facts bridge error: %s", exc)
