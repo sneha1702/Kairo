@@ -612,6 +612,24 @@ If T-72h and T-48h buckets are all zeros, explicitly note in historical_context 
 {trend_section}
 
 ════════════════════════════════════════════════════════
+SECTION 3d — UNIFIED CAPITAL SIGNAL SCHEMA
+════════════════════════════════════════════════════════
+
+Pre-aggregated cross-chain signal records. Use as primary evidence for
+capital_migration, smart_deployment, and stablecoin_flow narratives.
+
+{unified_section}
+
+Category definitions:
+  capital_migration  → cross-chain token flows: bridge_usd, whale transactions, and net_flow_usd combined per route.
+                       acceleration_7d_vs_30d_pct: how much faster capital is moving this week vs. the 30-day daily average.
+  smart_deployment   → smart money (wallets with strong track records) positioning into specific protocols post-bridge.
+  stablecoin_flow    → stablecoin mint activity and net flows; large mint_usd = fresh buying power entering the market.
+
+DATA QUALITY: If a field is 0 or absent, do not cite it as evidence.
+TOP TOKENS for capital_migration/smart_deployment narratives must be token symbols (e.g. WETH, USDC) not chain names.
+
+════════════════════════════════════════════════════════
 SECTION 4 — EVOLUTION SCENARIOS (apply in this order)
 ════════════════════════════════════════════════════════
 
