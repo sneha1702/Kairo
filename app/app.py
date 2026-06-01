@@ -794,7 +794,7 @@ with tab_admin:
 # ── Kairo tab — iframe only ───────────────────────────────────────────────────
 with tab_kairo:
     user_id        = st.session_state.get("admin_user_id",      "default")
-    hours_lookback = st.session_state.get("admin_hours_lookback", 24)
+    hours_lookback = st.session_state.get("admin_hours_lookback", _Cfg.DUNE_QUERY_WINDOW_HOURS)
 
     kairo_data = _cached_build_data(user_id, hours_lookback)
     kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
