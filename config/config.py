@@ -83,7 +83,8 @@ class Config:
         os.getenv("NARRATIVE_DETECTION_INTERVAL_HOURS", str(_dune_params.get("narrative_detection_interval_hours", 4)))
     )
     GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
-    
+    GOOGLE_CLOUD_LOCATION: str = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
+
     @classmethod
     def set_dune_query_window(cls, hours: int) -> None:
         """Persist a new query window to dune_params.json and update the class attr."""

@@ -18,14 +18,27 @@ logger = logging.getLogger(__name__)
 _PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts"
 
 
+# ── .env loading (optional) ────────────────────────────────────────────────────
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+
+
 class NarrativeEngine:
     def __init__(self, gemini_api_key: str):
+        from config.config import Config
+        project      = Config.GOOGLE_CLOUD_PROJECT
+        location     = Config.GOOGLE_CLOUD_LOCATION
+        model_name   = Config.GEMINI_MODEL
         self.client = genai.Client(
             vertexai=True,
-            project="kairoagent-497417",
-            location="us-central1",
+            project=project,
+            location=location,
         )
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = model_name
 
     # ── Legacy whale grouping (kept for backward compat) ──────────────────────
 
@@ -442,96 +455,88 @@ class NarrativeEngine:
                 return obj.isoformat()
             raise TypeError(f"Not serializable: {type(obj)}")
 
-        # ── Section 2: richer history ──────────────────────────────────────────
+        # ── Section 2: narrative history ───────────────────────────────────────
         history_section = "None yet — this may be the first run."
         if historical_narratives:
             slim = [
                 {
-                    "narrative_id":     n.get("narrative_id", ""),
-                    "name":             n.get("name", ""),
-                    "category":         n.get("category", ""),
-                    "status":           n.get("status", ""),
-                    "confidence_score": n.get("confidence_score", 0),
-                    "strength":         n.get("strength", ""),
-                    "top_tokens":       n.get("top_tokens", []),
-                    "key_evidence":     (n.get("key_evidence") or [])[:3],
-                    "signal_sources":   n.get("signal_sources", []),
-                    "momentum_trend":   (n.get("momentum") or {}).get("trend", ""),
+                    "narrative_id":       n.get("narrative_id", ""),
+                    "name":               n.get("name", ""),
+                    "category":           n.get("category", ""),
+                    "status":             n.get("status", ""),
+                    "confidence_score":   n.get("confidence_score", 0),
+                    "strength":           n.get("strength", ""),
+                    "top_tokens":         n.get("top_tokens", []),
+                    "key_evidence":       (n.get("key_evidence") or [])[:3],
+                    "signal_sources":     n.get("signal_sources", []),
+                    "momentum_trend":     (n.get("momentum") or {}).get("trend", ""),
                     "hours_since_update": n.get("hours_since_update"),
-                    "detected_at":      n.get("detected_at", ""),
+                    "detected_at":        n.get("detected_at", ""),
                 }
                 for n in historical_narratives
             ]
             history_section = json.dumps(slim, indent=2, default=_default)
 
-        # ── Extract data provenance from dune_context ──────────────────────────
+        # ── Data provenance — derived from unified_signals or dune_context ─────
         data_window_start: Optional[str] = None
         data_window_end:   Optional[str] = None
         last_ingested_at:  Optional[str] = None
 
+        if unified_signals:
+            buckets = [s["time_bucket"] for s in unified_signals if s.get("time_bucket")]
+            if buckets:
+                data_window_start = min(buckets)
+                data_window_end   = max(buckets)
+
         if dune_context:
-            all_event_times: List[str] = []
             all_ingested_ats: List[str] = []
-            # timestamp field names present per signal type
-            ts_fields = [
-                "block_time", "first_buy", "last_buy",
-                "earliest_tx_time", "latest_tx_time",
-                "earliest_flow_time", "latest_flow_time",
-                "earliest_trade_time", "latest_trade_time",
-                "window_start_time", "window_end_time",
-                "snapshot_time",
-            ]
             for docs in dune_context.values():
                 for doc in docs:
-                    for f in ts_fields:
-                        v = doc.get(f)
-                        if v and isinstance(v, str) and len(v) >= 10:
-                            all_event_times.append(v)
                     ia = doc.get("ingested_at")
                     if ia and isinstance(ia, str):
                         all_ingested_ats.append(ia)
-
-            if all_event_times:
-                data_window_start = min(all_event_times)
-                data_window_end   = max(all_event_times)
             if all_ingested_ats:
                 last_ingested_at = max(all_ingested_ats)
 
-        # ── Section 3a: token confluence ───────────────────────────────────────
-        confluence_section = "No on-chain data available."
-        signal_summary_section = ""
-        data_freshness_header = ""
-        if dune_context:
-            confluence = self.build_token_confluence(dune_context)
-            confluence_section = json.dumps(confluence, indent=2, default=_default)
-            summary = self.build_signal_summary(dune_context)
-            signal_summary_section = json.dumps(summary, indent=2, default=_default)
-            data_freshness_header = (
-                f"Data provenance: on-chain events from {data_window_start} → {data_window_end} "
-                f"| last ingested into ES at {last_ingested_at} "
-                f"| prompt built at {datetime.utcnow().isoformat()}Z"
-            )
+        data_freshness_header = (
+            f"Signal window: {data_window_start} → {data_window_end}"
+            + (f" | last ingested at {last_ingested_at}" if last_ingested_at else "")
+            + f" | prompt built at {datetime.utcnow().isoformat()}Z"
+        )
 
-        # ── Section 3c: temporal trend ─────────────────────────────────────────
-        trend_section = "No trend data available."
-        if signal_trend:
-            trend_section = json.dumps(signal_trend, indent=2, default=_default)
-
-        # ── Section 3d: unified capital signal schema ──────────────────────────
-        unified_section = "No unified signal data available."
+        # ── Unified signals section (sole data input to the prompt) ────────────
         if unified_signals:
             unified_section = json.dumps(unified_signals, indent=2, default=_default)
+            single_day_only = (
+                len({s["time_bucket"] for s in unified_signals if s.get("time_bucket")}) <= 1
+            )
+        else:
+            unified_section  = "No signal data available for this window."
+            single_day_only  = True
 
-        whale_section = ""
-        if whale_activity:
-            whale_section = f"\nWHALE TRANSACTION ACTIVITY:\n{json.dumps(whale_activity, indent=2)}\n"
+        confidence_cap_note = (
+            "NOTE: All signals cover a single day only — cap confidence at 0.74 and flag in data_caveat."
+            if single_day_only else ""
+        )
 
-        prompt = f"""You are a crypto narrative intelligence analyst. Your job is to detect and evolve multi-day capital-flow themes from on-chain signals and explain them clearly to everyday investors.
+        prompt = f"""You are a crypto narrative intelligence analyst writing **plain-English investor briefings**.
 
-CORE RULE: Every narrative must be backed by real numbers from the data below.
-CORE RULE: Write as if explaining to someone who is new to crypto — no unexplained jargon.
-CORE RULE: A narrative is a sustained market theme, NOT a one-time token event.
-Output is upserted into MongoDB using narrative_id as the stable key.
+Your output is NOT a dashboard, NOT a data report, and NOT a technical analysis sheet.
+It is a morning briefing that explains what is happening in crypto markets, why it matters, and what might happen next — written for a smart but non-technical retail investor.
+
+Think: *"Financial news explainer for someone who knows what Bitcoin is but has never used a crypto app."*
+
+════════════════════════════════════════════════════════
+CORE RULES (NON-NEGOTIABLE)
+════════════════════════════════════════════════════════
+
+RULE 1: Every narrative must be anchored in real numbers from Section 3.
+RULE 2: Write for a non-technical retail investor — no unexplained jargon or acronyms.
+RULE 3: A narrative is a sustained market theme that develops over days, NOT a single token event.
+RULE 4: Explain what is happening and why it matters — not how the data system works.
+RULE 5: Output is upserted into MongoDB using narrative_id as the key.
+RULE 6: Do NOT output dashboards, rankings, or analytical commentary. Only investor briefings.
+RULE 7: Prefer narrative continuity — merge evidence into existing stories rather than creating new ones.
 
 ════════════════════════════════════════════════════════
 SECTION 1 — CANONICAL NARRATIVE IDs
@@ -551,162 +556,175 @@ Prefer these stable identifiers before inventing new ones:
 If none fits, create a new snake_case id (e.g. "solana_defi_revival").
 
 ════════════════════════════════════════════════════════
-SECTION 2 — EXISTING NARRATIVES (prior detection state)
+SECTION 2 — EXISTING NARRATIVES (prior state)
 ════════════════════════════════════════════════════════
 
 {history_section}
 
 Each entry shows: narrative_id, prior key_evidence, prior signal_sources, momentum_trend, hours_since_update.
-Use this to CONTINUE and ENRICH existing narratives rather than recreating them.
+
+CONTINUITY RULES:
+  • ALWAYS prefer updating an existing narrative over creating a new one for the same theme.
+  • Merge new evidence into the existing story arc — write it as a "live briefing update", not a new report.
+  • Only create a new narrative_id if no existing one covers the theme AND signal_count ≥ 2.
+  • Do NOT fragment one theme into multiple small narratives.
 
 ════════════════════════════════════════════════════════
-SECTION 3 — ON-CHAIN SIGNALS
+SECTION 3 — ON-CHAIN SIGNAL DATA (sole data input)
 ════════════════════════════════════════════════════════
 
 {data_freshness_header}
+{confidence_cap_note}
 
-════════════════════════════════════════════════════════
-SECTION 3a — TOKEN CONFLUENCE TABLE (cross-signal view)
-════════════════════════════════════════════════════════
-
-Tokens ranked by number of independent signals confirming them.
-Higher signal_count = stronger multi-signal conviction.
-
-{confluence_section}
-
-Fields: symbol, signal_count, signals[], total_usd, smart_money_usd, whale_usd,
-        volume_multiplier, net_flow_usd, bridge_usd, holder_growth_pct, dex_share_pct
-
-DATA QUALITY CHECKS — apply before using any field:
-  • If net_flow_usd = 0 for a token marked "Net Outflow (Accumulation)", treat that signal as WEAK
-    (zero likely means missing data, not confirmed accumulation). Do not cite it as primary evidence.
-  • If the 72h trend (Section 3c) shows zeros for T-72h and T-48h buckets, ALL signals are single-day only.
-    Cap confidence at 0.79 for any narrative in this run, and note in key_evidence that data covers only 24h.
-  • For bridge narratives: top_tokens must list token symbols (e.g. USDC, ETH), NOT chain names.
-    Chain names belong in key_evidence descriptions only.
-
-════════════════════════════════════════════════════════
-SECTION 3b — PER-SIGNAL DETAIL (8 Dune sources)
-════════════════════════════════════════════════════════
-
-{signal_summary_section or "No signal data."}
-{whale_section}
-Signal key (plain-English definitions — use these exact definitions in your output text):
-  smart_money         → large, experienced traders making repeated buys on decentralized exchanges
-  token_flows         → net movement of tokens between exchanges and private wallets (outflow = investors withdrawing to hold, not sell)
-  bridge_activity     → capital crossing between different blockchain networks (e.g. from Solana to Ethereum)
-  volume_spikes       → trading volume that is unusually high compared to recent averages (multiplier = how many times above normal)
-  holder_growth       → rate at which new wallets are acquiring a token
-  dex_concentration   → what share of a token's trading is happening on a single exchange
-  whale_transactions  → very large single transfers (typically $500K+) by major holders
-  wallet_concentration→ how much of a token's total supply is held by the largest wallets
-
-════════════════════════════════════════════════════════
-SECTION 3c — 72-HOUR SIGNAL TREND (oldest → newest)
-════════════════════════════════════════════════════════
-
-Use this to detect acceleration or deceleration across time buckets.
-Rising whale_usd + rising smart_money_usd across buckets = strengthening conviction.
-If T-72h and T-48h buckets are all zeros, explicitly note in historical_context that this is a first-detection with only 24h of data.
-
-{trend_section}
-
-════════════════════════════════════════════════════════
-SECTION 3d — UNIFIED CAPITAL SIGNAL SCHEMA
-════════════════════════════════════════════════════════
-
-Pre-aggregated cross-chain signal records. Use as primary evidence for
-capital_migration, smart_deployment, and stablecoin_flow narratives.
+TREAT THIS AS RAW FACTS ONLY. Do NOT interpret here — interpretation belongs in the narrative output fields.
 
 {unified_section}
 
-Category definitions:
-  capital_migration  → cross-chain token flows: bridge_usd, whale transactions, and net_flow_usd combined per route.
-                       acceleration_7d_vs_30d_pct: how much faster capital is moving this week vs. the 30-day daily average.
-  smart_deployment   → smart money (wallets with strong track records) positioning into specific protocols post-bridge.
-  stablecoin_flow    → stablecoin mint activity and net flows; large mint_usd = fresh buying power entering the market.
+── Field guide ──────────────────────────────────────────
 
-DATA QUALITY: If a field is 0 or absent, do not cite it as evidence.
-TOP TOKENS for capital_migration/smart_deployment narratives must be token symbols (e.g. WETH, USDC) not chain names.
+capital_migration records capture money moving between blockchains:
+  • symbol              — which token is moving (e.g. WETH, USDC)
+  • from_chain / to_chain — source and destination blockchain
+  • total_usd           — combined dollar value of all cross-chain movement
+  • bridge_usd          — portion that crossed via a bridge protocol
+  • net_flow_usd        — net direction of token flow (positive = net inflow to destination)
+  • whale_concentration_pct — how much of this token the largest holders control (0–100)
+  • acceleration_7d_vs_30d_pct — how much faster capital is moving this week vs. the 30-day daily average
+  • signal_count        — number of independent signal types confirming this movement (higher = more conviction)
+
+smart_deployment records capture experienced investors putting money to work:
+  • smart_money_usd     — dollar value deployed by wallets with strong historical track records
+  • deployment_type     — how the money is being deployed (e.g. lending, liquidity, staking)
+  • protocol            — the specific platform receiving the capital
+
+stablecoin_flow records capture fresh buying power entering the market:
+  • net_flow_usd        — net direction of stablecoin movement
+  • mint_usd            — new stablecoins created (proxy for fresh capital entering crypto)
+
+── Data quality rules ───────────────────────────────────
+
+  • If a field is 0 or absent, do NOT cite it as evidence.
+  • net_flow_usd = 0 does NOT confirm accumulation — treat it as no signal.
+  • top_tokens must be token symbols (ETH, USDC, WBTC) — never chain names.
+  • signal_count is a confidence proxy, NOT a narrative definition.
 
 ════════════════════════════════════════════════════════
-SECTION 4 — EVOLUTION SCENARIOS (apply in this order)
+SECTION 4 — EVOLUTION SCENARIOS
 ════════════════════════════════════════════════════════
 
-SCENARIO A — CONTINUING/ACCELERATING (existing narrative gets new evidence):
-  Condition: A token/theme in Section 3a matches an existing narrative_id from Section 2.
+SCENARIO A — CONTINUING / ACCELERATING
+  Condition: A theme in Section 3 matches an existing narrative_id in Section 2.
   Action: Reuse the same narrative_id. Set status=CONTINUING or ACCELERATING.
-           Merge NEW observations from this run into key_evidence (don't repeat prior evidence).
-           Update confidence based on fresh signals. Update top_tokens if changed.
+          Add new observations to key_evidence — do not repeat prior evidence.
+          Update confidence based on fresh signals. Update top_tokens if changed.
 
-SCENARIO B — NEW narrative:
-  Condition: Token/theme in Section 3a has signal_count ≥ 2 AND no match in Section 2.
+SCENARIO B — NEW NARRATIVE
+  Condition: A theme in Section 3 has signal_count ≥ 2 AND no match in Section 2.
   Action: Create a new narrative_id. Set status=NEW.
+          The narrative must represent a real-world investor story, not a token cluster.
 
-SCENARIO C — STAGNATING (active narrative, no new signals):
-  Condition: A narrative_id from Section 2 has NO matching tokens in Section 3a,
+SCENARIO C — STABLE / STAGNATING
+  Condition: An existing narrative_id has NO matching signals in Section 3,
              AND hours_since_update < 72.
-  Action: STILL RETURN IT. Set status=STABLE, strength=Low or same, reduce confidence slightly.
-           This prevents valid multi-day narratives from disappearing after one quiet data cycle.
+  Action: STILL RETURN IT. Set status=STABLE, reduce confidence slightly.
+          This keeps valid multi-day themes alive through quiet data cycles.
+
+Evidence → confidence mapping (STRICTLY enforce):
+  • signal_count ≥ 3 + acceleration        → confidence 0.75–0.85
+  • signal_count ≥ 3, no acceleration      → confidence 0.70–0.79
+  • signal_count = 2                       → confidence 0.55–0.69
+  • signal_count = 1, volume > $50M        → confidence 0.40–0.54
+  • signal_count = 1, bridge only          → confidence max 0.50
+  • Single-day data only                   → cap at 0.74, note in data_caveat
 
 DO NOT return narratives with confidence_score < 0.40.
-DO NOT fabricate signal evidence that is not present in Section 3a or 3b.
-DO NOT cite net_flow_usd = 0 entries as confirmed accumulation evidence.
-
-Evidence quality rules (STRICTLY enforce — override your own judgment if needed):
-  • signal_count ≥ 3   → confidence 0.70–0.85 (cap at 0.79 if data is single-day only)
-  • signal_count = 2   → confidence 0.55–0.70
-  • signal_count = 1   → confidence 0.40–0.54 only if USD volume is exceptional (>$50M)
-  • signal_count = 1 + bridge_activity only → confidence max 0.54 regardless of volume
-  • Trend acceleration (Section 3c shows rising metrics across buckets) → +0.05 bonus
-  • Themes over tokens: "Stablecoin Accumulation Wave" NOT "USDC Buying"
+DO NOT fabricate signal evidence not present in Section 3.
 
 ════════════════════════════════════════════════════════
-SECTION 5 — WRITING TONE GUIDE (read before writing ANY field)
+SECTION 5 — WRITING STYLE (investor briefing rules)
 ════════════════════════════════════════════════════════
 
-Target reader: someone who has heard of Bitcoin and Ethereum but is not a DeFi expert.
+You are writing a retail investor briefing, not a data system output.
 
-Rules for ALL text fields (implications, retail_considerations, plain_english_summary):
-  1. NO unexplained acronyms. Write "Ethereum (ETH)" not just "ETH" on first use.
-     Write "decentralized exchange (DEX)" not "DEX". Write "stablecoin (a crypto token pegged to $1)" not "stablecoin".
-  2. Use size anchors for dollar amounts: "$5B (5 billion dollars)" or compare to something familiar.
-  3. Never use: "on-chain", "L1", "L2", "CEX", "DEX concentration", "net outflow" without first defining it.
-  4. key_evidence entries are allowed to use technical shorthand (they are data citations).
-  5. implications must answer: "What does this suggest might happen next in the market?"
-  6. retail_considerations MUST have three parts:
-       - Plain-English explanation of what this narrative means for regular investors
-       - ONE specific thing to watch (e.g. "watch whether ETH price follows smart money positioning")
-       - A risk caveat (e.g. "on-chain signals are early indicators and can reverse quickly — this is not financial advice")
-  7. plain_english_summary must be 2 sentences max: first sentence = what is happening, second = why it might matter.
-     Write as if texting a friend: "Big money wallets are quietly buying ETH. This sometimes happens before price moves up, but it's not guaranteed."
+RULES:
+
+1. Translate every signal into plain-English meaning:
+   NEVER write:  "whale_usd increased in token_flows metric"
+   ALWAYS write: "Large investors moved about $X into [token]"
+
+   Signal translations:
+     smart_money       → "experienced large investors" or "wallets with a strong track record"
+     bridge_activity   → "money moving between blockchains" or "capital rotating into [chain]"
+     whale_transactions→ "very large holders shifting funds" (typically $500K or more per move)
+     stablecoin_mint   → "fresh buying power entering the market" or "new dollars arriving in crypto"
+
+2. Every narrative must answer four questions in plain English:
+   • What is happening right now?
+   • Who is moving money (what type of investor)?
+   • Why does it matter for the broader market?
+   • What could happen next?
+
+3. Context all dollar amounts with a size anchor:
+   "$1.2B" → "$1.2 billion — roughly the size of a mid-sized investment fund"
+   "$50M"  → "about $50 million, a significant single-day institutional move"
+
+4. No jargon without an immediate explanation in parentheses on first use:
+   OK: "decentralized exchanges (platforms where people trade crypto directly)"
+   NOT OK: "DEX volume spiked"
+
+5. FORBIDDEN in output text fields (implications, summary, retail_considerations):
+   "signal_count" • "confluence" • "dex concentration" • "net outflow" • "on-chain"
+   "L1" • "L2" • "CEX" • "net flow" • "token_flows" • "whale_usd"
+   If you need to express these concepts, use the plain-English equivalents above.
+
+6. plain_english_summary: exactly 2 sentences, texting-a-friend style:
+   "Big money wallets are quietly moving funds into Ethereum. This kind of positioning
+    has historically preceded price moves, but there's no guarantee it will this time."
+
+7. retail_considerations: exactly 3 parts:
+   (1) What this means for regular investors in plain English
+   (2) One specific thing to watch as a signal of continuation or reversal
+   (3) A clear risk reminder: "On-chain movements are early signals that can reverse quickly —
+       this is not financial advice."
 
 ════════════════════════════════════════════════════════
 SECTION 6 — OUTPUT FORMAT
 ════════════════════════════════════════════════════════
 
-Return ONLY a valid JSON array — no markdown, no prose, no explanation.
-Maximum 5 narratives. Include Scenario C entries (stagnating) if hours_since_update < 72.
+Return ONLY a valid JSON array — no markdown, no prose, no explanation outside the array.
+Maximum 5 narratives. Always include Scenario C narratives if hours_since_update < 72.
 
 Each object MUST have EXACTLY these fields:
 
 {{
   "narrative_id":          "snake_case_stable_id",
-  "name":                  "Human-Readable Title (plain English, no acronyms)",
+  "name":                  "Investor-briefing title — plain English, no acronyms (e.g. 'Big Money Rotating Into Ethereum')",
   "category":              "AI | DeFi | L2 | RWA | Stablecoins | Infrastructure | Gaming | NFT | Memecoin | CrossChain | Institutional | Other",
   "status":                "NEW | CONTINUING | ACCELERATING | REVERSING | STABLE",
   "strength":              "High | Medium | Low",
   "momentum":              "Strengthening | Stable | Weakening",
   "confidence_score":      0.0,
-  "key_evidence":          ["specific data citation with numbers, e.g. '$58M bought by 40 large wallets (smart money) in last 24h — 3 independent signals'"],
-  "data_caveat":           "note any data quality issues, e.g. 'all signals from single 24h window; no prior trend to compare' or 'net_flow values were zero — accumulation signal is weak'",
-  "historical_context":    "one sentence: if NEW with no prior data say 'First detection — only 24h of data available, no multi-day trend yet confirmed.' If CONTINUING, compare to prior detection.",
-  "implications":          "What this might mean for the market next — written in plain English, no jargon. 2-3 sentences.",
-  "plain_english_summary": "2 sentences max. What is happening + why it might matter. Written like a text to a non-crypto friend.",
+  "key_evidence":          [
+    "Data citation in plain English with real numbers — e.g. 'About $125M moved from Ethereum to Base via bridges, running 2.4x faster than the 30-day average'"
+  ],
+  "data_caveat":           "Simple explanation of limitations — e.g. 'Only 24 hours of data available, so this may be an early signal rather than a confirmed trend'",
+  "historical_context":    "One sentence on continuity — if NEW say 'First detection with only 24h of data; no multi-day trend yet confirmed.' If CONTINUING, compare to prior detection.",
+  "implications":          "2–3 plain-English sentences: what could this mean for markets next? No jargon.",
+  "plain_english_summary": "Exactly 2 sentences — what is happening + why it might matter. Texting-a-friend tone.",
   "top_tokens":            ["TOKEN_SYMBOL_ONLY — e.g. USDC, ETH, WBTC — never chain names"],
-  "retail_considerations": "Three parts: (1) plain-English meaning for regular investors, (2) one specific thing to watch, (3) risk caveat.",
-  "signal_sources":        ["smart_money", "bridge_activity"]
+  "retail_considerations": "Three clearly separated parts: (1) plain-English meaning for regular investors, (2) one specific thing to watch, (3) risk reminder.",
+  "signal_sources":        ["bridge_activity", "smart_money"]
 }}
+
+════════════════════════════════════════════════════════
+FINAL RULE
+════════════════════════════════════════════════════════
+
+If there is any conflict between data precision and investor clarity:
+PRIORITIZE HUMAN CLARITY AND INVESTOR UNDERSTANDING OVER TECHNICAL PRECISION.
+
+A narrative that a non-crypto person can understand and act on is always better than
+a technically accurate one they cannot follow.
 """
 
         # ── Save prompt to disk ────────────────────────────────────────────────

@@ -9,7 +9,7 @@
   },
   "bridge_activity": {
     "id": 7614956,
-    "sql_hash": "5dc98b4e020d0b26"
+    "sql_hash": "970a5e9bd08e914c"
   },
   "smart_money_accumulation": {
     "id": 7614957,
@@ -31,8 +31,20 @@
     "id": 7614961,
     "sql_hash": "0a8052f56ff2c97d"
   },
-  "post_bridge_deployment": {},
-  "stablecoin_liquidity_flow": {},
-  "ecosystem_sector_rotation": {},
-  "protocol_inflow_leaderboard": {}
+  "post_bridge_deployment": {
+    "id": 7632638,
+    "sql_hash": "3b0c697269309794"
+  },
+  "stablecoin_liquidity_flow": {
+    "id": 7632639,
+    "sql_hash": "faf4727b0ecf04f3"
+  },
+  "ecosystem_sector_rotation": {
+    "id": 7632640,
+    "sql_hash": "13482f051dbe1829"
+  },
+  "protocol_inflow_leaderboard": {
+    "id": 7632641,
+    "sql_hash": "a9ecb573384dec0d"
+  }
 }
