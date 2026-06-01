@@ -6,6 +6,89 @@
 const K = window.KAIRO;
 let Icon, Asset, ForceTag, StatusBadge, CardLabel, StrengthCurve;
 
+/* ---- phase & intent chips ---- */
+const _PHASE_STYLE = {
+  Discovery: { bg: "var(--c-denim)",  ink: "var(--c-denim-ink)" },
+  Expanding: { bg: "var(--c-sage)",   ink: "var(--c-sage-ink)"  },
+  Peak:      { bg: "var(--accent-soft)", ink: "var(--accent-ink)" },
+  Maturing:  { bg: "var(--surface-2)", ink: "var(--ink-3)" },
+  Declining: { bg: "var(--c-rose)",   ink: "var(--c-rose-ink)"  },
+  Active:    { bg: "var(--c-peach)",  ink: "var(--c-peach-ink)" },
+};
+function PhaseChip({ phase }) {
+  if (!phase) return null;
+  const s = _PHASE_STYLE[phase] || { bg: "var(--surface-2)", ink: "var(--ink-3)" };
+  return (
+    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+      background: s.bg, color: s.ink, borderRadius: 99, padding: "2px 9px", display: "inline-block" }}>
+      {phase}
+    </span>
+  );
+}
+
+const _INTENT_STYLE = {
+  Deploying:    { bg: "var(--c-sage)",  ink: "var(--c-sage-ink)"  },
+  Positioning:  { bg: "var(--c-lav)",   ink: "var(--c-lav-ink)"   },
+  Accumulating: { bg: "var(--c-denim)", ink: "var(--c-denim-ink)" },
+  Rotating:     { bg: "var(--c-peach)", ink: "var(--c-peach-ink)" },
+  Exiting:      { bg: "var(--c-rose)",  ink: "var(--c-rose-ink)"  },
+};
+function SmartIntentBadge({ intent }) {
+  if (!intent) return null;
+  const s = _INTENT_STYLE[intent] || { bg: "var(--surface-2)", ink: "var(--ink-2)" };
+  return (
+    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase",
+      background: s.bg, color: s.ink, borderRadius: 99, padding: "2px 9px", display: "inline-block" }}>
+      Smart money · {intent}
+    </span>
+  );
+}
+
+/* ---- investor briefing sections (detail view) ---- */
+function BriefingSections({ t }) {
+  const { what_happening, why_matters, risk_note, watch_for } = t;
+  if (!what_happening && !why_matters && !risk_note && !watch_for) return null;
+  return (
+    <div style={{ marginTop: 24, paddingTop: 22, borderTop: "1px solid var(--hairline)",
+      display: "flex", flexDirection: "column", gap: 20 }}>
+      {what_happening && (
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>What is happening</div>
+          <p style={{ fontSize: 16, color: "var(--ink-2)", lineHeight: 1.65 }}>{what_happening}</p>
+        </div>
+      )}
+      {why_matters && (
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Why it matters</div>
+          <p style={{ fontSize: 15.5, color: "var(--ink-2)", lineHeight: 1.65 }}>{why_matters}</p>
+        </div>
+      )}
+      {(risk_note || watch_for) && (
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>Risk factors & what to watch</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {risk_note && (
+              <div style={{ display: "flex", gap: 10, alignItems: "flex-start",
+                background: "color-mix(in oklch, var(--c-peach) 30%, var(--surface-2))",
+                borderRadius: "var(--r-sm)", padding: "12px 14px",
+                border: "1px solid color-mix(in oklch, var(--c-peach) 50%, transparent)" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--c-peach-ink)", flexShrink: 0, paddingTop: 1 }}>Risk</span>
+                <span style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.6 }}>{risk_note}</span>
+              </div>
+            )}
+            {watch_for && (
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <span className="eyebrow" style={{ paddingTop: 3, flexShrink: 0 }}>Watch for</span>
+                <span style={{ fontSize: 14.5, color: "var(--ink-2)", fontStyle: "italic", lineHeight: 1.6 }}>{watch_for}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ---- live narratives rail (index) ---- */
 function NarrativeRail({ onDrill }) {
   if (!K.narratives || K.narratives.length === 0) {
