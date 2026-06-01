@@ -888,11 +888,15 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
                 ep_date = f"Day {ep_day}"
 
             ep_strength = round(max(5.0, strength - (len(key_evidence) - 1 - i) * 0.3), 1)
+            ev_str = str(ev).strip()
+            short_headline = _shorten_headline(ev_str)
+            explanation = _build_episode_body(ev_str, top, i)
             episodes.append({
                 "day":      ep_day,
                 "date":     ep_date,
-                "headline": str(ev)[:140],
-                "body":     _build_episode_body(str(ev), top, i),
+                "headline": short_headline,
+                "detail":   ev_str if len(ev_str) > len(short_headline) + 5 else "",
+                "body":     explanation,
                 "force":    force_id,
                 "strength": ep_strength,
             })
