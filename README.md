@@ -436,6 +436,30 @@ volume-spike-detection,Detect unusual volume increases,"symbol, volume_multiplie
 wallet-concentration,Measure how few wallets dominate activity,"symbol, whale_concentration_pct, smart_money_concentration_pct, signals",smart_deployment,"Critical for risk flags (e.g., ""high whale concentration"")."
 whale-transaction-filter,Filter large transactions,"symbol, whale_usd, smart_money_usd, signals, total_usd",smart_deployment,Should feed both whale and smart money columns.
 
+┌─────────────────────────────────┬──────────────────────────────┬────────────────────────────┬────────────────────────────────┐
+│              File               │          Key tables          │        symbol field        │            Signals             │
+├─────────────────────────────────┼──────────────────────────────┼────────────────────────────┼────────────────────────────────┤
+│                                 │ bridges_evms.deposits →      │                            │ HIGH_DEPLOYMENT_VOLUME,        │
+│ post_bridge_deployment.sql      │ dex.trades (L2s)             │ token bought symbol        │ BROAD_ADOPTION,                │
+│                                 │                              │                            │ WHALE_DEPLOYER, HIGH_ACTIVITY  │
+├─────────────────────────────────┼──────────────────────────────┼────────────────────────────┼────────────────────────────────┤
+│                                 │                              │                            │ NET_MINT_PRESSURE,             │
+│ stablecoin_liquidity_flow.sql   │ erc20_ethereum.evt_Transfer  │ USDC/USDT/DAI/FRAX/PYUSD   │ NET_BURN_PRESSURE,             │
+│                                 │ (mint/burn)                  │                            │ HIGH_MINT_VOLUME,              │
+│                                 │                              │                            │ STRONG_DIRECTIONAL_FLOW        │
+├─────────────────────────────────┼──────────────────────────────┼────────────────────────────┼────────────────────────────────┤
+│                                 │                              │                            │ STRONG_ROTATION_IN,            │
+│ ecosystem_sector_rotation.sql   │ dex.trades + sector lookup   │ sector name (e.g.          │ STRONG_ROTATION_OUT,           │
+│                                 │ VALUES CTE                   │ Liquid_Staking)            │ HIGH_SECTOR_VOLUME,            │
+│                                 │                              │                            │ ACCELERATING_ROTATION          │
+├─────────────────────────────────┼──────────────────────────────┼────────────────────────────┼────────────────────────────────┤
+│                                 │                              │                            │ HIGH_PROTOCOL_INFLOW,          │
+│ protocol_inflow_leaderboard.sql │ Aave v3 + EigenLayer + Lido  │ protocol name              │ WHALE_DOMINATED,               │
+│                                 │ + prices.usd                 │ (Aave_v3/EigenLayer/Lido)  │ BROAD_ADOPTION,                │
+│                                 │                              │                            │ ACCELERATING_INFLOW            │
+└─────────────────────────────────┴──────────────────────────────┴────────────────────────────┴────────────────────────────────┘
+
+
 **Helper commands**
 
 1. Compile Python Code after local refractoring
@@ -454,4 +478,3 @@ python3 -m py_compile scripts/purge.py
 4. Run elastic ingestion
 poetry run python3 app/ingestion/dune_pipeline.py
 
-4. Run p
