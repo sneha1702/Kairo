@@ -1,0 +1,59 @@
+```json
+[
+  {
+    "narrative_id": "large_investor_positioning",
+    "name": "Big Money Moving Major Crypto Assets",
+    "category": "Institutional",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.70,
+    "key_evidence": [
+      "Over the past three days, very large holders have shifted approximately $6.1 billion in Wrapped Bitcoin (WBTC), $4.8 billion in USDC, $1.5 billion in DAI, and $257 million in USDT. This significant activity in these major crypto assets is accelerating, running 3.29 times faster than its 30-day daily average."
+    ],
+    "data_caveat": "The data reflects whale transactions over the last three days for multiple assets, providing a strong signal, but it is still a short-term trend rather than a long-term pattern.",
+    "historical_context": "First detection of this broad capital movement from large investors across Wrapped Bitcoin and major stablecoins; no multi-day trend was confirmed in prior reports.",
+    "implications": "The sheer volume of stablecoins and Wrapped Bitcoin moving suggests that significant market participants are actively repositioning their portfolios. This often happens in anticipation of major market events or shifts in strategy, potentially leading to increased volatility or new trends in the coming days.",
+    "plain_english_summary": "Big money wallets are making massive moves with Wrapped Bitcoin and stablecoins, totaling billions of dollars. This suggests these large investors are getting ready for something big in the market.",
+    "top_tokens": [
+      "WBTC",
+      "USDC",
+      "DAI",
+      "USDT"
+    ],
+    "retail_considerations": [
+      "This means that some of the biggest players in crypto are actively shifting their funds around. While we don't know their exact intentions, such large movements often precede significant price action or new opportunities.",
+      "Keep an eye on the overall market direction for Bitcoin and major stablecoin demand. A sustained uptick in trading volume for these assets could confirm that new capital is being deployed.",
+      "On-chain movements are early signals that can reverse quickly — this is not financial advice."
+    ],
+    "signal_sources": [
+      "whale_transactions"
+    ]
+  },
+  {
+    "narrative_id": "cross_chain_liquidity",
+    "name": "Accelerated Movement of Funds Between Blockchains",
+    "category": "CrossChain",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": "Strengthening",
+    "confidence_score": 0.50,
+    "key_evidence": [
+      "About $309 million worth of various crypto assets has moved across different blockchains via bridges in the last day. This cross-chain capital flow is accelerating significantly, running 3.29 times faster than its 30-day daily average."
+    ],
+    "data_caveat": "Only 24 hours of data is available for this specific bridge activity, so this may be an early signal rather than a confirmed long-term trend.",
+    "historical_context": "First detection of this concentrated bridge activity; no multi-day trend yet confirmed.",
+    "implications": "A sharp increase in funds moving between chains suggests that participants are actively seeking new opportunities or optimizing their holdings across different blockchain ecosystems. This could lead to shifts in liquidity and activity on various networks as capital searches for new homes.",
+    "plain_english_summary": "Over $300 million is rapidly flowing between different blockchains, indicating investors are actively exploring options across the crypto landscape. This accelerated movement often signals potential shifts in where money is being put to work.",
+    "top_tokens": [],
+    "retail_considerations": [
+      "This indicates that the broader crypto market is dynamic, with investors reallocating funds to different blockchain networks. It might hint at emerging trends or specific chains gaining popularity.",
+      "Watch for announcements or increased activity on specific smaller blockchains (not just the biggest ones like Ethereum or Bitcoin) that might be attracting this new capital.",
+      "On-chain movements are early signals that can reverse quickly — this is not financial advice."
+    ],
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  }
+]
+```

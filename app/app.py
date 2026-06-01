@@ -730,12 +730,23 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
             status   = st.empty()
             progress = st.progress(0, text="Starting…")
             try:
-                progress.progress(10, text="Fetching Elasticsearch signals…")
-                dune_context = _es.get_dune_signal_context(hours=_hours)
+                from app.synthesize.signal_transformer import SignalTransformer, enrich_with_acceleration
+                from datetime import timezone as _tz
 
-                progress.progress(25, text="Fetching signal trend…")
-                _bucket_h = max(24, _hours // 3)
-                signal_trend = _es.get_signal_trend(hours_per_bucket=_bucket_h, num_buckets=3)
+                progress.progress(10, text="Building unified signal schema…")
+                _transformer    = SignalTransformer(_es)
+                unified_signals = _transformer.build_unified_signals(hours=_hours)
+                unified_signals = enrich_with_acceleration(unified_signals, _es)
+                logger.info(
+                    "[DETECT] Unified signals: %d records (%d capital_migration, %d smart_deployment, %d stablecoin_flow)",
+                    len(unified_signals),
+                    sum(1 for s in unified_signals if s["category"] == "capital_migration"),
+                    sum(1 for s in unified_signals if s["category"] == "smart_deployment"),
+                    sum(1 for s in unified_signals if s["category"] == "stablecoin_flow"),
+                )
+
+                progress.progress(25, text="Fetching Elasticsearch context…")
+                dune_context = _es.get_dune_signal_context(hours=_hours)
 
                 progress.progress(35, text="Loading existing narratives from MongoDB…")
                 current_narratives = _tracker.get_current_narratives(_user_id, min_confidence=0.0) if _tracker else []
@@ -745,7 +756,7 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 new_narratives = _engine.detect_narratives(
                     dune_context=dune_context,
                     historical_narratives=history_summary,
-                    signal_trend=signal_trend,
+                    unified_signals=unified_signals,
                 )
 
                 enriched = []
@@ -754,6 +765,21 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                         pct = 60 + int(30 * (i + 1) / len(new_narratives))
                         progress.progress(pct, text=f"Enriching narrative {i + 1}/{len(new_narratives)}…")
                         enriched.append(_engine.enrich_narrative(n, previous_narratives=current_narratives))
+
+                    # Attach unified signals as metadata before persisting
+                    _signal_meta = {
+                        "window_hours":  _hours,
+                        "generated_at":  datetime.now(_tz.utc).isoformat(),
+                        "total_records": len(unified_signals),
+                        "by_category": {
+                            "capital_migration": sum(1 for s in unified_signals if s["category"] == "capital_migration"),
+                            "smart_deployment":  sum(1 for s in unified_signals if s["category"] == "smart_deployment"),
+                            "stablecoin_flow":   sum(1 for s in unified_signals if s["category"] == "stablecoin_flow"),
+                        },
+                    }
+                    for n in enriched:
+                        n["unified_signals"] = unified_signals
+                        n["signal_metadata"] = _signal_meta
 
                     if _tracker:
                         progress.progress(92, text="Saving to MongoDB…")
