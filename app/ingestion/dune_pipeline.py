@@ -301,6 +301,24 @@ class DuneIngestionPipeline:
             parts = [str(qc.params.get("token_address", "")), ws]
         elif name == "dex_trading_concentration":
             parts = [str(doc.get("symbol", "")), str(doc.get("dex", "")), ws]
+        elif name == "post_bridge_deployment":
+            parts = [
+                str(doc.get("symbol", "")),
+                str(doc.get("chain", "")),
+                str(doc.get("deployment_type", "")),
+                str(doc.get("protocol", "")),
+                ws,
+            ]
+        elif name == "stablecoin_liquidity_flow":
+            parts = [str(doc.get("symbol", "")), ws]
+        elif name == "ecosystem_sector_rotation":
+            parts = [str(doc.get("symbol", "")), ws]
+        elif name == "protocol_inflow_leaderboard":
+            parts = [
+                str(doc.get("symbol", "")),
+                str(doc.get("deployment_type", "")),
+                ws,
+            ]
         else:
             parts = [name, ws]
 
