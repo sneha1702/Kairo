@@ -303,24 +303,65 @@ function SmartMoneyCard({ w }) {
 
 /* ---- Bridge flow card ---- */
 function BridgeCard({ b }) {
+  const hasRoute  = b.direction && b.direction.trim();
+  const hasBridge = b.bridge && b.bridge.trim();
+  const hasSymbol = b.symbol && b.symbol.trim();
+  const hasNet    = b.net_flow_fmt && b.net_flow_fmt.trim();
+  const netPos    = b.net_flow_usd > 0;
+  const hasAccel  = Math.abs(b.acceleration || 0) > 0.5;
   return (
-    <div style={{
-      background: "var(--surface-2)", borderRadius: "var(--r-md)", padding: "16px 18px",
-      border: "1px solid var(--hairline)",
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-        <div>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-            color: "var(--ink-3)", display: "block", marginBottom: 4 }}>{b.bridge}</span>
-          <span className="mono" style={{ fontSize: 22, fontWeight: 800, color: "var(--ink)" }}>{b.usd_fmt}</span>
+    <div style={{ background: "var(--surface-2)", borderRadius: "var(--r-md)", padding: "14px 18px",
+      border: "1px solid var(--hairline)", display: "flex", flexDirection: "column", gap: 8 }}>
+
+      {/* Route + amount */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", lineHeight: 1.3 }}>
+            {hasRoute ? b.direction : "Cross-chain flow"}
+          </div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 3 }}>
+            {hasSymbol && <span>{b.symbol}</span>}
+            {hasSymbol && hasBridge && <span> · </span>}
+            {hasBridge && <span>via {b.bridge}</span>}
+          </div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div className="mono" style={{ fontSize: 19, fontWeight: 800, color: "var(--ink)" }}>{b.usd_fmt}</div>
+          {hasNet && (
+            <div className="mono" style={{ fontSize: 12, fontWeight: 700, marginTop: 2,
+              color: netPos ? "var(--pos)" : "var(--neg)" }}>
+              net {b.net_flow_fmt}
+            </div>
+          )}
         </div>
       </div>
-      <p style={{ fontSize: 14, color: "var(--ink-2)", marginBottom: 10, fontWeight: 500 }}>{b.direction}</p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 20px" }}>
-        {b.signal && <FactRow label="Signal" value={b.signal} />}
-        {b.tx_count > 0 && <FactRow label="Transactions" value={b.tx_count} />}
-        {b.wallets > 0 && <FactRow label="Unique wallets" value={b.wallets} />}
+
+      {/* Stats row */}
+      <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+        {b.tx_count > 0 && (
+          <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+            <span className="mono" style={{ fontWeight: 700, color: "var(--ink-2)" }}>{b.tx_count.toLocaleString()}</span> txs
+          </span>
+        )}
+        {b.percentage > 0 && (
+          <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+            <span className="mono" style={{ fontWeight: 700, color: "var(--ink-2)" }}>{b.percentage.toFixed(1)}%</span> of total
+          </span>
+        )}
+        {hasAccel && (
+          <span style={{ fontSize: 12.5, fontWeight: 600,
+            color: b.acceleration > 0 ? "var(--pos)" : "var(--neg)" }}>
+            {b.acceleration > 0 ? "↑" : "↓"} {Math.abs(b.acceleration).toFixed(0)}% vs 30d
+          </span>
+        )}
       </div>
+
+      {b.signal && (
+        <p style={{ fontSize: 13.5, color: "var(--ink-2)", fontStyle: "italic", lineHeight: 1.55,
+          paddingTop: 8, borderTop: "1px solid var(--hairline)", margin: 0 }}>
+          {b.signal}
+        </p>
+      )}
     </div>
   );
 }
