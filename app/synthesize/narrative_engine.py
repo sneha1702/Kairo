@@ -430,6 +430,7 @@ class NarrativeEngine:
         historical_narratives: Optional[List[Dict]] = None,
         dune_context: Optional[Dict[str, Any]] = None,
         signal_trend: Optional[List[Dict]] = None,
+        unified_signals: Optional[List[Dict]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Use Gemini to detect and evolve narratives.
