@@ -77,6 +77,11 @@ class Config:
     DUNE_QUERY_WINDOW_HOURS: int = int(
         os.getenv("DUNE_QUERY_WINDOW_HOURS", str(_dune_params.get("query_window_hours", 4)))
     )
+    # How often (in hours) to run automated narrative detection in schedule_runner.
+    # Env var > dune_params.json > default of 4h.
+    NARRATIVE_DETECTION_INTERVAL_HOURS: int = int(
+        os.getenv("NARRATIVE_DETECTION_INTERVAL_HOURS", str(_dune_params.get("narrative_detection_interval_hours", 4)))
+    )
     GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
     
     @classmethod
