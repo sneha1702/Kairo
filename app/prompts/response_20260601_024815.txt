@@ -1,0 +1,89 @@
+```json
+[
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Whale Wallets Accumulating Stablecoins and Wrapped Bitcoin",
+    "category": "Stablecoins",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Stable",
+    "confidence_score": 0.70,
+    "key_evidence": [
+      "Over $15.7 billion in Wrapped Bitcoin (WBTC), USDC, DAI, and USDT moved by major holders (whale_transactions) in the last 24 hours.",
+      "$11.39 billion in Wrapped Bitcoin (WBTC) was involved in whale transactions and showed 17.87% trading concentration on decentralized exchanges (dex_concentration).",
+      "$2.64 billion in USDC was involved in whale transactions and showed 10.21% trading concentration on decentralized exchanges (dex_concentration).",
+      "$900 million in DAI was involved in whale transactions and showed 42.68% trading concentration on decentralized exchanges (dex_concentration).",
+      "$862 million in USDT was involved in whale transactions and showed 5.35% trading concentration on decentralized exchanges (dex_concentration)."
+    ],
+    "data_caveat": "All signals are from a single 24-hour window; no prior trend to compare. The 'Net Outflow (Accumulation)' signal for these assets was weak due to zero net_flow_usd values, indicating missing data rather than confirmed accumulation.",
+    "historical_context": "First detection — only 24h of data available, no multi-day trend yet confirmed.",
+    "implications": "When major holders (often called 'whales') move large sums into stablecoins (crypto tokens pegged to $1) and Wrapped Bitcoin, it often indicates they are either taking profits from other volatile assets, preparing to buy dips, or seeking a safe haven during uncertain market conditions. This suggests a cautious stance from some of the biggest players in the market, possibly anticipating future moves or rebalancing portfolios.",
+    "plain_english_summary": "Big crypto wallets are holding onto a lot of stablecoins (tokens worth about $1 each) and Wrapped Bitcoin. This usually means they're either waiting for better buying opportunities or trying to protect their investments during uncertain times.",
+    "top_tokens": ["WBTC", "USDC", "DAI", "USDT"],
+    "retail_considerations": "This means large investors are moving substantial funds into less volatile assets like stablecoins and Wrapped Bitcoin. They might be getting ready to invest in other tokens soon, or they might be looking for a safe place to store their money for now. Watch for significant price movements in major cryptocurrencies like Ethereum or Bitcoin, as large stablecoin holdings can signal buying power waiting to deploy. On-chain signals are early indicators and can reverse quickly — this is not financial advice.",
+    "signal_sources": ["whale_transactions", "dex_concentration", "token_flows"]
+  },
+  {
+    "narrative_id": "institutional_ethereum",
+    "name": "Smart Money Accumulating Wrapped Ethereum (WETH)",
+    "category": "Institutional",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": "Stable",
+    "confidence_score": 0.65,
+    "key_evidence": [
+      "$217.5 million in Wrapped Ethereum (WETH) accumulated by large, experienced traders (smart_money) in the last 24 hours, including several 'Building Position' and 'Aggressive Accumulation' signals.",
+      "The overall smart money activity totalled $251.4 million in the last 24 hours, with WETH as the top accumulated asset.",
+      "WETH also shows 2.21% trading concentration on decentralized exchanges (dex_concentration)."
+    ],
+    "data_caveat": "All signals are from a single 24-hour window; no prior trend to compare. The 'Net Outflow (Accumulation)' signal for WETH was weak due to zero net_flow_usd value.",
+    "historical_context": "First detection — only 24h of data available, no multi-day trend yet confirmed.",
+    "implications": "When experienced traders (often called 'smart money') repeatedly buy Wrapped Ethereum (WETH), it suggests they anticipate future price appreciation for Ethereum (ETH). This could signal a bullish sentiment for the broader Ethereum ecosystem and potentially lead to increased demand for ETH.",
+    "plain_english_summary": "Big, experienced traders are quietly buying up a lot of Wrapped Ethereum. This usually means they think Ethereum's price will go up, which is a good sign for the whole Ethereum network.",
+    "top_tokens": ["WETH"],
+    "retail_considerations": "This suggests that sophisticated investors are increasing their holdings of Ethereum, often a precursor to market rallies. It indicates confidence in Ethereum's future. Watch for continued smart money accumulation in WETH, and see if the price of Ethereum starts to reflect this increased demand. On-chain signals are early indicators and can reverse quickly — this is not financial advice.",
+    "signal_sources": ["smart_money", "dex_concentration", "token_flows"]
+  },
+  {
+    "narrative_id": "l2_capital_rotation",
+    "name": "Significant Capital Moving to Layer 2 Blockchains",
+    "category": "L2",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": "Stable",
+    "confidence_score": 0.54,
+    "key_evidence": [
+      "Over $1.43 billion in capital has moved from the Ethereum (ETH) network to various Layer 2 (L2) solutions in the last 24 hours (bridge_activity).",
+      "The largest single movement was $1.38 billion from Ethereum to a new Layer 2 called 'silicon_network' via the Agglayer bridge, signaled as 'Capital Moving to L2'.",
+      "Additionally, $25.9 million moved from Ethereum to Polygon and $22.1 million from Ethereum to Lighter (both also Layer 2s), indicating continued interest in scaling solutions."
+    ],
+    "data_caveat": "All signals are from a single 24-hour window; no prior trend to compare. Confidence is capped due to bridge activity being the sole strong signal type for these flows, and the specific token types (e.g., ETH, USDC) moved via these bridges were not explicitly provided in the data.",
+    "historical_context": "First detection — only 24h of data available, no multi-day trend yet confirmed.",
+    "implications": "Large capital flows to Layer 2 networks suggest a growing demand for faster and cheaper transactions, moving activity away from Ethereum's main network. This could drive adoption and development on these L2s, and potentially indicate a shift in where economic activity is happening in the broader crypto ecosystem.",
+    "plain_english_summary": "A lot of money is moving from the main Ethereum blockchain to newer, faster networks called 'Layer 2s'. This means people are looking for quicker and cheaper ways to do things with crypto.",
+    "top_tokens": [],
+    "retail_considerations": "This shows that a significant amount of money is being moved from the main Ethereum network to newer, faster, and often cheaper 'Layer 2' networks. This could indicate where future growth and activity in the crypto space might happen, as these L2s aim to make everyday crypto transactions more practical. Watch which Layer 2 networks are attracting the most capital, especially new or lesser-known ones, as this could signal emerging trends and investment opportunities. On-chain signals are early indicators and can reverse quickly — this is not financial advice.",
+    "signal_sources": ["bridge_activity"]
+  },
+  {
+    "narrative_id": "ethereum_staking",
+    "name": "Major Holders Transacting Staked Ethereum (stETH)",
+    "category": "DeFi",
+    "status": "NEW",
+    "strength": "Low",
+    "momentum": "Stable",
+    "confidence_score": 0.50,
+    "key_evidence": [
+      "Over $309 million in staked Ethereum (stETH) was moved by major holders (whale_transactions) in the last 24 hours.",
+      "stETH was listed among the top symbols for whale transactions, which totaled $33.46 billion in the last 24 hours."
+    ],
+    "data_caveat": "All signals are from a single 24-hour window; no prior trend to compare. The only strong signal identified is whale transactions, and the 'Net Outflow (Accumulation)' signal for stETH was weak due to zero net_flow_usd value.",
+    "historical_context": "First detection — only 24h of data available, no multi-day trend yet confirmed.",
+    "implications": "Significant whale activity around stETH can sometimes indicate strategic adjustments in staking positions or preparations for new decentralized finance (DeFi) opportunities. This suggests that large players are actively managing their staked Ethereum holdings, which underpins the security and functionality of the Ethereum network.",
+    "plain_english_summary": "Big crypto investors are making large moves with their 'staked' Ethereum, which is like earning interest on your crypto. This shows they're actively managing their investments in Ethereum.",
+    "top_tokens": ["STETH"],
+    "retail_considerations": "This indicates that major investors are actively engaging with Ethereum staking, which is a way to earn rewards for securing the network. While it doesn't directly imply a price movement, it shows high engagement from large capital in the Ethereum ecosystem. Watch for any changes in the total amount of ETH staked or specific news related to staking protocols, as this whale activity might be a precursor to larger trends. On-chain signals are early indicators and can reverse quickly — this is not financial advice.",
+    "signal_sources": ["whale_transactions", "token_flows"]
+  }
+]
+```

@@ -805,7 +805,7 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
                 "day":      ep_day,
                 "date":     ep_date,
                 "headline": str(ev)[:140],
-                "body":     f"Detected signal: {str(ev)[:250]}",
+                "body":     _build_episode_body(str(ev), top, i),
                 "force":    force_id,
                 "strength": ep_strength,
             })
