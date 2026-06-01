@@ -240,6 +240,9 @@ function Episode({ ep, last }) {
           <ForceTag id={ep.force} size="sm" />
         </div>
         <h3 style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>{ep.headline}</h3>
+        {ep.detail && ep.detail !== ep.headline && (
+          <p style={{ fontSize: 13.5, color: "var(--ink-3)", marginTop: 5, lineHeight: 1.55, fontStyle: "italic" }}>{ep.detail}</p>
+        )}
         <p style={{ fontSize: 14.5, color: "var(--ink-2)", marginTop: 7, lineHeight: 1.6 }}>{ep.body}</p>
       </div>
     </div>
