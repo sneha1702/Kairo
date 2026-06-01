@@ -514,7 +514,7 @@ def _build_watch(dune_context: dict, top: dict, all_narratives: list[dict]) -> d
             status = _MOMENTUM_TREND_TO_STATUS.get(trend, "emerging")
             return {
                 "title": second.get("name", "Emerging Narrative"),
-                "reason": (second.get("implications") or "On-chain signals suggest building momentum.")[:200],
+                "reason": (second.get("plain_english_summary") or second.get("implications") or "On-chain signals suggest building momentum.")[:200],
                 "status": status,
                 "assets": tokens,
             }
