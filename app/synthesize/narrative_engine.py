@@ -94,8 +94,13 @@ class NarrativeEngine:
             summary["smart_money"] = {
                 "wallet_count": len({r.get("wallet") for r in smart_money}),
                 "top_buys": [
-                    {"symbol": r.get("symbol"), "usd": r.get("total_bought_usd"),
-                     "signal": r.get("accumulation_signal")}
+                    {
+                        "symbol":     r.get("symbol"),
+                        "usd":        r.get("total_bought_usd"),
+                        "signal":     r.get("accumulation_signal"),
+                        "first_buy":  r.get("first_buy"),
+                        "last_buy":   r.get("last_buy"),
+                    }
                     for r in top_sm
                 ],
                 "total_flow_usd": sum(_num(r.get("total_smart_money_flow_usd")) for r in smart_money),
@@ -105,8 +110,13 @@ class NarrativeEngine:
         if token_flows:
             top_inflow = sorted(token_flows, key=lambda x: _num(x.get("net_flow_usd")), reverse=True)[:5]
             summary["token_flows"] = [
-                {"token": r.get("token"), "net_flow_usd": r.get("net_flow_usd"),
-                 "signal": r.get("signal")}
+                {
+                    "token":              r.get("token"),
+                    "net_flow_usd":       r.get("net_flow_usd"),
+                    "signal":             r.get("signal"),
+                    "earliest_flow_time": r.get("earliest_flow_time"),
+                    "latest_flow_time":   r.get("latest_flow_time"),
+                }
                 for r in top_inflow
             ]
 
@@ -115,8 +125,14 @@ class NarrativeEngine:
             summary["bridge_activity"] = {
                 "total_usd": sum(_num(r.get("total_usd")) for r in bridges),
                 "top_routes": [
-                    {"direction": r.get("direction"), "bridge": r.get("bridge"),
-                     "usd": r.get("total_usd"), "signal": r.get("capital_signal")}
+                    {
+                        "direction":        r.get("direction"),
+                        "bridge":           r.get("bridge"),
+                        "usd":              r.get("total_usd"),
+                        "signal":           r.get("capital_signal"),
+                        "earliest_tx_time": r.get("earliest_tx_time"),
+                        "latest_tx_time":   r.get("latest_tx_time"),
+                    }
                     for r in sorted(bridges, key=lambda x: _num(x.get("total_usd")), reverse=True)[:4]
                 ],
             }
@@ -124,36 +140,60 @@ class NarrativeEngine:
         spikes = dune_context.get("volume_spikes", [])
         if spikes:
             summary["volume_spikes"] = [
-                {"symbol": r.get("symbol"),
-                 "multiplier": r.get("volume_multiplier"),
-                 "signal": r.get("spike_signal")}
+                {
+                    "symbol":           r.get("symbol"),
+                    "multiplier":       r.get("volume_multiplier"),
+                    "signal":           r.get("spike_signal"),
+                    "window_start_time": r.get("window_start_time"),
+                    "window_end_time":   r.get("window_end_time"),
+                }
                 for r in sorted(spikes, key=lambda x: _num(x.get("volume_multiplier")), reverse=True)[:5]
             ]
 
         holder = dune_context.get("holder_growth", [])
         if holder:
             summary["holder_growth"] = [
-                {"token_address": r.get("token_address"),
-                 "growth_rate_pct": r.get("growth_rate_pct"),
-                 "signal": r.get("growth_signal")}
+                {
+                    "token_address":    r.get("token_address"),
+                    "growth_rate_pct":  r.get("growth_rate_pct"),
+                    "signal":           r.get("growth_signal"),
+                    "window_start_time": r.get("window_start_time"),
+                    "window_end_time":   r.get("window_end_time"),
+                }
                 for r in sorted(holder, key=lambda x: _num(x.get("growth_rate_pct")), reverse=True)[:5]
             ]
 
         dex = dune_context.get("dex_concentration", [])
         if dex:
             summary["dex_concentration"] = [
-                {"symbol": r.get("symbol"), "dex": r.get("dex"),
-                 "dex_share_pct": r.get("dex_share_pct"),
-                 "signal": r.get("concentration_signal")}
+                {
+                    "symbol":               r.get("symbol"),
+                    "dex":                  r.get("dex"),
+                    "dex_share_pct":        r.get("dex_share_pct"),
+                    "signal":               r.get("concentration_signal"),
+                    "earliest_trade_time":  r.get("earliest_trade_time"),
+                    "latest_trade_time":    r.get("latest_trade_time"),
+                }
                 for r in sorted(dex, key=lambda x: _num(x.get("pool_volume_usd")), reverse=True)[:5]
             ]
 
         whale_txs = dune_context.get("whale_transactions", [])
         if whale_txs:
+            top_whales = sorted(whale_txs, key=lambda x: _num(x.get("usd_value")), reverse=True)[:5]
             summary["whale_transactions"] = {
                 "count": len(whale_txs),
                 "total_usd": sum(_num(r.get("usd_value")) for r in whale_txs),
                 "top_symbols": list({r.get("symbol") for r in whale_txs if r.get("symbol")})[:5],
+                "top_txs": [
+                    {
+                        "symbol":     r.get("symbol"),
+                        "usd_value":  r.get("usd_value"),
+                        "block_time": r.get("block_time"),
+                        "sender":     (r.get("sender") or "")[:12] + "…" if r.get("sender") else None,
+                        "receiver":   (r.get("receiver") or "")[:12] + "…" if r.get("receiver") else None,
+                    }
+                    for r in top_whales
+                ],
             }
 
         wallet_conc = dune_context.get("wallet_concentration", [])
@@ -164,7 +204,11 @@ class NarrativeEngine:
                     (_num(r.get("cumulative_pct")) for r in top10), default=0.0
                 ),
                 "sample": [
-                    {"rank": r.get("rank"), "pct_of_supply": r.get("pct_of_supply")}
+                    {
+                        "rank":          r.get("rank"),
+                        "pct_of_supply": r.get("pct_of_supply"),
+                        "snapshot_time": r.get("snapshot_time"),
+                    }
                     for r in top10[:3]
                 ],
             }
