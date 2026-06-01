@@ -73,10 +73,30 @@ function StoryCard({ onOpenNarrative, big }) {
       </p>
 
       {open && (
-        <p style={{ fontSize: 15.5, color: "var(--ink-2)", marginTop: 12, lineHeight: 1.65,
-          paddingTop: 14, borderTop: "1px solid var(--hairline)" }}>
-          {s.expanded}
-        </p>
+        <div style={{ paddingTop: 14, borderTop: "1px solid var(--hairline)", display: "flex", flexDirection: "column", gap: 14, marginTop: 12 }}>
+          {s.what_happening && (
+            <div>
+              <div className="eyebrow" style={{ marginBottom: 7 }}>What is happening</div>
+              <p style={{ fontSize: 15.5, color: "var(--ink-2)", lineHeight: 1.65 }}>{s.what_happening}</p>
+            </div>
+          )}
+          <p style={{ fontSize: 15.5, color: "var(--ink-2)", lineHeight: 1.65 }}>{s.expanded}</p>
+          {s.watch_for && (
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+              <span className="eyebrow" style={{ paddingTop: 2, flexShrink: 0 }}>Watch for</span>
+              <span style={{ fontSize: 14, color: "var(--ink-2)", fontStyle: "italic", lineHeight: 1.6 }}>{s.watch_for}</span>
+            </div>
+          )}
+          {s.risk_note && (
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start",
+              background: "color-mix(in oklch, var(--c-peach) 35%, var(--surface-2))",
+              borderRadius: "var(--r-sm)", padding: "10px 12px",
+              border: "1px solid color-mix(in oklch, var(--c-peach) 55%, transparent)" }}>
+              <Icon name="watch" size={14} stroke={2} style={{ flexShrink: 0, marginTop: 2, color: "var(--c-peach-ink)" }} />
+              <span style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.55 }}>{s.risk_note}</span>
+            </div>
+          )}
+        </div>
       )}
       <ExplainToggle open={open} onToggle={() => setOpen(o => !o)} />
 
