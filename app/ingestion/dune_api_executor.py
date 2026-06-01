@@ -2,13 +2,19 @@
 DuneApiExecutor: saves SQL queries to Dune and executes them via the free-tier REST API.
 
 Workflow per query:
-  1. On first run: POST /api/v1/query  → stores query_id in query_ids.json
-  2. Every run:    POST /api/v1/query/{id}/execute  → get execution_id
-  3. Poll:         GET  /api/v1/execution/{exec_id}/results  until COMPLETED
+  1. On first run: POST /api/v1/query  → stores query_id + sql_hash in query_ids.json
+  2. On SQL change: PATCH /api/v1/query/{id} → updates query in Dune, refreshes stored hash
+  3. Every run:    POST /api/v1/query/{id}/execute  → get execution_id
+  4. Poll:         GET  /api/v1/execution/{exec_id}/results  until COMPLETED
 
 Delete ingestion/query/query_ids.json to force re-creation of all saved queries.
+
+query_ids.json format (v2):
+  {"query_name": {"id": 12345, "sql_hash": "abcd1234"}}
+Old plain-int format is migrated automatically on first load.
 """
 
+import hashlib
 import json
 import logging
 import re
@@ -58,7 +64,7 @@ class DuneApiExecutor:
         self.poll_interval = poll_interval_seconds
         self.max_polls = max_polls
         self._ids_path = self.query_dir / "query_ids.json"
-        self._query_ids: dict[str, int] = self._load_ids()
+        self._query_ids: dict[str, dict] = self._load_ids()
 
         self.session = requests.Session()
         self.session.headers.update({
@@ -74,7 +80,7 @@ class DuneApiExecutor:
         sql: str,
         params: dict[str, Any],
     ) -> list[dict[str, Any]]:
-        """Ensure query exists in Dune, execute it, and return rows."""
+        """Ensure query exists in Dune (and is up-to-date), execute it, return rows."""
         query_id = self._ensure_query(query_name, sql, params)
         execution_id = self._submit(query_id, query_name, params)
         logger.info("[%s] Executing query_id=%d  execution_id=%s", query_name, query_id, execution_id)
@@ -82,24 +88,49 @@ class DuneApiExecutor:
 
     # ── Query registry ───────────────────────────────────────────────────────────
 
-    def _load_ids(self) -> dict[str, int]:
-        if self._ids_path.exists():
-            try:
-                return json.loads(self._ids_path.read_text())
-            except Exception:
-                return {}
-        return {}
+    def _load_ids(self) -> dict[str, dict]:
+        """Load query_ids.json, migrating the old plain-int format to {id, sql_hash}."""
+        if not self._ids_path.exists():
+            return {}
+        try:
+            raw: dict = json.loads(self._ids_path.read_text())
+        except Exception:
+            return {}
+        result: dict[str, dict] = {}
+        for k, v in raw.items():
+            if isinstance(v, int):
+                # Old format — migrate; empty hash forces an update on next run
+                result[k] = {"id": v, "sql_hash": ""}
+            elif isinstance(v, dict) and "id" in v:
+                result[k] = v
+        return result
 
     def _save_ids(self) -> None:
         self._ids_path.write_text(json.dumps(self._query_ids, indent=2))
 
+    @staticmethod
+    def _sql_hash(sql: str) -> str:
+        return hashlib.sha256(sql.encode()).hexdigest()[:16]
+
     # ── Dune API calls ───────────────────────────────────────────────────────────
 
     def _ensure_query(self, query_name: str, sql: str, params: dict[str, Any]) -> int:
+        current_hash = self._sql_hash(sql)
+
         if query_name in self._query_ids:
-            qid = self._query_ids[query_name]
-            logger.debug("[%s] Using cached query_id=%d", query_name, qid)
+            entry = self._query_ids[query_name]
+            qid = entry["id"]
+            if entry.get("sql_hash") != current_hash:
+                logger.info(
+                    "[%s] SQL changed — patching query_id=%d in Dune", query_name, qid
+                )
+                self._patch_query(query_name, qid, sql, params)
+                entry["sql_hash"] = current_hash
+                self._save_ids()
+            else:
+                logger.debug("[%s] SQL unchanged — reusing query_id=%d", query_name, qid)
             return qid
+
         return self._create_query(query_name, sql, params)
 
     def _create_query(self, query_name: str, sql: str, params: dict[str, Any]) -> int:
@@ -114,14 +145,31 @@ class DuneApiExecutor:
         self._raise_for_status(resp, query_name, "create query")
         query_id: int = resp.json()["query_id"]
         logger.info("[%s] Created Dune query query_id=%d", query_name, query_id)
-        self._query_ids[query_name] = query_id
+        self._query_ids[query_name] = {"id": query_id, "sql_hash": self._sql_hash(sql)}
         self._save_ids()
         return query_id
+
+    def _patch_query(self, query_name: str, query_id: int, sql: str, params: dict[str, Any]) -> None:
+        """Update an existing Dune query with new SQL via PATCH."""
+        used_keys = set(re.findall(r"\{\{(\w+)\}\}", sql))
+        payload = {
+            "query_sql": sql,
+            "parameters": self._build_param_schema(params, used_keys),
+        }
+        resp = self.session.patch(f"{BASE_URL}/query/{query_id}", json=payload)
+        if resp.status_code == 404:
+            # Query was deleted from Dune — remove entry and recreate
+            logger.warning("[%s] query_id=%d not found on PATCH, recreating", query_name, query_id)
+            del self._query_ids[query_name]
+            self._save_ids()
+            self._create_query(query_name, sql, params)
+            return
+        self._raise_for_status(resp, query_name, "patch query")
+        logger.info("[%s] Patched Dune query_id=%d", query_name, query_id)
 
     def _submit(self, query_id: int, query_name: str, params: dict[str, Any]) -> str:
         sql = (self.query_dir / f"{query_name}.sql").read_text()
         used_keys = set(re.findall(r"\{\{(\w+)\}\}", sql))
-        # REST API expects query_parameters as a flat {key: value} dict.
         payload: dict[str, Any] = {
             "query_parameters": {k: v for k, v in params.items() if k in used_keys},
         }
