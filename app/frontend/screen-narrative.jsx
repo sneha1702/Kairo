@@ -503,6 +503,7 @@ function NarrativeDetail({ narrativeId, treatment, onBack }) {
 
       <article className="card" style={{ padding: "calc(var(--card-pad) + 4px)" }}>
         <TrackerHeader t={t} />
+        <BriefingSections t={t} />
 
         {treatment === "arc" && t.curve && t.curve.length > 0 && (
           <div style={{ marginTop: 26 }}>

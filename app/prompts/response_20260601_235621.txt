@@ -1,0 +1,48 @@
+```json
+[
+  {
+    "narrative_id": "large_investor_positioning",
+    "name": "Big Investors Making Moves in Stablecoins and Wrapped Bitcoin",
+    "category": "Institutional",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.82,
+    "key_evidence": [
+      "Very large holders have executed multiple transactions, shifting approximately $9.27 billion in USDT (Tether stablecoin) across several days in May.",
+      "Approximately $16.2 billion in WBTC (Wrapped Bitcoin) has been moved by major investors through multiple large transactions during May.",
+      "About $499 million in DAI (a decentralized stablecoin) was also part of significant whale transactions in mid-May.",
+      "The activity across these key assets shows an acceleration of 329% in the last 7 days compared to the previous 30-day average, indicating rapidly increasing interest from large investors."
+    ],
+    "data_caveat": "Data covers a period across May, focusing on large individual transactions rather than net inflows or outflows to specific destinations.",
+    "historical_context": "First detection with significant multi-day activity from large investors; no multi-day trend yet confirmed as a recurring pattern.",
+    "implications": "This sustained pattern of large transactions in major stablecoins and Wrapped Bitcoin suggests that influential investors are actively repositioning their portfolios. This could precede significant market movements, as these 'whales' often have a strong sense of market direction or are taking advantage of specific opportunities.",
+    "plain_english_summary": "Major players in the crypto world are moving billions of dollars in stablecoins and Wrapped Bitcoin, signaling significant portfolio adjustments. This flurry of activity from big investors often happens before bigger market shifts, so it's worth watching closely.",
+    "top_tokens": [
+      "USDT",
+      "WBTC",
+      "DAI"
+    ],
+    "retail_considerations": "1. When large investors, often called 'whales,' make big moves, it can sometimes indicate that they are preparing for a shift in market conditions or anticipating future price action. Watching these movements can give you an early heads-up on potential trends. \n2. Pay attention to how the prices of USDT, WBTC, and DAI react over the next few days. If you see sustained price stability or a clear trend emerging after these large transfers, it might confirm the sentiment of these big players. \n3. On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  },
+  {
+    "narrative_id": "cross_chain_liquidity",
+    "name": "Billions of Dollars Flowing Across Different Blockchains",
+    "category": "CrossChain",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": "Strengthening",
+    "confidence_score": 0.50,
+    "key_evidence": [
+      "On June 1st, over $74.9 billion in crypto assets moved between various blockchains using 'bridge' protocols, which allow tokens to travel from one network to another.",
+      "The speed of this cross-chain capital movement has accelerated by 329% in the last week compared to the average over the past 30 days."
+    ],
+    "data_caveat": "This data point represents total volume moved across bridges, without specific details on which tokens or chains were involved, and covers only a single day.",
+    "historical_context": "First detection of this specific large-scale bridge activity; no multi-day trend yet confirmed.",
+    "implications": "The sheer volume and accelerated pace of assets moving between blockchains indicate a very active crypto market where participants are constantly seeking out new opportunities or rebalancing their holdings across different networks. This high level of cross-chain activity suggests strong demand for the utility offered by various blockchains.",
+    "plain_english_summary": "A massive $75 billion has moved between different crypto networks in a single day, showing a huge jump in cross-chain activity. This suggests investors are actively exploring opportunities across the entire crypto ecosystem.",
+    "top_tokens": [],
+    "retail_considerations": "1. This widespread movement of funds indicates that the broader crypto market is highly dynamic, with investors actively deploying capital to different areas. This can lead to new trends emerging on various blockchains. \n2. Watch for announcements or developments from different blockchain networks that might explain where this capital is ultimately going or what new applications are attracting such large sums. \n3. On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```
