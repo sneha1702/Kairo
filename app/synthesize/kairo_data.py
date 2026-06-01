@@ -998,14 +998,23 @@ def _build_narratives(all_narratives: list[dict]) -> list[dict]:
             assets = (n.get("top_tokens") or [])[:3]
             day = _days_since(n.get("detected_at"))
             nid = name.lower().replace(" ", "-").replace("'", "").replace("(", "").replace(")", "")
+            phase = _derive_narrative_phase(n, day, conf)
+            smart_intent = _derive_smart_money_intent(n)
+            plain = (n.get("plain_english_summary") or n.get("implications") or "").strip()
+            first_dot = plain.find(". ")
+            summary_line = (plain[:first_dot + 1] if first_dot != -1 else plain)[:160]
+
             result.append({
-                "id":       nid,
-                "title":    name,
-                "status":   status,
-                "strength": round(conf * 10, 1),
-                "day":      day,
-                "assets":   assets,
-                "force":    force,
+                "id":               nid,
+                "title":            name,
+                "status":           status,
+                "strength":         round(conf * 10, 1),
+                "day":              day,
+                "assets":           assets,
+                "force":            force,
+                "phase":            phase,
+                "summary_line":     summary_line,
+                "smart_money_intent": smart_intent,
             })
         except Exception as exc:
             logger.warning("_build_narratives item error: %s", exc)
