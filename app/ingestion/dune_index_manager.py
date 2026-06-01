@@ -152,6 +152,58 @@ _INDEX_MAPPINGS: dict = {
             "latest_trade_time":        {"type": "date"},
         },
     },
+    "dune_post_bridge_deployment": {
+        "settings": _SETTINGS_DEFAULT,
+        "fields": {
+            "symbol":              {"type": "keyword"},
+            "chain":               {"type": "keyword"},
+            "deployment_type":     {"type": "keyword"},
+            "protocol":            {"type": "keyword"},
+            "net_flow_usd":        {"type": "double"},
+            "total_usd":           {"type": "double"},
+            "percentage_of_total": {"type": "double"},
+            "new_wallets":         {"type": "integer"},
+            "tx_count":            {"type": "integer"},
+        },
+    },
+    "dune_stablecoin_flows": {
+        "settings": _SETTINGS_DEFAULT,
+        "fields": {
+            "symbol":          {"type": "keyword"},
+            "mint_usd":        {"type": "double"},
+            "burn_usd":        {"type": "double"},
+            "net_flow_usd":    {"type": "double"},
+            "total_usd":       {"type": "double"},
+            "mint_growth_pct": {"type": "double"},
+            "new_wallets":     {"type": "integer"},
+        },
+    },
+    "dune_sector_rotation": {
+        "settings": _SETTINGS_DEFAULT,
+        "fields": {
+            "symbol":              {"type": "keyword"},
+            "gross_inflow_usd":    {"type": "double"},
+            "gross_outflow_usd":   {"type": "double"},
+            "net_flow_usd":        {"type": "double"},
+            "total_usd":           {"type": "double"},
+            "percentage_of_total": {"type": "double"},
+            "trade_count":         {"type": "integer"},
+            "unique_traders":      {"type": "integer"},
+            "volume_multiplier":   {"type": "double"},
+        },
+    },
+    "dune_protocol_inflows": {
+        "settings": _SETTINGS_DEFAULT,
+        "fields": {
+            "symbol":            {"type": "keyword"},
+            "deployment_type":   {"type": "keyword"},
+            "net_flow_usd":      {"type": "double"},
+            "total_usd":         {"type": "double"},
+            "whale_usd":         {"type": "double"},
+            "new_wallets":       {"type": "integer"},
+            "volume_multiplier": {"type": "double"},
+        },
+    },
 }
 
 
