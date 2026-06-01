@@ -268,18 +268,26 @@ class DuneIngestionPipeline:
         if name == "whale_transaction_filter":
             parts = [str(doc.get("tx_hash", ""))]
         elif name == "smart_money_accumulation":
-            parts = [str(doc.get("wallet", "")), str(doc.get("symbol", "")), ws]
+            # Now one row per symbol (restructured from per-wallet)
+            parts = [str(doc.get("symbol", "")), ws]
         elif name == "token_inflow_outflow":
-            parts = [str(doc.get("token", "")), ws]
+            # token column renamed to symbol
+            parts = [str(doc.get("symbol", "")), ws]
         elif name == "bridge_activity":
-            parts = [str(doc.get("direction", "")), str(doc.get("bridge", "")), ws]
+            # direction replaced by symbol + from_chain + to_chain + bridge_name
+            parts = [
+                str(doc.get("symbol", "")),
+                str(doc.get("from_chain", "")),
+                str(doc.get("to_chain", "")),
+                str(doc.get("bridge_name", "")),
+                ws,
+            ]
         elif name == "wallet_concentration":
             parts = [str(qc.params.get("token_address", "")), str(doc.get("address", "")), ws]
         elif name == "volume_spike_detection":
             parts = [str(doc.get("symbol", "")), ws]
         elif name == "new_holder_growth":
-            parts = [str(qc.params.get("token_address", "")),
-                     str(doc.get("view_type", "")), ws]
+            parts = [str(qc.params.get("token_address", "")), ws]
         elif name == "dex_trading_concentration":
             parts = [str(doc.get("symbol", "")), str(doc.get("dex", "")), ws]
         else:
