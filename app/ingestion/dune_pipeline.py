@@ -216,11 +216,12 @@ class DuneIngestionPipeline:
     _DUNE_TS = re.compile(r"^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d+)?) UTC$")
 
     def _normalize_doc(self, doc: dict) -> dict:
-        for k, v in doc.items():
+        for k, v in list(doc.items()):
             if isinstance(v, str):
                 m = self._DUNE_TS.match(v)
                 if m:
                     doc[k] = f"{m.group(1)}T{m.group(2)}Z"
+            # Arrays (e.g. signals) and other non-string types pass through unchanged.
         return doc
 
     def _add_metadata_envelope(
