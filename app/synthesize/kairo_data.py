@@ -923,6 +923,25 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
                 "strength": ep_strength,
             })
 
+        # Merge episodes that share the same date (caused by capping future dates at today)
+        merged: list[dict] = []
+        date_index: dict[str, int] = {}
+        for ep in episodes:
+            d = ep["date"]
+            if d in date_index:
+                existing = merged[date_index[d]]
+                # Append extra evidence as a second sentence in the body
+                if ep["body"] and ep["body"] not in existing["body"]:
+                    existing["body"] = existing["body"].rstrip(" .") + ". " + ep["body"]
+                # Keep the more descriptive headline (longer wins)
+                if len(ep["headline"]) > len(existing["headline"]):
+                    existing["headline"] = ep["headline"]
+                    existing["detail"] = ep["detail"]
+            else:
+                date_index[d] = len(merged)
+                merged.append(ep)
+        episodes = merged
+
         if not episodes:
             episodes = [{
                 "day":      day,
