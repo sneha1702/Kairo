@@ -1,121 +1,203 @@
 /* ============================================================
-   Kairo — Narrative History ("Pattern Memory")
-   How today's story compares to every prior occurrence
+   Kairo — Narrative History
+   Shows how the top narrative evolved from Day 1 to now,
+   with smart time-bucketed episodes (≤3 bullets always).
    ============================================================ */
 const K = window.KAIRO;
-let Icon, ForceTag;
+let Icon, ForceTag, StatusBadge, CardLabel, StrengthCurve;
 
-function CycleBar({ peak, current, weeks }) {
-  // a small horizontal "build & fade" curve sized by duration & peak
-  const w = 100, h = 40, max = 10;
-  const rise = 0.42; // peak at 42% along
-  const pts = [];
-  const n = 32;
-  for (let i = 0; i < n; i++) {
-    const x = i / (n - 1);
-    // asymmetric hump: faster fade for shorter (speculative) cycles handled by caller via peak
-    let v;
-    if (x <= rise) v = peak * Math.pow(x / rise, 0.75);
-    else v = peak * Math.pow(1 - (x - rise) / (1 - rise), current ? 0.55 : 0.9);
-    pts.push([6 + x * (w - 12), h - 4 - (v / max) * (h - 8)]);
-  }
-  const line = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
-  const area = `${line} L${(w-6)},${h} L6,${h} Z`;
-  const col = current ? "var(--accent)" : "var(--ink-3)";
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
-      <path d={area} fill={current ? "var(--accent-soft)" : "var(--surface-2)"} opacity={current ? 0.7 : 1} />
-      <path d={line} fill="none" stroke={col} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+/* ---- age label helper ---- */
+function _ageLabel(days) {
+  if (days === 1) return "Day 1";
+  if (days <= 7)  return `${days} days`;
+  if (days <= 28) return `${Math.floor(days / 7)} week${Math.floor(days / 7) > 1 ? "s" : ""}`;
+  return `${Math.floor(days / 30)} month${Math.floor(days / 30) > 1 ? "s" : ""}`;
 }
 
-function CycleRow({ c }) {
+/* ---- single journey step in the evolution timeline ---- */
+function JourneyStep({ ep, last }) {
+  const f = (K.forces && K.forces[ep.force]) || { color: "sage" };
+  // Period labels (summarised buckets) get a pill style instead of "Day X · Date"
+  const isPeriod = /ago|week|month/i.test(ep.date || "");
+
   return (
-    <article className="card" style={{
-      padding: "var(--card-pad)",
-      borderColor: c.current ? "color-mix(in oklch, var(--accent) 38%, var(--hairline))" : "var(--hairline)",
-      boxShadow: c.current ? "0 0 0 2px var(--accent-soft), var(--shadow-card)" : "var(--shadow-soft)",
-      background: c.current ? "linear-gradient(180deg, color-mix(in oklch, var(--accent-soft) 50%, var(--surface)) 0%, var(--surface) 50%)" : "var(--surface)",
-    }}>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.1fr) minmax(160px, 0.9fr)", gap: 24, alignItems: "center" }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 10 }}>
-            <h3 style={{ fontSize: 19, fontWeight: 800 }}>{c.name}</h3>
-            {c.current && <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-              color: "var(--accent-ink)", background: "var(--accent-soft)", padding: "3px 9px", borderRadius: 99 }}>Now</span>}
-            <span className="mono" style={{ fontSize: 13, color: "var(--ink-3)" }}>{c.span}</span>
-          </div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            <ForceTag id={c.force} size="sm" />
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-2)", background: "var(--surface-2)",
-              borderRadius: 99, padding: "4px 11px", border: "1px solid var(--hairline)" }}>{c.kind}</span>
-          </div>
-          <p style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.6, maxWidth: "42ch" }}>{c.note}</p>
-        </div>
-        <div>
-          <CycleBar peak={c.peak} current={c.current} weeks={c.durationWeeks} />
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
-            <Stat label="Peak strength" value={c.peak.toFixed(1)} accent={c.current} />
-            <Stat label="Duration" value={`${c.durationWeeks} wk`} accent={c.current} align="right" />
-          </div>
-        </div>
+    <div style={{ display: "flex", gap: 20, position: "relative" }}>
+      {/* connector */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+        <span style={{
+          width: 14, height: 14, borderRadius: 99,
+          background: `var(--c-${f.color}-ink)`,
+          boxShadow: `0 0 0 4px var(--c-${f.color})`,
+          marginTop: 5, zIndex: 1,
+        }} />
+        {!last && <span style={{ flex: 1, width: 2, background: "var(--hairline)", marginTop: 6 }} />}
       </div>
-    </article>
-  );
-}
 
-function Stat({ label, value, accent, align }) {
-  return (
-    <div style={{ textAlign: align || "left" }}>
-      <div className="eyebrow" style={{ marginBottom: 4 }}>{label}</div>
-      <div className="mono" style={{ fontSize: 17, fontWeight: 700, color: accent ? "var(--accent-ink)" : "var(--ink)" }}>{value}</div>
+      {/* content */}
+      <div style={{ paddingBottom: last ? 0 : 36, flex: 1 }}>
+        {/* time label row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9, flexWrap: "wrap" }}>
+          {isPeriod ? (
+            <span style={{
+              fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase",
+              color: "var(--accent-ink)", background: "var(--accent-soft)",
+              borderRadius: 99, padding: "3px 10px",
+            }}>{ep.date}</span>
+          ) : (
+            <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)" }}>
+              Day {ep.day} · {ep.date}
+            </span>
+          )}
+          <ForceTag id={ep.force} size="sm" />
+        </div>
+
+        <h3 style={{ fontSize: 17, fontWeight: 700, lineHeight: 1.3, marginBottom: 8 }}>{ep.headline}</h3>
+
+        {ep.detail && ep.detail !== ep.headline && (
+          <p style={{ fontSize: 13.5, color: "var(--ink-3)", marginBottom: 8,
+            lineHeight: 1.55, fontStyle: "italic" }}>{ep.detail}</p>
+        )}
+
+        <p style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.7 }}>{ep.body}</p>
+      </div>
     </div>
   );
 }
 
+/* ---- main screen ---- */
 function NarrativeHistory() {
-  ({ Icon, ForceTag } = window);
-  const h = K.history;
+  ({ Icon, ForceTag, StatusBadge, CardLabel, StrengthCurve } = window);
+
+  const t = K.tracker;
+  const hasData = t && t.title && t.title !== "No narrative detected" && (t.day || 0) > 0;
+
+  if (!hasData) {
+    return (
+      <div className="screen-enter" style={{ display: "flex", flexDirection: "column", gap: "var(--gap)" }}>
+        <header>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, color: "var(--ink-3)", marginBottom: 12 }}>
+            <Icon name="history" size={18} stroke={1.8} />
+            <span className="eyebrow">Narrative evolution</span>
+          </div>
+          <h1 style={{ fontSize: "clamp(26px, 3.2vw, 34px)", fontWeight: 800, letterSpacing: "-0.025em" }}>
+            No narrative tracked yet
+          </h1>
+          <p style={{ fontSize: 16, color: "var(--ink-2)", marginTop: 12, lineHeight: 1.6 }}>
+            Run detection to start tracking a narrative. Once active, you'll see its full evolution here — what happened day by day, how the signal strengthened, and what it means.
+          </p>
+        </header>
+      </div>
+    );
+  }
+
+  const episodes  = t.episodes || [];
+  const hasCurve  = t.curve && t.curve.length > 1;
+  const hasConclusion = t.why_matters || t.implications;
+  const ageLabel  = _ageLabel(t.day || 1);
+
   return (
     <div className="screen-enter" style={{ display: "flex", flexDirection: "column", gap: "var(--gap)" }}>
+
+      {/* ── Header ───────────────────────────────────────────────── */}
       <header>
         <div style={{ display: "flex", alignItems: "center", gap: 9, color: "var(--ink-3)", marginBottom: 12 }}>
           <Icon name="history" size={18} stroke={1.8} />
-          <span className="eyebrow">Pattern memory</span>
+          <span className="eyebrow">Narrative evolution</span>
         </div>
-        <h1 style={{ fontSize: "clamp(28px, 3.6vw, 38px)", fontWeight: 800, letterSpacing: "-0.025em" }}>{h.title}</h1>
-        <p style={{ fontSize: 18, color: "var(--ink-2)", marginTop: 12, maxWidth: "52ch" }}>{h.subtitle}</p>
+        <h1 style={{ fontSize: "clamp(22px, 3vw, 32px)", fontWeight: 800,
+          letterSpacing: "-0.025em", lineHeight: 1.2 }}>{t.title}</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, flexWrap: "wrap" }}>
+          <StatusBadge status={t.status} />
+          <span style={{ fontSize: 14, color: "var(--ink-3)", fontWeight: 600 }}>
+            Active for {ageLabel}
+          </span>
+          <span className="mono" style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-2)" }}>
+            Strength {(t.strength || 0).toFixed(1)} / 10
+          </span>
+        </div>
       </header>
 
-      {h.cycles && h.cycles.length > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap)", marginTop: 4 }}>
-          {h.cycles.map(c => <CycleRow key={c.name} c={c} />)}
-        </div>
-      ) : (
-        <div style={{
-          padding: "48px 32px", textAlign: "center", background: "var(--surface)",
-          border: "1px dashed var(--hairline-strong)", borderRadius: "var(--r-lg)",
-        }}>
-          <p style={{ fontSize: 15, color: "var(--ink-3)", maxWidth: "38ch", margin: "0 auto" }}>
-            No historical cycles yet. As Kairo detects more narratives over time, pattern comparisons will appear here.
+      {/* ── How it developed (bucketed timeline) ─────────────────── */}
+      {episodes.length > 0 && (
+        <article className="card" style={{ padding: "calc(var(--card-pad) + 4px)" }}>
+          <CardLabel icon="narr">How this narrative developed</CardLabel>
+          <p style={{ fontSize: 13.5, color: "var(--ink-3)", marginTop: -6, marginBottom: 22, lineHeight: 1.6 }}>
+            {t.day <= 7
+              ? "Each day this narrative has been active, from when it first appeared to now."
+              : t.day <= 28
+              ? "Older days are grouped into weekly summaries — recent activity shown individually."
+              : "Older weeks are rolled into a single summary. The most recent activity is shown individually."
+            }
           </p>
-        </div>
+          {episodes.map((ep, i, arr) => (
+            <JourneyStep key={i} ep={ep} last={i === arr.length - 1} />
+          ))}
+        </article>
       )}
 
-      <article className="card" style={{
-        padding: "calc(var(--card-pad) + 2px)", marginTop: 4,
-        background: "var(--ink)", borderColor: "var(--ink)", color: "var(--paper)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14, opacity: 0.7 }}>
-          <Icon name="spark2" size={16} stroke={1.8} />
-          <span className="eyebrow" style={{ color: "var(--paper)", opacity: 0.8 }}>What the pattern tells us</span>
-        </div>
-        <p style={{ fontSize: "clamp(18px, 2.2vw, 22px)", lineHeight: 1.5, fontWeight: 600,
-          color: "var(--paper)", letterSpacing: "-0.01em", maxWidth: "46ch", textWrap: "balance" }}>
-          {h.interpretation}
-        </p>
-      </article>
+      {/* ── Strength arc ─────────────────────────────────────────── */}
+      {hasCurve && (
+        <article className="card" style={{ padding: "calc(var(--card-pad) + 4px)" }}>
+          <CardLabel
+            icon="history"
+            right={<span style={{ fontSize: 13, color: "var(--ink-3)" }}>{t.curve.length}-day arc</span>}
+          >
+            Signal strength over time
+          </CardLabel>
+          <div style={{ background: "var(--surface-2)", borderRadius: "var(--r-md)",
+            padding: "20px 18px 8px", marginTop: 4 }}>
+            <StrengthCurve data={t.curve} />
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+              <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)" }}>Day 1</span>
+              <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)" }}>
+                Today · {(t.strength || 0).toFixed(1)} / 10
+              </span>
+            </div>
+          </div>
+        </article>
+      )}
+
+      {/* ── Where it stands ──────────────────────────────────────── */}
+      {hasConclusion && (
+        <article className="card" style={{
+          padding: "calc(var(--card-pad) + 2px)",
+          background: "var(--ink)", borderColor: "var(--ink)", color: "var(--paper)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14, opacity: 0.7 }}>
+            <Icon name="spark2" size={16} stroke={1.8} />
+            <span className="eyebrow" style={{ color: "var(--paper)", opacity: 0.8 }}>
+              Where this narrative stands
+            </span>
+          </div>
+          <p style={{ fontSize: "clamp(15px, 1.9vw, 19px)", lineHeight: 1.65, fontWeight: 600,
+            color: "var(--paper)", maxWidth: "48ch", textWrap: "balance" }}>
+            {t.why_matters || t.implications}
+          </p>
+          {t.watch_for && (
+            <div style={{ marginTop: 18, paddingTop: 16,
+              borderTop: "1px solid rgba(255,255,255,0.14)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+                textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>
+                Watch for
+              </div>
+              <p style={{ fontSize: 14.5, color: "rgba(255,255,255,0.72)",
+                lineHeight: 1.6, fontStyle: "italic", margin: 0 }}>{t.watch_for}</p>
+            </div>
+          )}
+          {t.risk_note && (
+            <div style={{ marginTop: 14, paddingTop: 14,
+              borderTop: "1px solid rgba(255,255,255,0.10)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+                textTransform: "uppercase", color: "rgba(255,255,255,0.38)", marginBottom: 5 }}>
+                Risk
+              </div>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.58)",
+                lineHeight: 1.6, margin: 0 }}>{t.risk_note}</p>
+            </div>
+          )}
+        </article>
+      )}
+
     </div>
   );
 }
