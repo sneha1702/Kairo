@@ -896,7 +896,10 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
                     if base.tzinfo is None:
                         base = base.replace(tzinfo=timezone.utc)
                     import datetime as _dt
-                    ep_date = (base + _dt.timedelta(days=i)).strftime("%b %-d")
+                    ep_date_dt = base + _dt.timedelta(days=i)
+                    if ep_date_dt.date() > _now().date():
+                        ep_date_dt = _now()
+                    ep_date = ep_date_dt.strftime("%b %-d")
                 else:
                     ep_date = f"Day {ep_day}"
             except Exception:
