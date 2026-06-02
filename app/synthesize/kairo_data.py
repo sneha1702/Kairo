@@ -749,9 +749,9 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
     except Exception as exc:
         logger.warning("_build_supporting_facts volume_spikes error: %s", exc)
 
-    # ── Wallet concentration ──────────────────────────────────────────────────
+    # ── Wallet concentration — only for whale/smart-money narratives ─────────
     try:
-        conc_rows = dune_context.get("wallet_concentration") or []
+        conc_rows = dune_context.get("wallet_concentration") or [] if narrative_includes_concentration else []
         top_conc = sorted(conc_rows, key=lambda r: int(r.get("rank") or 999))[:5]
         for r in top_conc:
             facts["wallet_concentration"].append({
