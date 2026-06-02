@@ -181,7 +181,6 @@ function TrackerHeader({ t }) {
         </div>
         <StrengthDial value={t.strength || 0} delta={t.delta || "+0.0"} />
       </div>
-      <p style={{ fontSize: 16, color: "var(--ink-2)", marginTop: 16, lineHeight: 1.65, maxWidth: "64ch" }}>{t.summary}</p>
       {(t.forces && t.forces.length > 0 || t.assets && t.assets.length > 0) && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 18, marginTop: 20, alignItems: "center" }}>
           {t.forces && t.forces.length > 0 && (
