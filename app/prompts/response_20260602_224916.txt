@@ -1,0 +1,56 @@
+```json
+[
+  {
+    "narrative_id": "large_investor_positioning",
+    "name": "Big Investors Making Moves in Stablecoins and Wrapped Bitcoin",
+    "category": "Institutional",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "Large investors are maintaining high activity levels, with approximately $1.99 billion in Wrapped Bitcoin (WBTC) moved on June 2nd.",
+      "Additionally, about $1.39 billion in Tether (USDT) and $2.44 billion in USDC were part of significant whale transactions on June 2nd.",
+      "These movements follow similar activity on June 1st, which included $596 million in DAI and $1.33 billion in USDC, building on earlier transfers of $9.27 billion in USDT, $16.2 billion in WBTC, and $499 million in DAI in May.",
+      "The overall speed of capital migration, which includes these large investor movements, has accelerated by 329% in the last week compared to the 30-day average."
+    ],
+    "data_caveat": "Data includes movements over the last two days, building on trends observed throughout May.",
+    "historical_context": "This narrative continues a trend of large investors actively repositioning significant amounts of stablecoins and Wrapped Bitcoin, now showing signs of acceleration in their movements.",
+    "implications": "These massive movements of stablecoins and Wrapped Bitcoin by very large investors often suggest preparation for significant market events or shifts in strategy. They could be accumulating positions in other crypto assets, or rebalancing their portfolios in anticipation of future market volatility or opportunities. The accelerated pace implies a heightened sense of urgency or conviction among these sophisticated players.",
+    "plain_english_summary": "Big investors are still moving billions in stablecoins and Wrapped Bitcoin, and they're doing it faster than usual. This indicates they might be getting ready for something big in the crypto market, whether it's buying into new opportunities or adjusting their risk.",
+    "top_tokens": [
+      "USDT",
+      "WBTC",
+      "DAI",
+      "USDC"
+    ],
+    "retail_considerations": "For regular investors, this means that those with deep pockets are actively making strategic moves, potentially signaling upcoming price action or shifts in market sentiment. It's a sign of institutional engagement and conviction.\nKeep an eye on whether this accelerated movement of stablecoins translates into significant buying or selling pressure on other major cryptocurrencies, or if new capital flows into specific areas of the market.\nOn-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ]
+  },
+  {
+    "narrative_id": "cross_chain_liquidity",
+    "name": "Billions of Dollars Flowing Across Different Blockchains",
+    "category": "CrossChain",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.75,
+    "key_evidence": [
+      "The movement of crypto assets between different blockchains continues, with approximately $161 million worth of various tokens crossing chains on June 2nd.",
+      "This follows a massive movement of over $74.9 billion in assets via 'bridge' protocols (which allow tokens to travel from one network to another) on June 1st.",
+      "Overall, the pace of this cross-chain capital rotation has accelerated significantly, now running 329% faster than the average over the past 30 days."
+    ],
+    "data_caveat": "While overall capital migration is accelerating, the daily bridge activity volume on June 2nd was significantly lower than the peak observed on June 1st.",
+    "historical_context": "This narrative demonstrates ongoing and accelerating rotation of capital across various blockchain networks, building on very high activity from the previous day.",
+    "implications": "Accelerated capital movement across blockchains suggests investors are actively seeking new opportunities or optimizing their holdings across different ecosystems. This could lead to increased activity and potential price shifts on the receiving chains, as capital flows into new projects or faster, cheaper networks. It also signals growing interoperability and fluidity within the crypto space.",
+    "plain_english_summary": "Money is still rushing between different blockchain networks at a much faster pace than usual. This means investors are busy rebalancing their portfolios, potentially looking for the next big opportunity on a different chain.",
+    "top_tokens": [],
+    "retail_considerations": "For everyday investors, this indicates that smart money is constantly evaluating where to deploy capital for the best returns, potentially highlighting emerging trends or under-the-radar ecosystems. Chains receiving significant inflows could see increased activity and potential growth.\nWatch to see which specific blockchains or types of projects (e.g., decentralized finance platforms, new faster networks) become the primary destinations for this cross-chain capital, as this could signal areas of future growth.\nOn-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  }
+]
+```

@@ -493,9 +493,10 @@ function SupportingEvidence({ facts, assets }) {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <Icon name="swap" size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
-            <span className="eyebrow">Bridge capital flows</span>
+            <span className="eyebrow">Cross-chain capital flows</span>
+            <span style={{ fontSize: 12, color: "var(--ink-4)", marginLeft: 4 }}>— where and how much capital is moving</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 12 }}>
             {bridges.map((b, i) => <BridgeCard key={i} b={b} />)}
           </div>
         </div>
