@@ -853,6 +853,41 @@ def _build_episode_body(evidence_text: str, narrative: dict, idx: int) -> str:
     return " ".join(parts)[:520]
 
 
+def _bucket_episodes(episodes: list[dict], total_days: int) -> list[dict]:
+    """
+    Collapse episodes to ≤3 smart time-bucketed bullets.
+
+    ≤7 days:   show last 3 individual days
+    8–28 days: one summary label for older days + 2 recent individual days
+    >28 days:  one monthly summary + 2 recent individual days
+    """
+    if not episodes or len(episodes) <= 3:
+        return episodes
+
+    def _make_summary(eps: list[dict], date_label: str) -> dict:
+        best = max(eps, key=lambda e: len(e.get("headline", "")))
+        combined_body = " ".join(e["body"] for e in eps if e.get("body"))[:450]
+        return {**best, "date": date_label, "detail": "", "body": combined_body}
+
+    if total_days <= 7:
+        return episodes[-3:]
+
+    recent = episodes[-2:]
+    older  = episodes[:-2]
+    if not older:
+        return episodes[-3:]
+
+    if total_days <= 28:
+        weeks_old = max(1, total_days // 7 - 1)
+        label = "Week 1" if weeks_old == 1 else f"Weeks 1–{weeks_old}"
+        return [_make_summary(older, label)] + recent
+
+    # >28 days
+    months = max(1, total_days // 30)
+    label = f"{months} month{'s' if months > 1 else ''} ago"
+    return [_make_summary(older, label)] + recent
+
+
 def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
     if not top:
         return _empty_tracker()
