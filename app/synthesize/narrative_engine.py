@@ -681,9 +681,15 @@ RULES:
    "Big money wallets are quietly moving funds into Ethereum. This kind of positioning
     has historically preceded price moves, but there's no guarantee it will this time."
 
-7. retail_considerations: exactly 3 parts:
-   (1) What this means for regular investors in plain English
-   (2) One specific thing to watch as a signal of continuation or reversal
+7. retail_considerations: exactly 3 parts, formatted as (1) (2) (3):
+   (1) What this means for regular investors — be specific about what TYPE of sophisticated
+       participants are moving, not just "whales". E.g. "institutional players lining up capital"
+       vs "speculative traders rotating quickly".
+   (2) One concrete, observable thing to watch — MUST include a specific timeframe
+       (e.g. "in the next 48–72 hours", "by end of week") and name a specific asset or chain
+       that would show the signal. E.g. "Watch whether Bitcoin prices begin to move up in the
+       next 48–72 hours — if they do, it likely confirms this stablecoin buildup is becoming
+       buying power."
    (3) A clear risk reminder: "On-chain movements are early signals that can reverse quickly —
        this is not financial advice."
 
@@ -705,14 +711,17 @@ Each object MUST have EXACTLY these fields:
   "momentum":              "Strengthening | Stable | Weakening",
   "confidence_score":      0.0,
   "key_evidence":          [
-    "Data citation in plain English with real numbers — e.g. 'About $125M moved from Ethereum to Base via bridges, running 2.4x faster than the 30-day average'"
+    "One bullet per major token or distinct event — do NOT merge multiple tokens into one sentence.",
+    "E.g. '$2.44 billion in USDC moved by very large holders on June 2nd — one of the biggest single-day stablecoin transfers in this window.'",
+    "E.g. '$1.99 billion in Wrapped Bitcoin shifted on June 2nd, following $815 million the day prior — two consecutive days of large-scale movement.'",
+    "A final context bullet if helpful: e.g. 'Activity is running 329% faster than the 30-day average — roughly 4× normal pace.'"
   ],
-  "data_caveat":           "Simple explanation of limitations — e.g. 'Only 24 hours of data available, so this may be an early signal rather than a confirmed trend'",
-  "historical_context":    "One sentence on continuity — if NEW say 'First detection with only 24h of data; no multi-day trend yet confirmed.' If CONTINUING, compare to prior detection.",
-  "implications":          "2–3 plain-English sentences: what could this mean for markets next? No jargon.",
+  "data_caveat":           "Identify the single most important unknown. What piece of information, if we had it, would most change the interpretation? Be specific. E.g. 'We cannot see the destination of these funds — if they are heading to an exchange it suggests selling pressure; if to cold storage, accumulation. That distinction would completely change what this means.'",
+  "historical_context":    "2–3 sentences: (a) when was this narrative first detected, (b) what changed day-over-day in specific quantitative terms (e.g. 'volume increased from $X to $Y'), (c) what does that day-over-day progression imply about intent — is this one-off or sustained?",
+  "implications":          "2–3 sentences structured as: (a) what mechanism best explains this behavior — give your best analytical opinion, (b) what specific observable outcome would follow if the trend continues — name the asset or chain, (c) how soon that might manifest. Be opinionated and specific; hedging every sentence makes this useless.",
   "plain_english_summary": "Exactly 2 sentences — what is happening + why it might matter. Texting-a-friend tone.",
   "top_tokens":            ["TOKEN_SYMBOL_ONLY — e.g. USDC, ETH, WBTC — never chain names"],
-  "retail_considerations": "Three clearly separated parts: (1) plain-English meaning for regular investors, (2) one specific thing to watch, (3) risk reminder.",
+  "retail_considerations": "(1) specific meaning for regular investors (2) concrete thing to watch with timeframe and named asset (3) risk reminder",
   "signal_sources":        ["bridge_activity", "smart_money"]
 }}
 
