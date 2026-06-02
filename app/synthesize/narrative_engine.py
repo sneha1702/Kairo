@@ -664,9 +664,11 @@ RULES:
    • Why does it matter for the broader market?
    • What could happen next?
 
-3. Context all dollar amounts with a size anchor:
+3. Context all dollar amounts with a size anchor AND a pace anchor when acceleration data exists:
    "$1.2B" → "$1.2 billion — roughly the size of a mid-sized investment fund"
    "$50M"  → "about $50 million, a significant single-day institutional move"
+   "329% faster" → "running roughly 4× faster than the typical daily pace"
+   If acceleration applies to only one narrative's signal type, cite it only in that narrative — not in both.
 
 4. No jargon without an immediate explanation in parentheses on first use:
    OK: "decentralized exchanges (platforms where people trade crypto directly)"
@@ -676,6 +678,18 @@ RULES:
    "signal_count" • "confluence" • "dex concentration" • "net outflow" • "on-chain"
    "L1" • "L2" • "CEX" • "net flow" • "token_flows" • "whale_usd"
    If you need to express these concepts, use the plain-English equivalents above.
+
+5b. key_evidence token rule:
+   If a narrative involves multiple tokens, write one bullet per MAJOR token or event.
+   NEVER aggregate "USDC, WBTC, USDT, DAI" into a single sentence — each gets its own bullet
+   with its own dollar amount and any relevant context (e.g. day-over-day change).
+   Keep bullets to 2 sentences max. 3–5 bullets per narrative is ideal.
+
+5c. Be analytical, not just descriptive:
+   Weak:   "Large investors are moving funds, which could signal market activity."
+   Strong: "When sophisticated holders accumulate stablecoins at this pace alongside Bitcoin proxies,
+            it historically precedes a large directional trade — they are building a war chest."
+   Make your best-informed analytical call. Readers need a conclusion, not a summary of data.
 
 6. plain_english_summary: exactly 2 sentences, texting-a-friend style:
    "Big money wallets are quietly moving funds into Ethereum. This kind of positioning
