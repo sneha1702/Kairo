@@ -429,8 +429,28 @@ function FactRow({ label, value, mono, link }) {
   );
 }
 
+/* ---- Evidence sub-section header with description ---- */
+function EvidenceSection({ icon, label, description, children, gridCols }) {
+  return (
+    <div>
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+          <Icon name={icon} size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
+          <span className="eyebrow">{label}</span>
+        </div>
+        <p style={{ fontSize: 13.5, color: "var(--ink-3)", lineHeight: 1.55, margin: 0, paddingLeft: 23 }}>
+          {description}
+        </p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: gridCols || "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 /* ---- Supporting evidence section ---- */
-function SupportingEvidence({ facts, assets }) {
+function SupportingEvidence({ facts, assets, tracker }) {
   if (!facts) return null;
   const assetSet = new Set((assets || []).map(a => a.toUpperCase()));
   const filterBySymbol = (arr) =>
@@ -450,6 +470,8 @@ function SupportingEvidence({ facts, assets }) {
   const hasSpikes = spikes.length > 0;
   const hasConc   = conc.length > 0;
 
+  const conclusion = tracker && (tracker.retail_considerations || tracker.why_matters);
+
   if (!hasWhales && !hasSmart && !hasBridge && !hasSpikes && !hasConc) {
     return (
       <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--hairline)" }}>
@@ -463,68 +485,86 @@ function SupportingEvidence({ facts, assets }) {
 
   return (
     <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid var(--hairline)", display: "flex", flexDirection: "column", gap: 28 }}>
-      <CardLabel icon="watch">Supporting on-chain evidence</CardLabel>
+      <div>
+        <CardLabel icon="watch">Supporting on-chain evidence</CardLabel>
+        <p style={{ fontSize: 14, color: "var(--ink-3)", marginTop: 6, lineHeight: 1.6 }}>
+          The raw blockchain data that triggered and sustains this narrative — filtered to activity relevant to the assets above.
+        </p>
+      </div>
 
       {hasWhales && (
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <Icon name="brain" size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
-            <span className="eyebrow">Large whale transactions</span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
-            {whales.map((m, i) => <WhaleCard key={i} m={m} />)}
-          </div>
-        </div>
+        <EvidenceSection
+          icon="brain"
+          label="Large whale transactions"
+          description="Individual transfers above $1M by wallets classified as institutional or whale-tier. These are the specific on-chain moves that triggered this narrative — they show capital is being deliberately repositioned, not just traded."
+          gridCols="repeat(auto-fill, minmax(280px, 1fr))"
+        >
+          {whales.map((m, i) => <WhaleCard key={i} m={m} />)}
+        </EvidenceSection>
       )}
 
       {hasSmart && (
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <Icon name="brain" size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
-            <span className="eyebrow">Smart money accumulation</span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
-            {smart.map((w, i) => <SmartMoneyCard key={i} w={w} />)}
-          </div>
-        </div>
+        <EvidenceSection
+          icon="brain"
+          label="Smart money accumulation"
+          description="Wallets with a track record of early or accurate market positioning. Their activity here suggests informed, deliberate action — not retail noise."
+          gridCols="repeat(auto-fill, minmax(280px, 1fr))"
+        >
+          {smart.map((w, i) => <SmartMoneyCard key={i} w={w} />)}
+        </EvidenceSection>
       )}
 
       {hasBridge && (
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <Icon name="swap" size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
-            <span className="eyebrow">Cross-chain capital flows</span>
-            <span style={{ fontSize: 12, color: "var(--ink-4)", marginLeft: 4 }}>— where and how much capital is moving</span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 12 }}>
-            {bridges.map((b, i) => <BridgeCard key={i} b={b} />)}
-          </div>
-        </div>
+        <EvidenceSection
+          icon="swap"
+          label="Cross-chain capital flows"
+          description="Capital moving between blockchains via bridges. Net positive into a destination = money flowing in; net negative = money leaving. Large net flows can signal where sophisticated capital is deploying."
+          gridCols="repeat(auto-fill, minmax(290px, 1fr))"
+        >
+          {bridges.map((b, i) => <BridgeCard key={i} b={b} />)}
+        </EvidenceSection>
       )}
 
       {hasSpikes && (
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <Icon name="spark2" size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
-            <span className="eyebrow">Volume anomalies</span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
-            {spikes.map((s, i) => <SpikeCard key={i} s={s} />)}
-          </div>
-        </div>
+        <EvidenceSection
+          icon="spark2"
+          label="Volume anomalies"
+          description="Assets trading significantly above their historical average. The multiplier (e.g. 2.25×) means volume is 2.25 times the normal baseline — an early attention signal that often precedes sustained price moves."
+          gridCols="repeat(auto-fill, minmax(220px, 1fr))"
+        >
+          {spikes.map((s, i) => <SpikeCard key={i} s={s} />)}
+        </EvidenceSection>
       )}
 
       {hasConc && (
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <Icon name="watch" size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
-            <span className="eyebrow">Top holder concentration</span>
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+              <Icon name="watch" size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
+              <span className="eyebrow">Top holder concentration</span>
+            </div>
+            <p style={{ fontSize: 13.5, color: "var(--ink-3)", lineHeight: 1.55, margin: 0, paddingLeft: 23 }}>
+              How much of the circulating supply sits in the largest wallets. High concentration means a small number of entities can move price significantly — amplifying the impact of the whale activity above.
+            </p>
           </div>
           <div style={{ background: "var(--surface-2)", borderRadius: "var(--r-md)", padding: "4px 18px", border: "1px solid var(--hairline)" }}>
             {conc.map((w, i, arr) => (
               <ConcentrationRow key={i} w={w} last={i === arr.length - 1} />
             ))}
           </div>
+        </div>
+      )}
+
+      {conclusion && (
+        <div style={{
+          background: "color-mix(in oklch, var(--c-denim) 18%, var(--surface-2))",
+          border: "1px solid color-mix(in oklch, var(--c-denim) 40%, transparent)",
+          borderRadius: "var(--r-md)", padding: "18px 20px",
+        }}>
+          <div className="eyebrow" style={{ marginBottom: 8, color: "var(--c-denim-ink)" }}>What this means for you</div>
+          <p style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.65, margin: 0 }}>
+            {conclusion}
+          </p>
         </div>
       )}
     </div>
