@@ -688,9 +688,13 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
     except Exception as exc:
         logger.warning("_build_supporting_facts smart_money error: %s", exc)
 
-    # ── Bridge flows ──────────────────────────────────────────────────────────
+    # ── Bridge flows — only for narratives whose signal_sources include bridge data ──
+    narrative_sources = {str(s).lower() for s in (narrative.get("signal_sources") or [])}
+    narrative_includes_bridge = bool(narrative_sources & {"bridge_activity", "bridge"})
+    narrative_includes_concentration = bool(narrative_sources & {"whale_transactions", "whale", "smart_money", "wallet_concentration"})
+
     try:
-        bridge_rows = dune_context.get("bridge_activity") or []
+        bridge_rows = dune_context.get("bridge_activity") or [] if narrative_includes_bridge else []
         top_bridges = sorted(bridge_rows, key=lambda r: _safe_float(r.get("total_usd"), 0), reverse=True)[:4]
         for r in top_bridges:
             usd = _safe_float(r.get("total_usd"), 0)
