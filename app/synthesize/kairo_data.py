@@ -975,7 +975,7 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
             else:
                 date_index[d] = len(merged)
                 merged.append(ep)
-        episodes = merged
+        episodes = _bucket_episodes(merged, day)
 
         if not episodes:
             episodes = [{
