@@ -620,7 +620,7 @@ function NarrativeDetail({ narrativeId, treatment, onBack }) {
           </div>
         )}
 
-        <SupportingEvidence facts={t.supportingFacts} assets={t.assets} />
+        <SupportingEvidence facts={t.supportingFacts} assets={t.assets} tracker={t} />
       </article>
     </div>
   );
