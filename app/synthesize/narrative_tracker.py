@@ -16,6 +16,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
+import certifi
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import CollectionInvalid, OperationFailure
 
