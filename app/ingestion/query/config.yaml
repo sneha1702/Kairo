@@ -18,6 +18,7 @@ globals:
 queries:
   whale_transaction_filter:
     min_usd_value: 100000
+    time_window_hours: 168   # capped at 7d — full ERC20 scan + price join times out beyond this on free tier
 
   smart_money_accumulation:
     min_buy_usd: 10000

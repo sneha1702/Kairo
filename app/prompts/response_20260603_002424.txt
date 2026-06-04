@@ -1,0 +1,54 @@
+```json
+[
+  {
+    "narrative_id": "large_investor_positioning",
+    "name": "Big Investors Making Moves in Stablecoins and Wrapped Bitcoin",
+    "category": "Institutional",
+    "status": "STABLE",
+    "strength": "High",
+    "momentum": "Stable",
+    "confidence_score": 0.75,
+    "key_evidence": [
+      "On June 2nd, large investors continued to make significant moves, shifting approximately $1.99 billion in Wrapped Bitcoin (WBTC), $1.39 billion in Tether (USDT), $2.44 billion in USDC, and about $299 million in DAI through whale transactions.",
+      "This follows substantial activity on June 1st, which saw approximately $814 million in Wrapped Bitcoin (WBTC), $596 million in DAI, and $1.33 billion in USDC transferred by big investors."
+    ],
+    "data_caveat": "The ultimate destination and intent behind these massive whale transfers are not fully visible. If funds are moving to exchanges, it could signal selling pressure, while moves to cold storage often suggest long-term accumulation. This distinction is crucial for interpreting market impact.",
+    "historical_context": "This pattern of large investors positioning significant capital in Wrapped Bitcoin and major stablecoins was first detected prior to June 1st, accelerating into the first two days of June with multi-billion dollar transfers. The consistency of these large moves over several days suggests a strategic, rather than opportunistic, positioning by sophisticated market participants.",
+    "implications": "When very large holders accumulate stablecoins and Wrapped Bitcoin at this scale, it often precedes a significant directional move in the market. These investors are building up liquidity or converting Bitcoin to stablecoins (or vice-versa) in anticipation of a major price shift. We could see heightened market volatility or a strong trend emerge in the broader crypto market within the next week.",
+    "plain_english_summary": "Big money continues to shuffle billions in stablecoins and Wrapped Bitcoin, suggesting they are preparing for a major market move. This kind of heavy positioning usually means something big is coming for crypto prices soon.",
+    "top_tokens": [
+      "USDT",
+      "WBTC",
+      "DAI",
+      "USDC"
+    ],
+    "retail_considerations": "(1) This indicates that sophisticated, large-scale investors are strategically positioning their capital. Their movements often act as a precursor to broader market trends, signaling potential shifts in market direction. (2) Watch the price action of Bitcoin (BTC) and major altcoins over the next 72 hours. A sustained move upwards or downwards could confirm that these large capital shifts are translating into market-wide buying or selling pressure. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ]
+  },
+  {
+    "narrative_id": "cross_chain_liquidity",
+    "name": "Billions of Dollars Flowing Across Different Blockchains",
+    "category": "CrossChain",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "A staggering $39.9 billion in assets moved across different blockchains on June 2nd, primarily through 'bridge' protocols that allow tokens to travel between networks.",
+      "This follows an immense $74.9 billion in cross-chain movements detected on June 1st.",
+      "The pace of this capital rotation remains significantly elevated, running approximately 329% faster than the average over the past 30 days — roughly 4 times the normal speed."
+    ],
+    "data_caveat": "While the volume is clear, the exact tokens comprising the 'MIXED' category for June 2nd's massive transfer are not fully identifiable. Knowing the specific assets involved would offer more precise insights into which areas of the crypto market are gaining or losing liquidity.",
+    "historical_context": "This narrative of substantial cross-chain capital movement was initially identified with billions flowing in early June, and the latest data for June 2nd shows the daily volume remains exceptionally high. The sustained, accelerated pace indicates that market participants are actively reallocating funds across different blockchain ecosystems, rather than just a one-off event.",
+    "implications": "The continuous, rapid movement of such vast sums between blockchains suggests active rebalancing and potential shifts in investment focus across the crypto landscape. This intense capital rotation often precedes significant rallies or declines in specific chains or asset classes as liquidity is either deployed or withdrawn. This could lead to outsized performance for certain ecosystems in the near term.",
+    "plain_english_summary": "An absolutely massive $39.9 billion flowed between different crypto blockchains on June 2nd, continuing a trend of intense capital movement. This much money changing networks so quickly often signals that investors are preparing to deploy funds into new opportunities or pull them from others.",
+    "top_tokens": [],
+    "retail_considerations": "(1) This indicates that institutional and sophisticated players are actively managing their portfolios by shifting capital between various blockchain networks. This might signal a preference for certain ecosystems or a preparation for new opportunities on specific chains. (2) Keep an eye on which blockchain ecosystems show notable inflows or outflows in the coming days. If a particular chain, like Ethereum or Solana, sees a sudden surge in new project deployments or increased trading volume, it could be a destination for this rotating capital. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  }
+]
+```
