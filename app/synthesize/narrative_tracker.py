@@ -16,9 +16,27 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
+import ssl as _ssl_module
+
 import certifi
+import pymongo.ssl_support as _pymongo_ssl_support
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import CollectionInvalid, OperationFailure
+
+# OpenSSL 3.5+ enables post-quantum (X25519MLKEM768) TLS 1.3 groups by default.
+# MongoDB Atlas returns TLSV1_ALERT_INTERNAL_ERROR when it encounters PQC key shares.
+# Patch pymongo's SSL context creation to cap at TLS 1.2, which Atlas fully supports.
+_orig_get_ssl_context = _pymongo_ssl_support.get_ssl_context
+
+
+def _patched_get_ssl_context(*args, **kwargs):
+    ctx = _orig_get_ssl_context(*args, **kwargs)
+    if hasattr(ctx, "maximum_version"):
+        ctx.maximum_version = _ssl_module.TLSVersion.TLSv1_2
+    return ctx
+
+
+_pymongo_ssl_support.get_ssl_context = _patched_get_ssl_context
 
 logger = logging.getLogger(__name__)
 
