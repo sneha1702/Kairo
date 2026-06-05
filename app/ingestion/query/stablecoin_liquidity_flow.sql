@@ -41,7 +41,8 @@ current_agg AS (
         ROUND(SUM(CASE WHEN flow_type = 'burn' THEN token_amount ELSE 0 END), 2) AS burn_usd,
         COUNT(DISTINCT CASE WHEN flow_type = 'mint' THEN recipient END) AS new_wallets
     FROM all_flows
-    WHERE evt_block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE evt_block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND evt_block_time <  TIMESTAMP '{{end_time}}'
     GROUP BY symbol
 ),
 
