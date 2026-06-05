@@ -406,6 +406,13 @@ function SpikeCard({ s }) {
         {s.signal && <FactRow label="Signal" value={s.signal} />}
         {s.current_vol > 0 && <FactRow label="Volume" value={s.current_vol_fmt} />}
         {s.traders > 0 && <FactRow label="Traders" value={s.traders.toLocaleString()} />}
+        {(_fmtDate(s.window_start) || _fmtDate(s.window_end)) && (
+          <FactRow label="Window" value={
+            _fmtDate(s.window_start) && _fmtDate(s.window_end)
+              ? `${_fmtDate(s.window_start)} – ${_fmtDate(s.window_end)}`
+              : (_fmtDate(s.window_start) || _fmtDate(s.window_end))
+          } />
+        )}
       </div>
     </div>
   );
