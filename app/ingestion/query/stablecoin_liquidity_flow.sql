@@ -67,7 +67,7 @@ preoutput AS (
             / NULLIF(COALESCE(p.prior_mint_usd, 0), 0)
         , 2) AS mint_growth_pct,
         c.new_wallets,
-        date_trunc('hour', NOW()) AS time_bucket,
+        TIMESTAMP '{{end_time}}' AS time_bucket,
         'liquidity_flow' AS category,
         FILTER(
             ARRAY[
