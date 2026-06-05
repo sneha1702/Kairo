@@ -1,5 +1,5 @@
 -- Token Inflow/Outflow: CEX net flow per token — positive net = sell pressure.
--- Parameters: {{time_window_hours}}
+-- Parameters: {{time_window_hours}}, {{end_time}}
 
 WITH flow_agg AS (
     SELECT
