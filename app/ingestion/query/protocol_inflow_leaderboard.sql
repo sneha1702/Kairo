@@ -51,7 +51,8 @@ lido_raw AS (
         ON p.blockchain = 'ethereum'
         AND p.contract_address = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
         AND p.minute = date_trunc('minute', s.evt_block_time)
-    WHERE s.evt_block_time >= NOW() - 2 * INTERVAL '{{time_window_hours}}' HOUR
+    WHERE s.evt_block_time >= TIMESTAMP '{{end_time}}' - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND s.evt_block_time <  TIMESTAMP '{{end_time}}'
 ),
 
 all_raw AS (
