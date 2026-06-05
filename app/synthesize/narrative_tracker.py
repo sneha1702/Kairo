@@ -401,6 +401,13 @@ class NarrativeTracker:
             {"$set": {"tracked": False, "updated_at": datetime.now(timezone.utc)}},
         )
 
+    def purge_narratives(self, user_id: str = "default") -> int:
+        """Delete all narratives for a user. Returns the number of documents deleted."""
+        result = self.db.narratives.delete_many({"user_id": user_id})
+        deleted = result.deleted_count
+        logger.info("[MONGO] Purged %d narratives for user=%s", deleted, user_id)
+        return deleted
+
     def get_narrative_stats(self, user_id: str = "default") -> Dict[str, Any]:
         return {
             "total_narratives": self.db.narratives.count_documents({"user_id": user_id}),
