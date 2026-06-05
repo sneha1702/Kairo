@@ -34,7 +34,8 @@ eigenlayer_raw AS (
         ON p.blockchain = 'ethereum'
         AND p.contract_address = d.token
         AND p.minute = date_trunc('minute', d.evt_block_time)
-    WHERE d.evt_block_time >= NOW() - 2 * INTERVAL '{{time_window_hours}}' HOUR
+    WHERE d.evt_block_time >= TIMESTAMP '{{end_time}}' - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND d.evt_block_time <  TIMESTAMP '{{end_time}}'
 ),
 
 lido_raw AS (
