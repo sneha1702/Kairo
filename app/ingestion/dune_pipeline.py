@@ -192,7 +192,12 @@ class DuneIngestionPipeline:
 
     # ── Internal helpers ───────────────────────────────────────────────────────
 
-    def _load_query_configs(self, query_names: list[str] | None) -> list[QueryConfig]:
+    def _load_query_configs(
+        self,
+        query_names: list[str] | None,
+        end_time: str | None = None,
+        time_window_hours: int | None = None,
+    ) -> list[QueryConfig]:
         if self._raw_config is None:
             with open(self.config_path) as f:
                 self._raw_config = yaml.safe_load(f)
@@ -202,17 +207,27 @@ class DuneIngestionPipeline:
         queries_cfg = cfg.get("queries") or {}
         names = query_names or list(QUERY_TO_INDEX.keys())
 
-        # Config.DUNE_QUERY_WINDOW_HOURS is the authoritative global time window.
-        # Precedence: per-query YAML override > Config value > YAML globals fallback.
-        effective_global_hours = Config.DUNE_QUERY_WINDOW_HOURS
+        # Precedence: caller override > Config value > YAML globals fallback.
+        effective_global_hours = time_window_hours if time_window_hours is not None else Config.DUNE_QUERY_WINDOW_HOURS
+        # end_time defaults to now (UTC) so regular runs behave identically to before.
+        effective_end_time = end_time or datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
         result = []
         for name in names:
             per_query = queries_cfg.get(name, {})
-            # Start from YAML globals, inject the Config-driven time window, then
-            # apply per-query overrides (which can still override time_window_hours
-            # for queries that genuinely need a different window).
-            params = {**globals_, "time_window_hours": effective_global_hours, **per_query}
+            # Inject end_time and time_window_hours before per-query overrides so that
+            # per-query YAML can still override time_window_hours for special cases,
+            # but end_time is always set (backfill callers override it per chunk).
+            params = {
+                **globals_,
+                "time_window_hours": effective_global_hours,
+                "end_time": effective_end_time,
+                **per_query,
+            }
+            # Per-query time_window_hours override must not clobber a backfill end_time
+            if end_time is not None:
+                params["end_time"] = end_time
+                params["time_window_hours"] = time_window_hours if time_window_hours is not None else int(params.get("time_window_hours", effective_global_hours))
             cadence = int(params.get("time_window_hours", effective_global_hours))
             result.append(QueryConfig(
                 query_name=name,
