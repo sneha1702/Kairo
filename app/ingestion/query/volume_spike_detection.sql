@@ -53,7 +53,8 @@ current_window AS (
         MIN(hour)                AS window_start_time,
         MAX(hour)                AS window_end_time
     FROM hourly_volume
-    WHERE hour >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE hour >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND hour <  TIMESTAMP '{{end_time}}'
     GROUP BY token_address, symbol
 ),
 
