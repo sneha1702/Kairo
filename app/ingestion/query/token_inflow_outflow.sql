@@ -38,7 +38,7 @@ preoutput AS (
         net_flow_usd,
         earliest_flow_time,
         latest_flow_time,
-        date_trunc('hour', NOW())                                      AS time_bucket,
+        TIMESTAMP '{{end_time}}'                                       AS time_bucket,
         'capital_migration'                                            AS category,
         FILTER(
             ARRAY[
