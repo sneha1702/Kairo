@@ -51,7 +51,7 @@ prior_agg AS (
         symbol,
         SUM(CASE WHEN flow_type = 'mint' THEN token_amount ELSE 0 END) AS prior_mint_usd
     FROM all_flows
-    WHERE evt_block_time < NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE evt_block_time < TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
     GROUP BY symbol
 ),
 
