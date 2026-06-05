@@ -6,6 +6,28 @@
 const K = window.KAIRO;
 let Icon, Asset, ForceTag, StatusBadge, CardLabel, StrengthCurve;
 
+/* ---- ISO timestamp → compact human label ---- */
+function _fmtTs(iso) {
+  if (!iso) return null;
+  try {
+    const d = new Date(iso);
+    if (isNaN(d)) return null;
+    return d.toLocaleString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+      hour: "numeric", minute: "2-digit", hour12: true, timeZone: "UTC",
+    }) + " UTC";
+  } catch { return null; }
+}
+
+function _fmtDate(iso) {
+  if (!iso) return null;
+  try {
+    const d = new Date(iso);
+    if (isNaN(d)) return null;
+    return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+  } catch { return null; }
+}
+
 /* ---- phase & intent chips ---- */
 const _PHASE_STYLE = {
   Discovery: { bg: "var(--c-denim)",  ink: "var(--c-denim-ink)" },
