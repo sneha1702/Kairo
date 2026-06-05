@@ -1,6 +1,6 @@
 -- Post-Bridge Deployment: bridge recipients deploying capital to DEX on destination chains.
 -- Each row = one (symbol, chain, protocol) group for the current time window.
--- Parameters: {{time_window_hours}}, {{min_usd_value}}
+-- Parameters: {{time_window_hours}}, {{min_usd_value}}, {{end_time}}
 
 WITH bridge_recipients AS (
     SELECT
