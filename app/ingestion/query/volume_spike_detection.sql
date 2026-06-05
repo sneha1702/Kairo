@@ -1,6 +1,6 @@
 -- Volume Spike Detection: Compares current window to prior window of equal length.
 -- Baseline = prior {{time_window_hours}} period (no hardcoded day windows).
--- Parameters: {{time_window_hours}}, {{spike_multiplier}}
+-- Parameters: {{time_window_hours}}, {{spike_multiplier}}, {{end_time}}
 -- Note: acceleration_7d_vs_30d_pct is derived by the app from accumulated ES history.
 
 WITH hourly_volume AS (
