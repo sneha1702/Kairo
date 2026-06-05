@@ -23,7 +23,8 @@ first_acquisition AS (
 new_holders_current AS (
     SELECT COUNT(*) AS new_wallets
     FROM first_acquisition
-    WHERE first_received >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE first_received >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND first_received <  TIMESTAMP '{{end_time}}'
 ),
 
 new_holders_prior AS (
