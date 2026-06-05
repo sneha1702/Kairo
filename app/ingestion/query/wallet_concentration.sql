@@ -74,7 +74,7 @@ preoutput AS (
         cs.whale_concentration_pct,
         cs.smart_money_concentration_pct,
         CURRENT_TIMESTAMP                                             AS snapshot_time,
-        date_trunc('hour', NOW())                                     AS time_bucket,
+        TIMESTAMP '{{end_time}}'                                      AS time_bucket,
         'smart_deployment'                                            AS category,
         FILTER(
             ARRAY[
