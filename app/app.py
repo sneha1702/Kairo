@@ -626,216 +626,310 @@ es_manager, narrative_engine, tracker = init_services()
 # the whole page so the Kairo tab picks up new data.
 # ---------------------------------------------------------------------------
 
-_WINDOW_PRESETS: list[tuple[str, int]] = [
-    ("2 hours",           2),
-    ("4 hours (default)", 4),
-    ("6 hours",           6),
-    ("12 hours",          12),
-    ("24 hours / 1 day",  24),
-    ("48 hours / 2 days", 48),
-    ("1 week",            168),
-    ("1 month",           720),
-    ("3 months",          2160),
-    ("6 months",          4380),
-    ("1 year",            8760),
-]
-
 @st.fragment
 def _admin_panel() -> None:
     _es, _engine, _tracker = init_services()
-
-    # Constrain admin content width without touching the Kairo tab panel
     col, _ = st.columns([5, 2])
     with col:
         _admin_panel_content(_es, _engine, _tracker)
 
 
-def _admin_panel_content(_es, _engine, _tracker) -> None:
-    # ── Detection Settings ────────────────────────────────────────────────────
-    st.subheader("Detection Settings")
-    st.text_input("User ID", value="default", key="admin_user_id")
-    st.slider("Hours to analyse", 1, 168, min(168, _Cfg.DUNE_QUERY_WINDOW_HOURS), key="admin_hours_lookback")
+def _run_detection_flow(_es, _engine, _tracker, user_id: str, hours: int) -> None:
+    """Shared detection logic used by both the standalone button and post-ingestion flow."""
+    from app.synthesize.signal_transformer import SignalTransformer, enrich_with_acceleration
+    from datetime import timezone as _tz
 
-    st.divider()
+    if _es is None or _engine is None:
+        st.info("Services not fully configured.")
+        return
 
-    # ── Dune Ingestion Settings ───────────────────────────────────────────────
-    st.subheader("Dune Ingestion Settings")
+    status   = st.empty()
+    progress = st.progress(0, text="Building unified signals…")
+    try:
+        progress.progress(10, text="Building unified signal schema…")
+        _transformer    = SignalTransformer(_es)
+        unified_signals = _transformer.build_unified_signals(hours=hours)
+        unified_signals = enrich_with_acceleration(unified_signals, _es)
+        logger.info(
+            "[DETECT] Unified signals: %d records (%d capital_migration, %d smart_deployment, %d stablecoin_flow)",
+            len(unified_signals),
+            sum(1 for s in unified_signals if s["category"] == "capital_migration"),
+            sum(1 for s in unified_signals if s["category"] == "smart_deployment"),
+            sum(1 for s in unified_signals if s["category"] == "stablecoin_flow"),
+        )
 
-    _preset_labels = [p[0] for p in _WINDOW_PRESETS]
-    _preset_hours  = [p[1] for p in _WINDOW_PRESETS]
-    _preset_map    = dict(_WINDOW_PRESETS)
+        progress.progress(25, text="Fetching Elasticsearch context…")
+        dune_context = _es.get_dune_signal_context(hours=hours)
 
-    current_hours = _Cfg.DUNE_QUERY_WINDOW_HOURS
-    current_label = next((lbl for lbl, h in _WINDOW_PRESETS if h == current_hours),
-                         f"{current_hours}h (custom)")
-    st.caption(f"Active query window: **{current_label}** ({current_hours}h)")
+        progress.progress(35, text="Loading existing narratives from MongoDB…")
+        current_narratives = _tracker.get_current_narratives(user_id, min_confidence=0.0) if _tracker else []
+        history_summary    = _tracker.get_narratives_summary(user_id) if _tracker else []
 
-    default_idx = _preset_hours.index(current_hours) if current_hours in _preset_hours else 1
-    st.selectbox(
-        "Query window — how far back each Dune query looks",
-        options=_preset_labels,
-        index=default_idx,
-        key="dune_window_select",
-    )
-
-    st.checkbox(
-        "Fetch fresh data from Dune immediately after saving",
-        value=True,
-        key="fetch_after_save",
-        help="Runs all 8 Dune queries with the new window and stores results in Elasticsearch.",
-    )
-
-    if st.button("Save & Apply", use_container_width=True, key="save_dune_window"):
-        _selected_window = st.session_state.get("dune_window_select", "4 hours (default)")
-        _selected_hours  = _preset_map.get(_selected_window, 4)
-        try:
-            _Cfg.set_dune_query_window(_selected_hours)
-            st.success(f"Query window set to **{_selected_window}** ({_selected_hours}h).")
-
-            if st.session_state.get("fetch_after_save", True):
-                status = st.empty()
-                progress = st.progress(0, text="Connecting to Dune…")
-                try:
-                    progress.progress(10, text="Running Dune pipeline…")
-                    pipeline = _build_pipeline()
-                    progress.progress(40, text="Fetching on-chain data…")
-                    results  = pipeline.run_all()
-                    n_ok   = sum(1 for r in results.values() if r.success)
-                    n_fail = sum(1 for r in results.values() if not r.success)
-                    _cached_build_data.clear()
-                    progress.progress(100, text="Done.")
-                    if n_fail:
-                        failed_names = [r.query_name for r in results.values() if not r.success]
-                        status.warning(f"Ingestion: {n_ok} succeeded, {n_fail} failed: {failed_names}")
-                    else:
-                        total_rows = sum(r.rows_fetched for r in results.values())
-                        status.success(f"Ingested {total_rows:,} rows across {n_ok} queries.")
-                    st.rerun()
-                except Exception as exc:
-                    progress.empty()
-                    st.error(f"Dune ingestion failed: {exc}")
-                    logger.exception("Dune ingestion failed from admin panel")
-        except Exception as exc:
-            st.error(f"Failed to save config: {exc}")
-
-    st.divider()
-
-    # ── Run Detection ─────────────────────────────────────────────────────────
-    st.subheader("Run Detection")
-    if st.button("🔮 Run Detection", use_container_width=True, key="run_detection"):
-        _user_id = st.session_state.get("admin_user_id", "default")
-        _hours   = st.session_state.get("admin_hours_lookback", _Cfg.DUNE_QUERY_WINDOW_HOURS)
-
-        if _es is not None and _engine is not None:
-            status   = st.empty()
-            progress = st.progress(0, text="Starting…")
-            try:
-                from app.synthesize.signal_transformer import SignalTransformer, enrich_with_acceleration
-                from datetime import timezone as _tz
-
-                progress.progress(10, text="Building unified signal schema…")
-                _transformer    = SignalTransformer(_es)
-                unified_signals = _transformer.build_unified_signals(hours=_hours)
-                unified_signals = enrich_with_acceleration(unified_signals, _es)
-                logger.info(
-                    "[DETECT] Unified signals: %d records (%d capital_migration, %d smart_deployment, %d stablecoin_flow)",
-                    len(unified_signals),
-                    sum(1 for s in unified_signals if s["category"] == "capital_migration"),
-                    sum(1 for s in unified_signals if s["category"] == "smart_deployment"),
-                    sum(1 for s in unified_signals if s["category"] == "stablecoin_flow"),
-                )
-
-                progress.progress(25, text="Fetching Elasticsearch context…")
-                dune_context = _es.get_dune_signal_context(hours=_hours)
-
-                progress.progress(35, text="Loading existing narratives from MongoDB…")
-                current_narratives = _tracker.get_current_narratives(_user_id, min_confidence=0.0) if _tracker else []
-                history_summary    = _tracker.get_narratives_summary(_user_id) if _tracker else []
-
-                # Idempotency guard: block re-runs on the same data window.
-                # When detection runs twice on the same signals, Run 2 reads Run 1's
-                # Gemini output from MongoDB as "prior state" and drifts narratives
-                # without any new on-chain evidence to justify the changes.
-                _signal_window_end = max(
-                    (s["time_bucket"] for s in unified_signals if s.get("time_bucket")),
-                    default=None,
-                )
-                if _signal_window_end and history_summary:
-                    _last_processed_end = None
-                    for _n in history_summary:
-                        _wend = _n.get("data_window_end")
-                        if _wend:
-                            _wend_str = (
-                                _wend.strftime("%Y-%m-%d")
-                                if hasattr(_wend, "strftime")
-                                else str(_wend)[:10]
-                            )
-                            if _last_processed_end is None or _wend_str > _last_processed_end:
-                                _last_processed_end = _wend_str
-                    if _last_processed_end and _last_processed_end >= str(_signal_window_end):
-                        progress.empty()
-                        st.warning(
-                            f"⚠️ Detection already ran for data window ending **{_last_processed_end}** "
-                            f"(current signals also end at **{_signal_window_end}**). "
-                            "Re-running on the same window causes narrative drift — Gemini evolves "
-                            "its own prior output without new signals. "
-                            "Wait for fresh data to be ingested before running detection again."
-                        )
-                        st.stop()
-
-                progress.progress(50, text="Running Gemini narrative detection…")
-                new_narratives = _engine.detect_narratives(
-                    dune_context=dune_context,
-                    historical_narratives=history_summary,
-                    unified_signals=unified_signals,
-                )
-
-                enriched = []
-                if new_narratives:
-                    for i, n in enumerate(new_narratives):
-                        pct = 60 + int(30 * (i + 1) / len(new_narratives))
-                        progress.progress(pct, text=f"Enriching narrative {i + 1}/{len(new_narratives)}…")
-                        enriched.append(_engine.enrich_narrative(n, previous_narratives=current_narratives))
-
-                    # Attach unified signals as metadata before persisting
-                    _signal_meta = {
-                        "window_hours":  _hours,
-                        "generated_at":  datetime.now(_tz.utc).isoformat(),
-                        "total_records": len(unified_signals),
-                        "by_category": {
-                            "capital_migration": sum(1 for s in unified_signals if s["category"] == "capital_migration"),
-                            "smart_deployment":  sum(1 for s in unified_signals if s["category"] == "smart_deployment"),
-                            "stablecoin_flow":   sum(1 for s in unified_signals if s["category"] == "stablecoin_flow"),
-                        },
-                    }
-                    for n in enriched:
-                        n["unified_signals"] = unified_signals
-                        n["signal_metadata"] = _signal_meta
-
-                    if _tracker:
-                        progress.progress(92, text="Saving to MongoDB…")
-                        _tracker.save_narratives(enriched, _user_id)
-                        returned_ids = {n.get("narrative_id") for n in enriched}
-                        _tracker.mark_stale_narratives(returned_ids, _user_id)
-
-                _cached_build_data.clear()
-                progress.progress(100, text="Done.")
-                count = len(new_narratives) if new_narratives else 0
-                status.success(
-                    f"Detection complete — {count} narrative(s) detected. "
-                    "Switch to the Kairo tab to see results."
-                )
-                st.rerun()
-            except Exception as exc:
+        # Idempotency guard — block re-runs on same data window to prevent narrative drift.
+        _signal_window_end = max(
+            (s["time_bucket"] for s in unified_signals if s.get("time_bucket")),
+            default=None,
+        )
+        if _signal_window_end and history_summary:
+            _last_processed_end = None
+            for _n in history_summary:
+                _wend = _n.get("data_window_end")
+                if _wend:
+                    _wend_str = (
+                        _wend.strftime("%Y-%m-%d")
+                        if hasattr(_wend, "strftime")
+                        else str(_wend)[:10]
+                    )
+                    if _last_processed_end is None or _wend_str > _last_processed_end:
+                        _last_processed_end = _wend_str
+            if _last_processed_end and _last_processed_end >= str(_signal_window_end):
                 progress.empty()
-                st.error(f"Detection error: {exc}")
-                logger.exception("Detection failed")
-        else:
-            st.info("Services not fully configured — showing available data.")
+                st.warning(
+                    f"⚠️ Detection already ran for data window ending **{_last_processed_end}** "
+                    f"(current signals also end at **{_signal_window_end}**). "
+                    "Re-running on the same window causes narrative drift. "
+                    "Fetch newer data or purge narratives first."
+                )
+                return
+
+        progress.progress(50, text="Running Gemini narrative detection…")
+        new_narratives = _engine.detect_narratives(
+            dune_context=dune_context,
+            historical_narratives=history_summary,
+            unified_signals=unified_signals,
+        )
+
+        enriched = []
+        if new_narratives:
+            for i, n in enumerate(new_narratives):
+                pct = 60 + int(30 * (i + 1) / len(new_narratives))
+                progress.progress(pct, text=f"Enriching narrative {i + 1}/{len(new_narratives)}…")
+                enriched.append(_engine.enrich_narrative(n, previous_narratives=current_narratives))
+
+            _signal_meta = {
+                "window_hours":  hours,
+                "generated_at":  datetime.now(_tz.utc).isoformat(),
+                "total_records": len(unified_signals),
+                "by_category": {
+                    "capital_migration": sum(1 for s in unified_signals if s["category"] == "capital_migration"),
+                    "smart_deployment":  sum(1 for s in unified_signals if s["category"] == "smart_deployment"),
+                    "stablecoin_flow":   sum(1 for s in unified_signals if s["category"] == "stablecoin_flow"),
+                },
+            }
+            for n in enriched:
+                n["unified_signals"] = unified_signals
+                n["signal_metadata"] = _signal_meta
+
+            if _tracker:
+                progress.progress(92, text="Saving to MongoDB…")
+                _tracker.save_narratives(enriched, user_id)
+                returned_ids = {n.get("narrative_id") for n in enriched}
+                _tracker.mark_stale_narratives(returned_ids, user_id)
+
+        _cached_build_data.clear()
+        progress.progress(100, text="Done.")
+        count = len(new_narratives) if new_narratives else 0
+        status.success(
+            f"Detection complete — {count} narrative(s) detected. "
+            "Switch to the Kairo tab to see results."
+        )
+        st.rerun()
+    except Exception as exc:
+        progress.empty()
+        st.error(f"Detection error: {exc}")
+        logger.exception("Detection failed")
+
+
+def _admin_panel_content(_es, _engine, _tracker) -> None:
+    from datetime import date as _date, timedelta as _td
+
+    st.text_input("User ID", value="default", key="admin_user_id")
+    _user_id = st.session_state.get("admin_user_id", "default")
 
     st.divider()
 
-    # ── Service Status ────────────────────────────────────────────────────────
+    # ── 1. Fetch On-Chain Data ─────────────────────────────────────────────────
+    st.subheader("Fetch On-Chain Data")
+
+    _today = _date.today()
+    _fcol1, _fcol2 = st.columns(2)
+    with _fcol1:
+        _start_date = st.date_input(
+            "From (UTC)", value=_today - _td(days=7), max_value=_today, key="fetch_start_date"
+        )
+    with _fcol2:
+        _end_date = st.date_input(
+            "To (UTC)", value=_today, max_value=_today, key="fetch_end_date"
+        )
+
+    _fetch_valid = bool(_start_date and _end_date and _end_date > _start_date)
+    if _fetch_valid:
+        _delta_days  = (_end_date - _start_date).days
+        _delta_hours = _delta_days * 24
+        _backfill_mode = _delta_days >= 7
+        if _backfill_mode:
+            _n_chunks = (_delta_days + 6) // 7
+            st.caption(f"📦 Backfill mode — {_delta_days} days → {_n_chunks} weekly chunk(s)")
+        else:
+            st.caption(f"⚡ Direct query — {_delta_hours} hours")
+    elif _start_date and _end_date:
+        st.warning("End date must be after start date.")
+        _delta_hours = 0
+        _backfill_mode = False
+    else:
+        _delta_hours = 0
+        _backfill_mode = False
+
+    _run_detect_after = st.checkbox(
+        "Also run narrative detection after ingestion",
+        value=False,
+        key="fetch_run_detect",
+    )
+
+    if st.button("Fetch Data", use_container_width=True, key="btn_fetch_data",
+                 disabled=not _fetch_valid):
+        _start_dt = datetime(_start_date.year, _start_date.month, _start_date.day, tzinfo=timezone.utc)
+        _end_dt   = datetime(_end_date.year,   _end_date.month,   _end_date.day,
+                             hour=23, minute=59, second=59, tzinfo=timezone.utc)
+        try:
+            _pipeline = _build_pipeline()
+        except Exception as exc:
+            st.error(f"Pipeline init failed: {exc}")
+            logger.exception("Pipeline init failed")
+            return
+
+        _total_rows    = 0
+        _total_indexed = 0
+        _all_errors: list[str] = []
+
+        if _backfill_mode:
+            # Chunked: iterate weekly slices from start → end
+            _cursor = _start_dt
+            _chunks: list[tuple[datetime, datetime]] = []
+            while _cursor < _end_dt:
+                _ce = min(_cursor + _td(days=7), _end_dt)
+                _chunks.append((_cursor, _ce))
+                _cursor = _ce
+
+            _prog = st.progress(0, text=f"Chunk 1/{len(_chunks)}…")
+            _stat = st.empty()
+            for _i, (_cs, _ce) in enumerate(_chunks):
+                _end_str = _ce.strftime("%Y-%m-%d %H:%M:%S")
+                _prog.progress(
+                    int(100 * _i / len(_chunks)),
+                    text=f"Chunk {_i + 1}/{len(_chunks)}: {_cs.date()} → {_ce.date()}",
+                )
+                try:
+                    _res = _pipeline.run_all(
+                        end_time=_end_str,
+                        time_window_hours=168,
+                    )
+                    _total_rows    += sum(r.rows_fetched  for r in _res.values())
+                    _total_indexed += sum(r.docs_indexed  for r in _res.values())
+                    _all_errors.extend(
+                        f"[{r.query_name}] chunk {_i + 1}: {r.error}"
+                        for r in _res.values() if r.error
+                    )
+                except Exception as exc:
+                    _all_errors.append(f"Chunk {_i + 1}: {exc}")
+                    logger.exception("Backfill chunk %d failed", _i + 1)
+
+            _prog.progress(100, text="Done.")
+        else:
+            # Single direct query
+            _prog = st.progress(0, text="Running Dune pipeline…")
+            _stat = st.empty()
+            _end_str = _end_dt.strftime("%Y-%m-%d %H:%M:%S")
+            try:
+                _prog.progress(20, text="Fetching on-chain data…")
+                _res = _pipeline.run_all(
+                    end_time=_end_str,
+                    time_window_hours=_delta_hours,
+                )
+                _total_rows    = sum(r.rows_fetched  for r in _res.values())
+                _total_indexed = sum(r.docs_indexed  for r in _res.values())
+                _all_errors.extend(
+                    f"[{r.query_name}] {r.error}" for r in _res.values() if r.error
+                )
+                _prog.progress(100, text="Done.")
+            except Exception as exc:
+                _prog.empty()
+                st.error(f"Ingestion failed: {exc}")
+                logger.exception("Ingestion failed")
+                return
+
+        _cached_build_data.clear()
+        if _all_errors:
+            _stat.warning(
+                f"Ingested {_total_rows:,} rows ({_total_indexed:,} indexed) with {len(_all_errors)} error(s): "
+                + "; ".join(_all_errors[:3])
+            )
+        else:
+            _stat.success(f"Ingested {_total_rows:,} rows, {_total_indexed:,} docs indexed.")
+
+        if _run_detect_after:
+            st.markdown("---")
+            st.markdown("**Running detection on fetched data…**")
+            _detect_h = _delta_hours if not _backfill_mode else (_delta_days * 24 + 24)
+            _run_detection_flow(_es, _engine, _tracker, _user_id, hours=max(_detect_h, 48))
+        else:
+            st.rerun()
+
+    st.divider()
+
+    # ── 2. Narrative Detection ────────────────────────────────────────────────
+    st.subheader("Narrative Detection")
+    st.caption("Runs Gemini detection on data currently in Elasticsearch.")
+
+    _detect_hours = st.number_input(
+        "Lookback window (hours)",
+        min_value=1,
+        max_value=8760,
+        value=2160,
+        step=24,
+        key="detect_hours_input",
+        help="2160 = 90 days. Use a large value to include all backfilled data.",
+    )
+
+    if st.button("🔮 Run Detection", use_container_width=True, key="btn_run_detection"):
+        _run_detection_flow(_es, _engine, _tracker, _user_id, hours=int(_detect_hours))
+
+    st.divider()
+
+    # ── 3. Purge Narratives ───────────────────────────────────────────────────
+    st.subheader("Purge Narratives")
+    st.caption(f"Permanently delete all narratives for user **{_user_id}** from MongoDB.")
+
+    if not st.session_state.get("confirm_purge_pending"):
+        if st.button("🗑 Purge Narratives", use_container_width=True,
+                     key="btn_purge_start", type="secondary"):
+            st.session_state["confirm_purge_pending"] = True
+            st.rerun()
+    else:
+        st.warning(
+            f"This will permanently delete **all narratives** for user `{_user_id}`. "
+            "This cannot be undone."
+        )
+        _pc1, _pc2 = st.columns(2)
+        with _pc1:
+            if st.button("✅ Confirm Purge", use_container_width=True,
+                         key="btn_purge_confirm", type="primary"):
+                if _tracker:
+                    _n_deleted = _tracker.purge_narratives(_user_id)
+                    st.session_state.pop("confirm_purge_pending", None)
+                    _cached_build_data.clear()
+                    st.success(f"Deleted {_n_deleted} narrative(s).")
+                    st.rerun()
+                else:
+                    st.error("MongoDB tracker not connected.")
+        with _pc2:
+            if st.button("Cancel", use_container_width=True, key="btn_purge_cancel"):
+                st.session_state.pop("confirm_purge_pending", None)
+                st.rerun()
+
+    st.divider()
+
+    # ── 4. Service Status ─────────────────────────────────────────────────────
     st.subheader("Service Status")
     st.write("Elasticsearch:",    "✅ connected" if _es      is not None else "❌ not connected")
     st.write("Narrative Engine:", "✅ ready"     if _engine  is not None else "❌ not ready")
