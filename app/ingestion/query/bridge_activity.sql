@@ -31,7 +31,8 @@ WITH all_flows AS (
         withdrawal_amount_usd AS usd_value,
         'withdrawal' AS flow_direction
     FROM bridges_evms.withdrawals
-    WHERE block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time <  TIMESTAMP '{{end_time}}'
       AND withdrawal_amount_usd >= {{min_usd_value}}
 ),
 
