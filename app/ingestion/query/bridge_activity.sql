@@ -3,7 +3,7 @@
 --   gross_inflow_usd  = deposits flowing from_chain → to_chain
 --   gross_outflow_usd = withdrawals returning to_chain → from_chain
 --   net_flow_usd      = positive means net migration toward to_chain
--- Parameters: {{time_window_hours}}, {{min_usd_value}}
+-- Parameters: {{time_window_hours}}, {{min_usd_value}}, {{end_time}}
 -- Note: acceleration_7d_vs_30d_pct is derived by the app from accumulated ES history.
 
 WITH all_flows AS (
