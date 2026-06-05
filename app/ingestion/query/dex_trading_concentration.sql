@@ -1,6 +1,6 @@
 -- DEX Trading Concentration: Which DEXes and wallets dominate trading for top tokens.
 -- volume_multiplier compares current window to prior window of equal length.
--- Parameters: {{time_window_hours}}
+-- Parameters: {{time_window_hours}}, {{end_time}}
 
 WITH token_dex_volume AS (
     SELECT
