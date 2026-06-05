@@ -74,7 +74,7 @@ preoutput AS (
         smart_money_usd,
         tx_hash,
         etherscan_url,
-        date_trunc('hour', NOW())                                                      AS time_bucket,
+        TIMESTAMP '{{end_time}}'                                                        AS time_bucket,
         'smart_deployment'                                                             AS category,
         FILTER(
             ARRAY[
