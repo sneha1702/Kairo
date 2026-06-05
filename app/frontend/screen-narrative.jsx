@@ -293,6 +293,7 @@ function WhaleCard({ m }) {
         <FactRow label="To" value={m.wallet_to} mono />
         {m.amount > 0 && <FactRow label="Amount" value={`${m.amount.toLocaleString(undefined, {maximumFractionDigits: 2})} ${m.symbol}`} />}
         {m.tx_hash && <FactRow label="Tx hash" value={m.tx_hash} mono link={m.etherscan_url} />}
+        {_fmtTs(m.block_time) && <FactRow label="Time" value={_fmtTs(m.block_time)} />}
       </div>
     </div>
   );
