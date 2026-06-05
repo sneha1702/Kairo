@@ -96,7 +96,7 @@ preoutput AS (
         a.whale_usd,
         a.new_wallets,
         ROUND(a.net_flow_usd / NULLIF(a.prior_usd, 0), 2) AS volume_multiplier,
-        date_trunc('hour', NOW()) AS time_bucket,
+        TIMESTAMP '{{end_time}}' AS time_bucket,
         'protocol_inflow' AS category,
         FILTER(
             ARRAY[
