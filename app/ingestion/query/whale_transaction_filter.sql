@@ -1,6 +1,6 @@
 -- Whale Transaction Filter: Large ERC20 transfers with per-symbol aggregate context.
 -- whale_usd / smart_money_usd / total_usd are per-symbol window aggregates on each row.
--- Parameters: {{min_usd_value}}, {{time_window_hours}}
+-- Parameters: {{min_usd_value}}, {{time_window_hours}}, {{end_time}}
 
 WITH top_tokens AS (
     SELECT contract_address, symbol, decimals
