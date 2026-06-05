@@ -13,7 +13,8 @@ WITH hourly_volume AS (
         COUNT(DISTINCT taker)           AS unique_traders
     FROM dex.trades
     WHERE blockchain = 'ethereum'
-      AND block_time >= NOW() - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time >= TIMESTAMP '{{end_time}}' - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time <  TIMESTAMP '{{end_time}}'
       AND token_bought_address IN (
           0xdAC17F958D2ee523a2206206994597C13D831ec7,
           0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,
