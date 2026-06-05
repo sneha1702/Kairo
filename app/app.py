@@ -752,6 +752,37 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 current_narratives = _tracker.get_current_narratives(_user_id, min_confidence=0.0) if _tracker else []
                 history_summary    = _tracker.get_narratives_summary(_user_id) if _tracker else []
 
+                # Idempotency guard: block re-runs on the same data window.
+                # When detection runs twice on the same signals, Run 2 reads Run 1's
+                # Gemini output from MongoDB as "prior state" and drifts narratives
+                # without any new on-chain evidence to justify the changes.
+                _signal_window_end = max(
+                    (s["time_bucket"] for s in unified_signals if s.get("time_bucket")),
+                    default=None,
+                )
+                if _signal_window_end and history_summary:
+                    _last_processed_end = None
+                    for _n in history_summary:
+                        _wend = _n.get("data_window_end")
+                        if _wend:
+                            _wend_str = (
+                                _wend.strftime("%Y-%m-%d")
+                                if hasattr(_wend, "strftime")
+                                else str(_wend)[:10]
+                            )
+                            if _last_processed_end is None or _wend_str > _last_processed_end:
+                                _last_processed_end = _wend_str
+                    if _last_processed_end and _last_processed_end >= str(_signal_window_end):
+                        progress.empty()
+                        st.warning(
+                            f"⚠️ Detection already ran for data window ending **{_last_processed_end}** "
+                            f"(current signals also end at **{_signal_window_end}**). "
+                            "Re-running on the same window causes narrative drift — Gemini evolves "
+                            "its own prior output without new signals. "
+                            "Wait for fresh data to be ingested before running detection again."
+                        )
+                        st.stop()
+
                 progress.progress(50, text="Running Gemini narrative detection…")
                 new_narratives = _engine.detect_narratives(
                     dune_context=dune_context,
