@@ -251,15 +251,28 @@ class DuneIngestionPipeline:
             # Arrays (e.g. signals) and other non-string types pass through unchanged.
         return doc
 
+    @staticmethod
+    def _resolve_end_dt(qc: QueryConfig, ingested_at: datetime) -> datetime:
+        """Return the logical end of the data window (end_time param or ingested_at)."""
+        raw = qc.params.get("end_time")
+        if raw:
+            try:
+                dt = datetime.fromisoformat(raw)
+                return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+            except ValueError:
+                pass
+        return ingested_at
+
     def _add_metadata_envelope(
         self,
         rows: list[dict],
         qc: QueryConfig,
         ingested_at: datetime,
     ) -> list[dict]:
+        end_dt = self._resolve_end_dt(qc, ingested_at)
         tw = qc.params.get("time_window_hours")
         window_start = (
-            (ingested_at - timedelta(hours=int(tw))).isoformat()
+            (end_dt - timedelta(hours=int(tw))).isoformat()
             if tw is not None
             else None
         )
