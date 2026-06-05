@@ -1,7 +1,7 @@
 -- Stablecoin Liquidity Flow: mint (from=0x0) and burn (to=0x0) events as liquidity signals.
 -- Each row = one stablecoin for the current time window.
 -- mint_growth_pct compares current window minting to the prior window of the same length.
--- Parameters: {{time_window_hours}}, {{min_usd_value}}
+-- Parameters: {{time_window_hours}}, {{min_usd_value}}, {{end_time}}
 
 WITH stablecoin_meta AS (
     SELECT contract_address, symbol, decimals FROM (VALUES
