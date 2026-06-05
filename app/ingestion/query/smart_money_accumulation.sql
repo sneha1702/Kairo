@@ -91,7 +91,7 @@ preoutput AS (
         tl.wallet_count,
         np.total_buy_usd                                                        AS total_smart_money_flow_usd,
         np.wallets_buying_same_token,
-        date_trunc('hour', NOW())                                               AS time_bucket,
+        TIMESTAMP '{{end_time}}'                                                AS time_bucket,
         'smart_deployment'                                                      AS category,
         FILTER(
             ARRAY[
