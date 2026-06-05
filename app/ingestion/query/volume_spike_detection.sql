@@ -72,7 +72,7 @@ preoutput AS (
         cw.current_unique_traders,
         cw.window_start_time,
         cw.window_end_time,
-        date_trunc('hour', NOW())                                                    AS time_bucket,
+        TIMESTAMP '{{end_time}}'                                                     AS time_bucket,
         'ecosystem_rotation'                                                         AS category,
         FILTER(
             ARRAY[
