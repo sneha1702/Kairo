@@ -17,7 +17,8 @@ WITH flow_agg AS (
         MAX(block_time)                                                               AS latest_flow_time
     FROM cex.flows
     WHERE blockchain = 'ethereum'
-      AND block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time <  TIMESTAMP '{{end_time}}'
       AND token_symbol IN ('USDT', 'USDC', 'WBTC', 'WETH', 'LINK', 'UNI', 'AAVE', 'stETH', 'DAI', 'MKR')
       AND amount_usd IS NOT NULL
     GROUP BY token_symbol, blockchain
