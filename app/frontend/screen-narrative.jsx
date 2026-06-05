@@ -378,6 +378,14 @@ function BridgeCard({ b }) {
         )}
       </div>
 
+      {(_fmtDate(b.window_start) || _fmtDate(b.window_end)) && (
+        <div style={{ fontSize: 12, color: "var(--ink-4)", fontFamily: "var(--font-mono)" }}>
+          {_fmtDate(b.window_start) && _fmtDate(b.window_end)
+            ? `${_fmtDate(b.window_start)} – ${_fmtDate(b.window_end)}`
+            : (_fmtDate(b.window_start) || _fmtDate(b.window_end))}
+        </div>
+      )}
+
       {b.signal && (
         <p style={{ fontSize: 13.5, color: "var(--ink-2)", fontStyle: "italic", lineHeight: 1.55,
           paddingTop: 8, borderTop: "1px solid var(--hairline)", margin: 0 }}>
