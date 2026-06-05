@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.dune.com/api/v1"
 
-# Parameters whose values are Ethereum addresses → Dune "text" type.
+# Parameters whose values are strings (addresses, timestamps) → Dune "text" type.
 # Everything else is treated as "number".
-_TEXT_PARAMS = {"token_address"}
+_TEXT_PARAMS = {"token_address", "end_time"}
 
 
 class DuneApiError(Exception):
