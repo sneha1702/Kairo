@@ -77,7 +77,7 @@ prior_sector AS (
         sector,
         SUM(amount_usd) AS prior_total_usd
     FROM sector_flows
-    WHERE block_time < NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE block_time < TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
     GROUP BY sector
 ),
 
