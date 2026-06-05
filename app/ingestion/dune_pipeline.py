@@ -138,6 +138,8 @@ class DuneIngestionPipeline:
         self,
         query_names: list[str] | None = None,
         dry_run: bool = False,
+        end_time: str | None = None,
+        time_window_hours: int | None = None,
     ) -> dict[str, IngestionResult]:
         configs = self._load_query_configs(query_names)
         results: dict[str, IngestionResult] = {}
