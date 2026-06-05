@@ -1,7 +1,7 @@
 -- Protocol Inflow Leaderboard: USD deposits into Aave v3, EigenLayer, and Lido.
 -- symbol = protocol name. Each row = one (protocol, deployment_type) per window.
 -- volume_multiplier compares current vs prior period of the same length.
--- Parameters: {{time_window_hours}}, {{min_usd_value}}
+-- Parameters: {{time_window_hours}}, {{min_usd_value}}, {{end_time}}
 
 WITH aave_raw AS (
     SELECT
