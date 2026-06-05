@@ -39,7 +39,7 @@ baseline AS (
         STDDEV(volume_usd)   AS stddev_volume,
         AVG(trade_count)     AS avg_hourly_trades
     FROM hourly_volume
-    WHERE hour < NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE hour < TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
     GROUP BY token_address, symbol
 ),
 
