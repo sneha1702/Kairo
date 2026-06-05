@@ -25,7 +25,8 @@ all_flows AS (
         tr.evt_block_time
     FROM erc20_ethereum.evt_Transfer tr
     INNER JOIN stablecoin_meta sm ON tr.contract_address = sm.contract_address
-    WHERE tr.evt_block_time >= NOW() - 2 * INTERVAL '{{time_window_hours}}' HOUR
+    WHERE tr.evt_block_time >= TIMESTAMP '{{end_time}}' - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND tr.evt_block_time <  TIMESTAMP '{{end_time}}'
       AND (
           tr."from" = 0x0000000000000000000000000000000000000000
           OR tr."to" = 0x0000000000000000000000000000000000000000
