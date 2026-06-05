@@ -8,7 +8,8 @@ WITH bridge_recipients AS (
         recipient,
         SUM(deposit_amount_usd) AS bridged_usd
     FROM bridges_evms.deposits
-    WHERE block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time <  TIMESTAMP '{{end_time}}'
       AND deposit_amount_usd >= {{min_usd_value}}
       AND recipient IS NOT NULL
     GROUP BY LOWER(withdrawal_chain), recipient
