@@ -67,16 +67,20 @@ agg AS (
     SELECT
         protocol AS symbol,
         deployment_type,
-        ROUND(SUM(CASE WHEN block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+        ROUND(SUM(CASE WHEN block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+                            AND block_time < TIMESTAMP '{{end_time}}'
                        THEN usd_value ELSE 0 END), 2) AS net_flow_usd,
-        ROUND(SUM(CASE WHEN block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+        ROUND(SUM(CASE WHEN block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+                            AND block_time < TIMESTAMP '{{end_time}}'
                        THEN usd_value ELSE 0 END), 2) AS total_usd,
-        ROUND(SUM(CASE WHEN block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+        ROUND(SUM(CASE WHEN block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+                            AND block_time < TIMESTAMP '{{end_time}}'
                             AND usd_value >= {{min_usd_value}}
                        THEN usd_value ELSE 0 END), 2) AS whale_usd,
-        COUNT(DISTINCT CASE WHEN block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+        COUNT(DISTINCT CASE WHEN block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+                                 AND block_time < TIMESTAMP '{{end_time}}'
                             THEN depositor END) AS new_wallets,
-        ROUND(SUM(CASE WHEN block_time < NOW() - INTERVAL '{{time_window_hours}}' HOUR
+        ROUND(SUM(CASE WHEN block_time < TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
                        THEN usd_value ELSE 0 END), 2) AS prior_usd
     FROM all_raw
     WHERE usd_value > 0
