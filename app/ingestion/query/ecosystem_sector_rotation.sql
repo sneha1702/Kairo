@@ -44,7 +44,8 @@ raw_trades AS (
     LEFT JOIN sector_map s_in  ON t.token_bought_address = s_in.address
     LEFT JOIN sector_map s_out ON t.token_sold_address   = s_out.address
     WHERE t.blockchain = 'ethereum'
-      AND t.block_time >= NOW() - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND t.block_time >= TIMESTAMP '{{end_time}}' - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND t.block_time <  TIMESTAMP '{{end_time}}'
       AND t.amount_usd >= {{min_usd_value}}
       AND (s_in.sector IS NOT NULL OR s_out.sector IS NOT NULL)
 ),
