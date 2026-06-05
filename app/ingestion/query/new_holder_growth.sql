@@ -70,9 +70,9 @@ preoutput AS (
         th.total                                                        AS total_holders_all_time,
         ROUND(nhc.new_wallets * 100.0 / NULLIF(th.total, 0), 4)        AS first_time_users_pct,
         aw.active_addresses,
-        NOW() - INTERVAL '{{time_window_hours}}' HOUR                  AS window_start_time,
-        NOW()                                                           AS window_end_time,
-        date_trunc('hour', NOW())                                       AS time_bucket,
+        TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR AS window_start_time,
+        TIMESTAMP '{{end_time}}'                                        AS window_end_time,
+        TIMESTAMP '{{end_time}}'                                        AS time_bucket,
         'organic_adoption'                                              AS category,
         FILTER(
             ARRAY[
