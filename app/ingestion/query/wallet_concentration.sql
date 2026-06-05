@@ -1,7 +1,7 @@
 -- Wallet Concentration: Top-50 holder supply share per token.
 -- whale_concentration_pct  = top-50 wallets' cumulative supply share.
 -- smart_money_concentration_pct = top-10 wallets' cumulative supply share (proxy).
--- Parameters: {{token_address}}
+-- Parameters: {{token_address}}, {{end_time}}
 
 WITH token_info AS (
     SELECT contract_address, symbol, decimals
