@@ -75,7 +75,8 @@ net_pressure AS (
         COUNT(DISTINCT taker)         AS wallets_buying_same_token
     FROM dex.trades
     WHERE blockchain = 'ethereum'
-      AND block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time <  TIMESTAMP '{{end_time}}'
       AND token_bought_address = {{token_address}}
     GROUP BY token_bought_symbol
 ),
