@@ -62,7 +62,8 @@ recent_sells AS (
         ROUND(SUM(t.amount_usd), 2) AS total_sell_usd
     FROM dex.trades t
     WHERE t.blockchain = 'ethereum'
-      AND t.block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+      AND t.block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND t.block_time <  TIMESTAMP '{{end_time}}'
       AND t.token_sold_address = {{token_address}}
     GROUP BY t.token_sold_symbol
 ),
