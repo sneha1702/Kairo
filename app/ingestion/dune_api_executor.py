@@ -62,7 +62,7 @@ class DuneApiExecutor:
         api_key: str,
         query_dir: str | Path,
         poll_interval_seconds: int = 5,
-        max_polls: int = 60,
+        max_polls: int = 120,
     ):
         self.query_dir = Path(query_dir)
         self.poll_interval = poll_interval_seconds
