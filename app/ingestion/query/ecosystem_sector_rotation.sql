@@ -1,7 +1,7 @@
 -- Ecosystem Sector Rotation: DEX buy/sell flows by DeFi sector on Ethereum mainnet.
 -- symbol = sector name. Each row = one sector for the current time window.
 -- volume_multiplier compares current vs prior period of the same length.
--- Parameters: {{time_window_hours}}, {{min_usd_value}}
+-- Parameters: {{time_window_hours}}, {{min_usd_value}}, {{end_time}}
 
 WITH sector_map AS (
     SELECT address, sector FROM (VALUES
