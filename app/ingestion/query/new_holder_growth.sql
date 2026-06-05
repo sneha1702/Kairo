@@ -46,12 +46,14 @@ active_in_window AS (
     FROM (
         SELECT "to"   AS addr FROM erc20_ethereum.evt_Transfer
         WHERE contract_address = {{token_address}}
-          AND evt_block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+          AND evt_block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+          AND evt_block_time <  TIMESTAMP '{{end_time}}'
           AND "to" != 0x0000000000000000000000000000000000000000
         UNION
         SELECT "from" AS addr FROM erc20_ethereum.evt_Transfer
         WHERE contract_address = {{token_address}}
-          AND evt_block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+          AND evt_block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+          AND evt_block_time <  TIMESTAMP '{{end_time}}'
           AND "from" != 0x0000000000000000000000000000000000000000
     ) addrs
 ),
