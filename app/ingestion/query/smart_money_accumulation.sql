@@ -11,7 +11,8 @@ WITH recent_buys AS (
         t.tx_hash
     FROM dex.trades t
     WHERE t.blockchain = 'ethereum'
-      AND t.block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+      AND t.block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND t.block_time <  TIMESTAMP '{{end_time}}'
       AND t.token_bought_address = {{token_address}}
       AND t.amount_usd >= {{min_buy_usd}}
 ),
