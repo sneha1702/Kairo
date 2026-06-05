@@ -1,6 +1,6 @@
 -- New Holder Growth: Tracks organic adoption by counting first-time token acquirers.
 -- Compares current window to prior window of equal length.
--- Parameters: {{token_address}}, {{time_window_hours}}
+-- Parameters: {{token_address}}, {{time_window_hours}}, {{end_time}}
 
 WITH token_meta AS (
     SELECT symbol
