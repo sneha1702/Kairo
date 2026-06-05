@@ -661,6 +661,7 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
                 "tier":        _strip_emoji(r.get("whale_tier") or "Whale"),
                 "tx_hash":     (r.get("tx_hash") or "")[:12] + "…" if r.get("tx_hash") else "",
                 "etherscan_url": r.get("etherscan_url") or "",
+                "block_time":  r.get("block_time") or "",
             })
     except Exception as exc:
         logger.warning("_build_supporting_facts whale error: %s", exc)
