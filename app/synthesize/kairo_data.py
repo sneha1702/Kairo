@@ -859,7 +859,9 @@ def _build_episode_body(evidence_text: str, narrative: dict, idx: int) -> str:
         parts.append(signal_context)
     if narrative_context:
         parts.append(narrative_context)
-    return " ".join(parts)[:520]
+    text = " ".join(parts)
+    words = text.split()
+    return " ".join(words[:100]) + ("…" if len(words) > 100 else "")
 
 
 def _bucket_episodes(episodes: list[dict], total_days: int) -> list[dict]:
