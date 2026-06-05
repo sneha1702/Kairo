@@ -18,7 +18,8 @@ WITH aave_raw AS (
         ON p.blockchain = 'ethereum'
         AND p.contract_address = s.reserve
         AND p.minute = date_trunc('minute', s.evt_block_time)
-    WHERE s.evt_block_time >= NOW() - 2 * INTERVAL '{{time_window_hours}}' HOUR
+    WHERE s.evt_block_time >= TIMESTAMP '{{end_time}}' - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND s.evt_block_time <  TIMESTAMP '{{end_time}}'
 ),
 
 eigenlayer_raw AS (
