@@ -1,6 +1,6 @@
 -- Smart Money Accumulation: Per-symbol summary of sophisticated capital activity.
 -- Qualifies wallets that make ≥2 buys above {{min_buy_usd}} within the window.
--- Parameters: {{token_address}}, {{time_window_hours}}, {{min_buy_usd}}
+-- Parameters: {{token_address}}, {{time_window_hours}}, {{min_buy_usd}}, {{end_time}}
 
 WITH recent_buys AS (
     SELECT
