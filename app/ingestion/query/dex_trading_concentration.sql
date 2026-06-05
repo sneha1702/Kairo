@@ -115,7 +115,7 @@ preoutput AS (
         ROUND(tb.total_volume_usd / NULLIF(pv.prior_volume_usd, 0), 2)            AS volume_multiplier,
         tdv.earliest_trade_time,
         tdv.latest_trade_time,
-        date_trunc('hour', NOW())                                                  AS time_bucket,
+        TIMESTAMP '{{end_time}}'                                                   AS time_bucket,
         'ecosystem_rotation'                                                       AS category,
         FILTER(
             ARRAY[
