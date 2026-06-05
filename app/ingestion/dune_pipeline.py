@@ -297,14 +297,15 @@ class DuneIngestionPipeline:
         self, qc: QueryConfig, doc: dict, ingested_at: datetime
     ) -> str:
         name = qc.query_name
-        # window_start truncated to the hour
+        # Use end_time param (deterministic across re-runs of same chunk) or ingested_at.
+        end_dt = self._resolve_end_dt(qc, ingested_at)
         tw = qc.params.get("time_window_hours")
         if tw is not None:
-            ws = (ingested_at - timedelta(hours=int(tw))).replace(
+            ws = (end_dt - timedelta(hours=int(tw))).replace(
                 minute=0, second=0, microsecond=0
             ).isoformat()
         else:
-            ws = ingested_at.strftime("%Y-%m-%d")
+            ws = end_dt.strftime("%Y-%m-%d")
 
         if name == "whale_transaction_filter":
             parts = [str(doc.get("tx_hash", ""))]
