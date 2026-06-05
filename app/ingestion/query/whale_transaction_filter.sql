@@ -37,7 +37,8 @@ transfers AS (
         ON p.blockchain = 'ethereum'
        AND p.contract_address = t.contract_address
        AND p.minute = date_trunc('minute', t.evt_block_time)
-    WHERE t.evt_block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE t.evt_block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND t.evt_block_time <  TIMESTAMP '{{end_time}}'
 ),
 
 -- Add per-symbol aggregates via window functions
