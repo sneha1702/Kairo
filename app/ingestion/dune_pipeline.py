@@ -141,7 +141,7 @@ class DuneIngestionPipeline:
         end_time: str | None = None,
         time_window_hours: int | None = None,
     ) -> dict[str, IngestionResult]:
-        configs = self._load_query_configs(query_names)
+        configs = self._load_query_configs(query_names, end_time=end_time, time_window_hours=time_window_hours)
         results: dict[str, IngestionResult] = {}
 
         with ThreadPoolExecutor(max_workers=3) as pool:  # free tier: max 3 concurrent executions
