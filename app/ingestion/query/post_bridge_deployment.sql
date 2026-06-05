@@ -27,7 +27,8 @@ dex_deployments AS (
     INNER JOIN bridge_recipients br
         ON t.taker = br.recipient
         AND t.blockchain = br.dest_chain
-    WHERE t.block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE t.block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND t.block_time <  TIMESTAMP '{{end_time}}'
       AND t.amount_usd >= 1000
       AND t.amount_usd IS NOT NULL
 ),
