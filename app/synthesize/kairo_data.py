@@ -766,6 +766,12 @@ def _build_supporting_facts(dune_context: dict, narrative: dict) -> dict:
                 "cumulative_pct": _safe_float(r.get("cumulative_pct"), 0),
                 "balance":     _safe_float(r.get("balance"), 0),
             })
+        if top_conc:
+            as_of = max(
+                (r.get("ingested_at") or r.get("window_start") or "" for r in top_conc),
+                default="",
+            ) or narrative.get("detected_at") or ""
+            facts["concentration_as_of"] = as_of
     except Exception as exc:
         logger.warning("_build_supporting_facts wallet_concentration error: %s", exc)
 
