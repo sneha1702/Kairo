@@ -62,7 +62,7 @@ preoutput AS (
         ROUND(a.total_usd * 100.0 / NULLIF(t.grand_total_usd, 0), 2) AS percentage_of_total,
         a.new_wallets,
         a.tx_count,
-        date_trunc('hour', NOW()) AS time_bucket,
+        TIMESTAMP '{{end_time}}' AS time_bucket,
         'capital_deployment' AS category,
         FILTER(
             ARRAY[
