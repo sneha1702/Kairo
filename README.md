@@ -477,4 +477,5 @@ python3 -m py_compile scripts/purge.py
 
 4. Run elastic ingestion
 poetry run python3 app/ingestion/dune_pipeline.py
-
+5. Run synthsize
+poetry  run python3 app/synthesize/signal_transformer.py --hours 48

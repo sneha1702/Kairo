@@ -571,6 +571,11 @@ function SupportingEvidence({ facts, assets, tracker }) {
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
               <Icon name="watch" size={15} stroke={1.8} style={{ color: "var(--ink-3)" }} />
               <span className="eyebrow">Top holder concentration</span>
+              {_fmtDate(facts.concentration_as_of) && (
+                <span style={{ fontSize: 11, color: "var(--ink-4)", fontFamily: "var(--font-mono)", marginLeft: 4 }}>
+                  as of {_fmtDate(facts.concentration_as_of)}
+                </span>
+              )}
             </div>
             <p style={{ fontSize: 13.5, color: "var(--ink-3)", lineHeight: 1.55, margin: 0, paddingLeft: 23 }}>
               How much of the circulating supply sits in the largest wallets. High concentration means a small number of entities can move price significantly — amplifying the impact of the whale activity above.

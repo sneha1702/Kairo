@@ -1,0 +1,54 @@
+```json
+[
+  {
+    "narrative_id": "large_investor_positioning",
+    "name": "Big Investors Continue to Shift Wrapped Bitcoin and Stablecoins",
+    "category": "Institutional",
+    "status": "CONTINUING",
+    "strength": "High",
+    "momentum": "Stable",
+    "confidence_score": 0.75,
+    "key_evidence": [
+      "Very large holders moved approximately $851 million in Wrapped Bitcoin (WBTC) on June 3rd.",
+      "This followed substantial activity on June 2nd, which saw about $3.04 billion in Wrapped Bitcoin (WBTC) transferred.",
+      "On June 1st, approximately $2.71 billion in Wrapped Bitcoin (WBTC) and $857 million in USDC were shifted by big investors.",
+      "Earlier in the week, even larger movements were recorded, including $6.45 billion in Wrapped Bitcoin (WBTC) on May 31st and $5.06 billion on May 30th, showcasing sustained large-scale re-positioning.",
+      "Additionally, $428 million in USDC was moved by large investors on May 31st and again on June 2nd."
+    ],
+    "data_caveat": "We cannot see the specific destination of these funds — if they are heading to centralized exchanges, it might suggest selling pressure; if to cold storage or DeFi platforms, it could indicate accumulation or strategic deployment. This distinction would completely change what the activity implies.",
+    "historical_context": "This narrative was initially detected with consistent large movements of Wrapped Bitcoin and stablecoins. Day-over-day, we continue to observe significant activity, with some of the largest single-day WBTC movements (like $6.45 billion on May 31st) occurring earlier in the current monitoring window, implying a prolonged period of strategic positioning by these large players rather than a one-off event.",
+    "implications": "The sustained movement of such substantial capital by sophisticated investors often signals a period of strategic positioning ahead of anticipated market moves. When these large players are consistently moving these foundational assets, it could precede a significant directional shift in the broader crypto market, potentially impacting Bitcoin prices (as WBTC is a Bitcoin proxy) or signaling a reallocation of stablecoins (USDC) into other opportunities. This sort of activity could manifest in market shifts within the coming days to weeks.",
+    "plain_english_summary": "Big money wallets are consistently moving billions in Wrapped Bitcoin and USDC around the market, signaling they are preparing for something. This kind of persistent activity by large investors usually means they are positioning for a significant market event soon.",
+    "top_tokens": [
+      "WBTC",
+      "USDC"
+    ],
+    "retail_considerations": "(1) This indicates institutional or very large individual players are actively managing their core crypto holdings, suggesting a period of strategic recalibration or anticipation of market changes. (2) Watch the price action of Bitcoin (and its proxy, WBTC) and the overall stablecoin market capitalization in the next 72 hours — continued accumulation could hint at upward pressure, while large outflows to exchanges might suggest selling. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ]
+  },
+  {
+    "narrative_id": "cross_chain_liquidity",
+    "name": "Overall Capital Movement Stays Elevated, Despite Lower Daily Bridge Volume",
+    "category": "CrossChain",
+    "status": "CONTINUING",
+    "strength": "Medium",
+    "momentum": "Stable",
+    "confidence_score": 0.5,
+    "key_evidence": [
+      "On June 4th, approximately $133 million in mixed crypto assets moved across different blockchains using 'bridge' protocols, which allow tokens to transfer between networks.",
+      "The broader pace of capital migration across the crypto ecosystem remains significantly elevated, running about 329% faster than the 30-day daily average."
+    ],
+    "data_caveat": "The specific breakdown of 'mixed assets' and their ultimate destination chains for the $133 million bridge activity is unknown, which limits a deeper understanding of where capital is specifically flowing. Also, the 329% acceleration applies to overall capital migration, not exclusively to bridge volume.",
+    "historical_context": "This narrative previously highlighted immense daily bridge volumes, indicating high activity. While the specific daily bridge volume on June 4th was lower compared to previously observed peaks, the underlying, broader pace of capital movement across the crypto ecosystem remains exceptionally high. This suggests that while large concentrated bridge events might have cooled off, overall strategic relocation of funds continues at an accelerated rate.",
+    "implications": "An accelerated overall pace of capital movement, even with lower daily bridge volumes, means market participants are still very active in shifting funds around the various crypto networks. This sustained dynamism indicates that investors are either seeking new opportunities on different blockchains or rebalancing their portfolios, which can lead to increased activity and potential price changes for tokens native to those chains receiving capital. This general elevation in activity could continue to fuel market shifts over the coming week.",
+    "plain_english_summary": "Even though less money moved through crypto bridges on a single day, the overall speed at which funds are moving between different blockchains is still super fast. This means people are constantly re-shuffling their crypto across different networks, keeping the market very dynamic.",
+    "top_tokens": [],
+    "retail_considerations": "(1) This suggests that investors are actively engaging with different blockchain ecosystems, potentially looking for new opportunities or managing their exposure across various networks. (2) Keep an eye on the activity and token prices of smaller, alternative blockchains ('altcoins') in the coming days, as a high rate of capital migration can precede shifts in where money is being deployed. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  }
+]
+```

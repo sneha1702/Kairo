@@ -1,0 +1,1223 @@
+[
+  {
+    "narrative_id": "large_investor_positioning",
+    "name": "Big Investors Continue to Shift Wrapped Bitcoin and Stablecoins",
+    "category": "Institutional",
+    "status": "CONTINUING",
+    "strength": "High",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0.0
+    },
+    "confidence_score": 0.75,
+    "key_evidence": [
+      "Very large holders moved approximately $851 million in Wrapped Bitcoin (WBTC) on June 3rd.",
+      "This followed substantial activity on June 2nd, which saw about $3.04 billion in Wrapped Bitcoin (WBTC) transferred.",
+      "On June 1st, approximately $2.71 billion in Wrapped Bitcoin (WBTC) and $857 million in USDC were shifted by big investors.",
+      "Earlier in the week, even larger movements were recorded, including $6.45 billion in Wrapped Bitcoin (WBTC) on May 31st and $5.06 billion on May 30th, showcasing sustained large-scale re-positioning.",
+      "Additionally, $428 million in USDC was moved by large investors on May 31st and again on June 2nd."
+    ],
+    "data_caveat": "We cannot see the specific destination of these funds \u2014 if they are heading to centralized exchanges, it might suggest selling pressure; if to cold storage or DeFi platforms, it could indicate accumulation or strategic deployment. This distinction would completely change what the activity implies.",
+    "historical_context": "This narrative was initially detected with consistent large movements of Wrapped Bitcoin and stablecoins. Day-over-day, we continue to observe significant activity, with some of the largest single-day WBTC movements (like $6.45 billion on May 31st) occurring earlier in the current monitoring window, implying a prolonged period of strategic positioning by these large players rather than a one-off event.",
+    "implications": "The sustained movement of such substantial capital by sophisticated investors often signals a period of strategic positioning ahead of anticipated market moves. When these large players are consistently moving these foundational assets, it could precede a significant directional shift in the broader crypto market, potentially impacting Bitcoin prices (as WBTC is a Bitcoin proxy) or signaling a reallocation of stablecoins (USDC) into other opportunities. This sort of activity could manifest in market shifts within the coming days to weeks.",
+    "plain_english_summary": "Big money wallets are consistently moving billions in Wrapped Bitcoin and USDC around the market, signaling they are preparing for something. This kind of persistent activity by large investors usually means they are positioning for a significant market event soon.",
+    "top_tokens": [
+      "WBTC",
+      "USDC"
+    ],
+    "retail_considerations": "(1) This indicates institutional or very large individual players are actively managing their core crypto holdings, suggesting a period of strategic recalibration or anticipation of market changes. (2) Watch the price action of Bitcoin (and its proxy, WBTC) and the overall stablecoin market capitalization in the next 72 hours \u2014 continued accumulation could hint at upward pressure, while large outflows to exchanges might suggest selling. (3) On-chain movements are early signals that can reverse quickly \u2014 this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ],
+    "detected_at": "2026-06-05T10:36:13.224369Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-28",
+    "data_window_end": "2026-06-04",
+    "last_ingested_at": "2026-06-04T20:36:50.423852+00:00",
+    "prompt_built_at": "2026-06-05T10:36:13.224369Z",
+    "evidence_timestamps": {
+      "WBTC": {
+        "whale_tx_block_times": [
+          "2026-05-28T22:34:47.000Z",
+          "2026-05-28T23:46:23.000Z",
+          "2026-05-29T01:10:59.000Z",
+          "2026-05-29T03:50:11.000Z",
+          "2026-05-29T07:10:11.000Z",
+          "2026-05-29T16:52:59.000Z",
+          "2026-05-30T00:05:47.000Z",
+          "2026-05-30T01:28:47.000Z",
+          "2026-05-30T04:38:47.000Z",
+          "2026-05-30T06:05:47.000Z"
+        ],
+        "volume_spike_window_start": "2026-06-01T19:00:00.000Z",
+        "volume_spike_window_end": "2026-06-04T17:00:00.000Z"
+      },
+      "USDC": {
+        "whale_tx_block_times": [
+          "2026-05-31T00:06:47.000Z",
+          "2026-06-01T00:07:23.000Z",
+          "2026-06-01T23:48:23.000Z",
+          "2026-06-02T23:43:35.000Z"
+        ],
+        "volume_spike_window_start": "2026-06-01T19:00:00.000Z",
+        "volume_spike_window_end": "2026-06-04T17:00:00.000Z"
+      }
+    },
+    "unified_signals": [
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "MIXED",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 133725758,
+        "net_flow_usd": 0,
+        "bridge_usd": 133725758,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-31",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 6457394911,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-30",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 5064763409,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 2715705908,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-02",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 3046734112,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-31",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 428842420,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-03",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 851629281,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-29",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 1827780011,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-28",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 909124999,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 857713898,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-02",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 428880294,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "UNI",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "AAVE",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "USDT",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "DAI",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "WETH",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 37.8,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "STETH",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "LINK",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "WETH",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 37.8,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "STETH",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "LINK",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "AAVE",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "USDT",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "DAI",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "UNI",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "MKR",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "smart_deployment",
+        "symbol": "WETH",
+        "to_chain": "Unknown",
+        "deployment_type": "unknown",
+        "protocol": "Unknown",
+        "signals": [
+          "smart_money"
+        ],
+        "signal_count": 1,
+        "smart_money_usd": 0,
+        "whale_concentration_pct": 37.8
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "stablecoin_flow",
+        "symbol": "USDT",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "stablecoin_flow",
+        "symbol": "DAI",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "stablecoin_flow",
+        "symbol": "USDC",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "stablecoin_flow",
+        "symbol": "USDC",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "stablecoin_flow",
+        "symbol": "USDT",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "stablecoin_flow",
+        "symbol": "DAI",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      }
+    ],
+    "signal_metadata": {
+      "window_hours": 48,
+      "generated_at": "2026-06-05T10:36:13.225020+00:00",
+      "total_records": 37,
+      "by_category": {
+        "capital_migration": 30,
+        "smart_deployment": 1,
+        "stablecoin_flow": 6
+      }
+    }
+  },
+  {
+    "narrative_id": "cross_chain_liquidity",
+    "name": "Overall Capital Movement Stays Elevated, Despite Lower Daily Bridge Volume",
+    "category": "CrossChain",
+    "status": "CONTINUING",
+    "strength": "Medium",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0.0
+    },
+    "confidence_score": 0.5,
+    "key_evidence": [
+      "On June 4th, approximately $133 million in mixed crypto assets moved across different blockchains using 'bridge' protocols, which allow tokens to transfer between networks.",
+      "The broader pace of capital migration across the crypto ecosystem remains significantly elevated, running about 329% faster than the 30-day daily average."
+    ],
+    "data_caveat": "The specific breakdown of 'mixed assets' and their ultimate destination chains for the $133 million bridge activity is unknown, which limits a deeper understanding of where capital is specifically flowing. Also, the 329% acceleration applies to overall capital migration, not exclusively to bridge volume.",
+    "historical_context": "This narrative previously highlighted immense daily bridge volumes, indicating high activity. While the specific daily bridge volume on June 4th was lower compared to previously observed peaks, the underlying, broader pace of capital movement across the crypto ecosystem remains exceptionally high. This suggests that while large concentrated bridge events might have cooled off, overall strategic relocation of funds continues at an accelerated rate.",
+    "implications": "An accelerated overall pace of capital movement, even with lower daily bridge volumes, means market participants are still very active in shifting funds around the various crypto networks. This sustained dynamism indicates that investors are either seeking new opportunities on different blockchains or rebalancing their portfolios, which can lead to increased activity and potential price changes for tokens native to those chains receiving capital. This general elevation in activity could continue to fuel market shifts over the coming week.",
+    "plain_english_summary": "Even though less money moved through crypto bridges on a single day, the overall speed at which funds are moving between different blockchains is still super fast. This means people are constantly re-shuffling their crypto across different networks, keeping the market very dynamic.",
+    "top_tokens": [],
+    "retail_considerations": "(1) This suggests that investors are actively engaging with different blockchain ecosystems, potentially looking for new opportunities or managing their exposure across various networks. (2) Keep an eye on the activity and token prices of smaller, alternative blockchains ('altcoins') in the coming days, as a high rate of capital migration can precede shifts in where money is being deployed. (3) On-chain movements are early signals that can reverse quickly \u2014 this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ],
+    "detected_at": "2026-06-05T10:36:13.224369Z",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-05-28",
+    "data_window_end": "2026-06-04",
+    "last_ingested_at": "2026-06-04T20:36:50.423852+00:00",
+    "prompt_built_at": "2026-06-05T10:36:13.224369Z",
+    "evidence_timestamps": {},
+    "unified_signals": [
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "MIXED",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 133725758,
+        "net_flow_usd": 0,
+        "bridge_usd": 133725758,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-31",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 6457394911,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-30",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 5064763409,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 2715705908,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-02",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 3046734112,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-31",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 428842420,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-03",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 851629281,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-29",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 1827780011,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-05-28",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 909124999,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 857713898,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-02",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "whale_transactions"
+        ],
+        "signal_count": 1,
+        "total_usd": 428880294,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "UNI",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "AAVE",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "USDT",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "DAI",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "WETH",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 37.8,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "STETH",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "capital_migration",
+        "symbol": "LINK",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "WETH",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 37.8,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "STETH",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "LINK",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "AAVE",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "USDC",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "USDT",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "WBTC",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "DAI",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "UNI",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "capital_migration",
+        "symbol": "MKR",
+        "from_chain": "ethereum",
+        "to_chain": "cex",
+        "signals": [
+          "token_flows"
+        ],
+        "signal_count": 1,
+        "total_usd": 0,
+        "net_flow_usd": 0,
+        "bridge_usd": 0,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 329
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "smart_deployment",
+        "symbol": "WETH",
+        "to_chain": "Unknown",
+        "deployment_type": "unknown",
+        "protocol": "Unknown",
+        "signals": [
+          "smart_money"
+        ],
+        "signal_count": 1,
+        "smart_money_usd": 0,
+        "whale_concentration_pct": 37.8
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "stablecoin_flow",
+        "symbol": "USDT",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "stablecoin_flow",
+        "symbol": "DAI",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-04",
+        "category": "stablecoin_flow",
+        "symbol": "USDC",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "stablecoin_flow",
+        "symbol": "USDC",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "stablecoin_flow",
+        "symbol": "USDT",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      },
+      {
+        "time_bucket": "2026-06-01",
+        "category": "stablecoin_flow",
+        "symbol": "DAI",
+        "net_flow_usd": 0,
+        "mint_usd": 0,
+        "signals": [],
+        "signal_count": 0
+      }
+    ],
+    "signal_metadata": {
+      "window_hours": 48,
+      "generated_at": "2026-06-05T10:36:13.225020+00:00",
+      "total_records": 37,
+      "by_category": {
+        "capital_migration": 30,
+        "smart_deployment": 1,
+        "stablecoin_flow": 6
+      }
+    }
+  }
+]
