@@ -30,8 +30,8 @@ new_holders_current AS (
 new_holders_prior AS (
     SELECT COUNT(*) AS prior_new_wallets
     FROM first_acquisition
-    WHERE first_received >= NOW() - 2 * INTERVAL '{{time_window_hours}}' HOUR
-      AND first_received <  NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE first_received >= TIMESTAMP '{{end_time}}' - 2 * INTERVAL '{{time_window_hours}}' HOUR
+      AND first_received <  TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
 ),
 
 total_holders AS (
