@@ -67,7 +67,8 @@ current_sector AS (
         COUNT(*) AS trade_count,
         COUNT(DISTINCT taker) AS unique_traders
     FROM sector_flows
-    WHERE block_time >= NOW() - INTERVAL '{{time_window_hours}}' HOUR
+    WHERE block_time >= TIMESTAMP '{{end_time}}' - INTERVAL '{{time_window_hours}}' HOUR
+      AND block_time <  TIMESTAMP '{{end_time}}'
     GROUP BY sector
 ),
 
