@@ -1,0 +1,469 @@
+"""
+DefiLlamaIngestionPipeline: implements BaseIngestionPipeline using DefiLlama's
+free public REST API.
+
+Supported signals (6/12):
+  volume_spike_detection      → /overview/dexs
+  dex_trading_concentration   → /overview/dexs
+  bridge_activity             → /bridges + /bridgevolume/Ethereum
+  stablecoin_liquidity_flow   → /stablecoins
+  ecosystem_sector_rotation   → /protocols (grouped by category, TVL change)
+  protocol_inflow_leaderboard → /protocol/{slug} for Aave v3, Lido, EigenLayer
+
+Unsupported signals (6/12) — skipped with success=True, rows_fetched=0:
+  whale_transaction_filter, smart_money_accumulation, token_inflow_outflow,
+  wallet_concentration, new_holder_growth, post_bridge_deployment
+"""
+
+from __future__ import annotations
+
+import logging
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from app.ingestion.base_pipeline import (
+    BaseIngestionPipeline,
+    CADENCE_GROUPS,
+    QUERY_TO_INDEX,
+    QUERY_TO_SIGNAL,
+    IngestionResult,
+    QueryConfig,
+)
+from app.ingestion.defillama_client import DefiLlamaClient, DefiLlamaApiError
+
+logger = logging.getLogger(__name__)
+
+# Signals that require per-wallet / per-tx on-chain data — not available from
+# DefiLlama's pre-aggregated endpoints.
+_UNSUPPORTED = frozenset({
+    "whale_transaction_filter",
+    "smart_money_accumulation",
+    "token_inflow_outflow",
+    "wallet_concentration",
+    "new_holder_growth",
+    "post_bridge_deployment",
+})
+
+# Protocol slugs used by DefiLlama
+_PROTOCOL_SLUGS = {
+    "aave-v3":   "Aave V3",
+    "lido":      "Lido",
+    "eigenlayer": "EigenLayer",
+}
+
+# Top bridges by DefiLlama ID (Stargate=1, Arbitrum Bridge=7, Hop=10, Across=41)
+_TOP_BRIDGE_IDS = [1, 7, 10, 41]
+
+
+def _utcnow_str() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
+class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
+    provider_name = "defillama"
+
+    def __init__(self, es_client: Any, client: DefiLlamaClient | None = None):
+        self._es = es_client
+        self._client = client or DefiLlamaClient()
+
+    # ── BaseIngestionPipeline interface ──────────────────────────────────────────
+
+    def run_all(
+        self,
+        query_names: list[str] | None = None,
+        dry_run: bool = False,
+        end_time: str | None = None,
+        time_window_hours: int | None = None,
+    ) -> dict[str, IngestionResult]:
+        names = query_names if query_names else list(QUERY_TO_INDEX.keys())
+        results: dict[str, IngestionResult] = {}
+        for name in names:
+            qc = QueryConfig(
+                query_name=name,
+                sql_path=Path("."),
+                params={
+                    "end_time": end_time or _utcnow_str(),
+                    "time_window_hours": time_window_hours or 168,
+                },
+                cadence_hours=24,
+                signal_category=QUERY_TO_SIGNAL.get(name, ""),
+                target_index=QUERY_TO_INDEX.get(name, name),
+            )
+            results[name] = self.run_one(qc, dry_run=dry_run)
+        return results
+
+    def run_one(self, qc: QueryConfig, dry_run: bool = False) -> IngestionResult:
+        t0 = time.time()
+        result = IngestionResult(
+            query_name=qc.query_name,
+            provider=self.provider_name,
+        )
+
+        if qc.query_name in _UNSUPPORTED:
+            logger.info("[%s] Skipped — not supported by DefiLlama", qc.query_name)
+            result.success = True
+            result.duration_seconds = time.time() - t0
+            return result
+
+        if dry_run:
+            logger.info("[%s] [DRY RUN] Would fetch from DefiLlama", qc.query_name)
+            result.success = True
+            result.duration_seconds = time.time() - t0
+            return result
+
+        try:
+            rows = self._dispatch(qc)
+            result.rows_fetched = len(rows)
+            logger.info("[%s] Fetched %d rows", qc.query_name, len(rows))
+
+            if rows:
+                indexed, failed = self._bulk_index(rows, qc.target_index)
+                result.docs_indexed = indexed
+                result.docs_failed  = failed
+
+            result.success = True
+        except DefiLlamaApiError as exc:
+            logger.error("[%s] DefiLlama error: %s", qc.query_name, exc)
+            result.error = exc
+        except Exception as exc:
+            logger.exception("[%s] Unexpected error: %s", qc.query_name, exc)
+            result.error = exc
+
+        result.duration_seconds = time.time() - t0
+        return result
+
+    # ── Dispatcher ───────────────────────────────────────────────────────────────
+
+    def _dispatch(self, qc: QueryConfig) -> list[dict]:
+        name = qc.query_name
+        params = qc.params
+        dispatch = {
+            "volume_spike_detection":      self._fetch_volume_spike,
+            "dex_trading_concentration":   self._fetch_dex_concentration,
+            "bridge_activity":             self._fetch_bridge_activity,
+            "stablecoin_liquidity_flow":   self._fetch_stablecoin_flow,
+            "ecosystem_sector_rotation":   self._fetch_sector_rotation,
+            "protocol_inflow_leaderboard": self._fetch_protocol_inflow,
+        }
+        return dispatch[name](params)
+
+    # ── Signal fetch methods ─────────────────────────────────────────────────────
+
+    def _fetch_volume_spike(self, params: dict) -> list[dict]:
+        data = self._client.dex_overview(chain="Ethereum")
+        end_time = params.get("end_time", _utcnow_str())
+        protocols = data.get("protocols", [])
+        rows = []
+        for p in protocols:
+            vol_24h   = p.get("totalVolume24h") or 0
+            vol_7d    = p.get("totalVolume7d")  or 0
+            change_1d = p.get("change_1d") or 0
+            change_7d = p.get("change_7d") or 0
+            if vol_24h <= 0:
+                continue
+
+            signals = []
+            if change_1d >= 100:
+                signals.append("EXTREME_VOLUME_SPIKE")
+            elif change_1d >= 50:
+                signals.append("HIGH_VOLUME_SPIKE")
+            elif change_1d >= 20:
+                signals.append("MODERATE_VOLUME_SPIKE")
+            if change_1d >= 50 and change_7d >= 50:
+                signals.append("SUSTAINED_VOLUME_GROWTH")
+
+            rows.append({
+                "symbol":          p.get("name", ""),
+                "volume_24h_usd":  round(vol_24h, 2),
+                "volume_7d_usd":   round(vol_7d, 2),
+                "change_1d_pct":   round(change_1d, 2),
+                "change_7d_pct":   round(change_7d, 2),
+                "time_bucket":     end_time,
+                "category":        "volume_spike",
+                "signals":         signals,
+                "signal_count":    len(signals),
+            })
+        return sorted(rows, key=lambda r: r["volume_24h_usd"], reverse=True)[:20]
+
+    def _fetch_dex_concentration(self, params: dict) -> list[dict]:
+        data = self._client.dex_overview(chain="Ethereum")
+        end_time = params.get("end_time", _utcnow_str())
+        protocols = [p for p in data.get("protocols", []) if (p.get("totalVolume24h") or 0) > 0]
+
+        total_vol = sum(p.get("totalVolume24h", 0) or 0 for p in protocols)
+        if total_vol <= 0:
+            return []
+
+        rows = []
+        cumulative = 0.0
+        for rank, p in enumerate(
+            sorted(protocols, key=lambda x: x.get("totalVolume24h", 0), reverse=True)[:20],
+            start=1,
+        ):
+            vol = p.get("totalVolume24h", 0) or 0
+            pct = round(vol / total_vol * 100, 4)
+            cumulative = round(cumulative + pct, 2)
+
+            signals = []
+            if rank == 1 and pct >= 50:
+                signals.append("DOMINANT_DEX")
+            if pct >= 30:
+                signals.append("HIGH_MARKET_SHARE")
+            if cumulative >= 80 and rank <= 3:
+                signals.append("CONCENTRATED_MARKET")
+
+            rows.append({
+                "symbol":         p.get("name", ""),
+                "rank":           rank,
+                "volume_24h_usd": round(vol, 2),
+                "market_share_pct": pct,
+                "cumulative_pct": cumulative,
+                "time_bucket":    end_time,
+                "category":       "dex_liquidity",
+                "signals":        signals,
+                "signal_count":   len(signals),
+            })
+        return rows
+
+    def _fetch_bridge_activity(self, params: dict) -> list[dict]:
+        end_time = params.get("end_time", _utcnow_str())
+        tw_hours  = int(params.get("time_window_hours", 168))
+        bridges_data = self._client.bridges()
+        bridge_list  = bridges_data.get("bridges", [])
+
+        # Filter to known top bridges only to reduce API calls
+        top_ids = {b["id"] for b in bridge_list if b.get("id") in _TOP_BRIDGE_IDS}
+        if not top_ids:
+            top_ids = {b["id"] for b in bridge_list[:4]}
+
+        rows = []
+        for bridge in bridge_list:
+            bid = bridge.get("id")
+            if bid not in top_ids:
+                continue
+            try:
+                vol_data = self._client.bridge_volume(bid, chain="Ethereum")
+            except DefiLlamaApiError as exc:
+                logger.warning("[bridge_activity] bridge_id=%s: %s", bid, exc)
+                continue
+
+            # vol_data is a list of {date, depositUSD, withdrawUSD, ...}
+            if not isinstance(vol_data, list) or not vol_data:
+                continue
+
+            latest = vol_data[-1] if vol_data else {}
+            prev   = vol_data[-2] if len(vol_data) >= 2 else {}
+
+            deposit_usd  = latest.get("depositUSD", 0) or 0
+            withdraw_usd = latest.get("withdrawUSD", 0) or 0
+            net_usd      = deposit_usd - withdraw_usd
+
+            prev_deposit = prev.get("depositUSD", 0) or 0
+            multiplier   = round(deposit_usd / prev_deposit, 2) if prev_deposit else None
+
+            signals = []
+            if deposit_usd >= 50_000_000:
+                signals.append("HIGH_BRIDGE_INFLOW")
+            if net_usd < -10_000_000:
+                signals.append("NET_BRIDGE_OUTFLOW")
+            if multiplier and multiplier >= 2.0:
+                signals.append("ACCELERATING_BRIDGE_VOLUME")
+
+            rows.append({
+                "bridge_name":        bridge.get("displayName", bridge.get("name", "")),
+                "deposit_usd":        round(deposit_usd, 2),
+                "withdraw_usd":       round(withdraw_usd, 2),
+                "net_flow_usd":       round(net_usd, 2),
+                "volume_multiplier":  multiplier,
+                "time_bucket":        end_time,
+                "category":           "bridge",
+                "signals":            signals,
+                "signal_count":       len(signals),
+            })
+        return rows
+
+    def _fetch_stablecoin_flow(self, params: dict) -> list[dict]:
+        end_time = params.get("end_time", _utcnow_str())
+        data  = self._client.stablecoins()
+        coins = data.get("peggedAssets", [])
+
+        rows = []
+        for coin in coins:
+            current_usd  = (coin.get("circulating", {}) or {}).get("peggedUSD", 0) or 0
+            prev_day_usd = (coin.get("circulatingPrevDay", {}) or {}).get("peggedUSD", 0) or 0
+
+            if current_usd <= 0:
+                continue
+
+            delta_usd = current_usd - prev_day_usd
+            change_pct = round(delta_usd / prev_day_usd * 100, 2) if prev_day_usd else 0
+
+            signals = []
+            if delta_usd >= 100_000_000:
+                signals.append("LARGE_STABLECOIN_MINT")
+            if delta_usd <= -100_000_000:
+                signals.append("LARGE_STABLECOIN_BURN")
+            if change_pct >= 5:
+                signals.append("RAPID_SUPPLY_EXPANSION")
+            if change_pct <= -5:
+                signals.append("RAPID_SUPPLY_CONTRACTION")
+
+            rows.append({
+                "symbol":          coin.get("symbol", ""),
+                "name":            coin.get("name", ""),
+                "circulating_usd": round(current_usd, 2),
+                "prev_day_usd":    round(prev_day_usd, 2),
+                "delta_usd":       round(delta_usd, 2),
+                "change_pct":      change_pct,
+                "peg_type":        coin.get("pegType", ""),
+                "time_bucket":     end_time,
+                "category":        "stablecoin_flow",
+                "signals":         signals,
+                "signal_count":    len(signals),
+            })
+
+        return sorted(rows, key=lambda r: r["circulating_usd"], reverse=True)[:20]
+
+    def _fetch_sector_rotation(self, params: dict) -> list[dict]:
+        end_time = params.get("end_time", _utcnow_str())
+        protocols = self._client.protocols()
+
+        # Group by category, sum TVL + TVL change
+        from collections import defaultdict
+        by_category: dict[str, dict] = defaultdict(lambda: {
+            "tvl": 0.0, "tvl_prev": 0.0, "protocol_count": 0,
+        })
+
+        for p in protocols:
+            cat = p.get("category") or "Other"
+            chains = p.get("chains", [])
+            if "Ethereum" not in chains:
+                continue
+
+            tvl = p.get("tvl") or 0
+            change_1d_pct = p.get("change_1d") or 0
+            prev_tvl = tvl / (1 + change_1d_pct / 100) if change_1d_pct != -100 else tvl
+
+            by_category[cat]["tvl"]            += tvl
+            by_category[cat]["tvl_prev"]       += prev_tvl
+            by_category[cat]["protocol_count"] += 1
+
+        rows = []
+        for cat, agg in by_category.items():
+            tvl      = agg["tvl"]
+            tvl_prev = agg["tvl_prev"]
+            if tvl <= 0:
+                continue
+
+            delta_pct = round((tvl - tvl_prev) / tvl_prev * 100, 2) if tvl_prev else 0
+
+            signals = []
+            if delta_pct >= 20:
+                signals.append("STRONG_SECTOR_INFLOW")
+            elif delta_pct >= 5:
+                signals.append("MODERATE_SECTOR_INFLOW")
+            if delta_pct <= -20:
+                signals.append("STRONG_SECTOR_OUTFLOW")
+            elif delta_pct <= -5:
+                signals.append("MODERATE_SECTOR_OUTFLOW")
+
+            rows.append({
+                "category":       cat,
+                "tvl_usd":        round(tvl, 2),
+                "tvl_prev_usd":   round(tvl_prev, 2),
+                "tvl_change_pct": delta_pct,
+                "protocol_count": agg["protocol_count"],
+                "time_bucket":    end_time,
+                "signal_category": "sector_rotation",
+                "signals":        signals,
+                "signal_count":   len(signals),
+            })
+
+        return sorted(rows, key=lambda r: r["tvl_usd"], reverse=True)[:15]
+
+    def _fetch_protocol_inflow(self, params: dict) -> list[dict]:
+        end_time = params.get("end_time", _utcnow_str())
+        rows = []
+
+        for slug, display_name in _PROTOCOL_SLUGS.items():
+            try:
+                data = self._client.protocol(slug)
+            except DefiLlamaApiError as exc:
+                logger.warning("[protocol_inflow_leaderboard] %s: %s", slug, exc)
+                continue
+
+            # tvl field is a list of {date, totalLiquidityUSD}
+            tvl_series = data.get("tvl", [])
+            if not tvl_series:
+                continue
+
+            current_tvl = tvl_series[-1].get("totalLiquidityUSD", 0) or 0
+            prev_tvl    = tvl_series[-2].get("totalLiquidityUSD", 0) if len(tvl_series) >= 2 else current_tvl
+            delta_usd   = current_tvl - prev_tvl
+            multiplier  = round(current_tvl / prev_tvl, 2) if prev_tvl else None
+
+            signals = []
+            if delta_usd >= 100_000_000:
+                signals.append("HIGH_PROTOCOL_INFLOW")
+            if delta_usd <= -100_000_000:
+                signals.append("HIGH_PROTOCOL_OUTFLOW")
+            if multiplier and multiplier >= 2.0:
+                signals.append("ACCELERATING_INFLOW")
+            if current_tvl >= 1_000_000_000:
+                signals.append("BILLION_DOLLAR_PROTOCOL")
+
+            rows.append({
+                "symbol":            display_name,
+                "slug":              slug,
+                "tvl_usd":           round(current_tvl, 2),
+                "prev_tvl_usd":      round(prev_tvl, 2),
+                "net_flow_usd":      round(delta_usd, 2),
+                "volume_multiplier": multiplier,
+                "time_bucket":       end_time,
+                "category":          "protocol_inflow",
+                "signals":           signals,
+                "signal_count":      len(signals),
+            })
+
+        return sorted(rows, key=lambda r: r["tvl_usd"], reverse=True)
+
+    # ── Elasticsearch bulk index ─────────────────────────────────────────────────
+
+    def _bulk_index(self, rows: list[dict], index: str) -> tuple[int, int]:
+        from elasticsearch.helpers import bulk, BulkIndexError
+
+        actions = [{"_index": index, "_source": row} for row in rows]
+        try:
+            success, errors = bulk(self._es, actions, raise_on_error=False)
+            failed = len(errors) if errors else 0
+            if errors:
+                for err in errors[:3]:
+                    logger.warning("Index error: %s", err)
+            return success, failed
+        except BulkIndexError as exc:
+            logger.error("Bulk index error for %s: %s", index, exc)
+            return 0, len(rows)
+
+
+def build_defillama_pipeline() -> DefiLlamaIngestionPipeline:
+    """Factory: create a DefiLlamaIngestionPipeline wired to Elasticsearch."""
+    import os
+    import sys
+
+    ROOT_DIR = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+    )
+    if ROOT_DIR not in sys.path:
+        sys.path.insert(0, ROOT_DIR)
+
+    from config.config import Config
+    from elasticsearch import Elasticsearch
+
+    es = Elasticsearch(
+        Config.ES_URL,
+        basic_auth=(Config.ES_USERNAME, Config.ES_PASSWORD),
+        verify_certs=False,
+    )
+    return DefiLlamaIngestionPipeline(es_client=es)
