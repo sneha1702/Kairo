@@ -152,9 +152,15 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
     # ── Signal fetch methods ─────────────────────────────────────────────────────
 
     def _fetch_volume_spike(self, params: dict) -> list[dict]:
-        data = self._client.dex_overview(chain="Ethereum")
+        # Fetch all DEXes (no chain filter — chain param changes response shape)
+        data = self._client.dex_overview()
         end_time = params.get("end_time", _utcnow_str())
-        protocols = data.get("protocols", [])
+        # Keep only protocols that have Ethereum in their chain list
+        all_protocols = data.get("protocols", [])
+        protocols = [
+            p for p in all_protocols
+            if "Ethereum" in (p.get("chains") or [])
+        ]
         rows = []
         for p in protocols:
             vol_24h   = p.get("totalVolume24h") or 0
@@ -188,9 +194,13 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
         return sorted(rows, key=lambda r: r["volume_24h_usd"], reverse=True)[:20]
 
     def _fetch_dex_concentration(self, params: dict) -> list[dict]:
-        data = self._client.dex_overview(chain="Ethereum")
+        data = self._client.dex_overview()
         end_time = params.get("end_time", _utcnow_str())
-        protocols = [p for p in data.get("protocols", []) if (p.get("totalVolume24h") or 0) > 0]
+        all_protocols = data.get("protocols", [])
+        protocols = [
+            p for p in all_protocols
+            if "Ethereum" in (p.get("chains") or []) and (p.get("totalVolume24h") or 0) > 0
+        ]
 
         total_vol = sum(p.get("totalVolume24h", 0) or 0 for p in protocols)
         if total_vol <= 0:
