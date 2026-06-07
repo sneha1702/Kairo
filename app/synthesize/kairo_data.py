@@ -1210,36 +1210,67 @@ def _build_history(all_narratives: list[dict]) -> dict:
 # ---------------------------------------------------------------------------
 
 def _build_markets() -> dict:
-    """Load the latest top-20 markets config from MongoDB."""
+    """
+    Load top-20 CMC data and merge with Gemini analysis (if available).
+    Both sources are read independently — neither is required for the other to work.
+    """
     try:
         from config.config import Config
         from app.ingestion.crypto_markets import CryptoMarketsUpdater
+        from app.markets.analyzer import MarketAnalyzer
 
         if not Config.MONGO_URI:
-            return {"projects": [], "updated_at": None, "stale": True}
+            return {"projects": [], "updated_at": None, "stale": True, "analysis_ran": False}
 
-        doc = CryptoMarketsUpdater.load_from_mongo(
-            Config.MONGO_URI, Config.MONGO_DB or "kairo"
+        mongo_uri = Config.MONGO_URI
+        mongo_db  = Config.MONGO_DB or "kairo"
+
+        # ── Load CMC price / ranking data ────────────────────────────────────
+        cmc_doc = CryptoMarketsUpdater.load_from_mongo(mongo_uri, mongo_db)
+        if not cmc_doc:
+            return {"projects": [], "updated_at": None, "stale": True, "analysis_ran": False}
+
+        # ── Load Gemini analysis (optional — may not exist yet) ──────────────
+        analysis_doc = MarketAnalyzer.load_from_mongo(mongo_uri, mongo_db)
+        analysis_map: dict[int, dict] = {}
+        if analysis_doc and analysis_doc.get("projects"):
+            for a in analysis_doc["projects"]:
+                cid = a.get("cmc_id")
+                if cid is not None:
+                    analysis_map[int(cid)] = a
+
+        # ── Merge by cmc_id ───────────────────────────────────────────────────
+        _ANALYSIS_FIELDS = (
+            "description", "ecosystem_category", "ecosystem_description",
+            "trad_fi_equivalent", "trad_fi_explanation",
+            "roadmap_summary", "roadmap_source_url", "roadmap_source_date",
+            "analysis_confidence", "analyzed_at",
         )
-        if not doc:
-            return {"projects": [], "updated_at": None, "stale": True}
+        projects = []
+        for p in (cmc_doc.get("projects") or []):
+            merged = dict(p)
+            a = analysis_map.get(int(p.get("cmc_id", -1)))
+            for field in _ANALYSIS_FIELDS:
+                merged[field] = a.get(field) if a else None
+            projects.append(merged)
 
-        updated_at = doc.get("updated_at")
+        # ── Staleness check ───────────────────────────────────────────────────
+        updated_at = cmc_doc.get("updated_at")
         stale = False
         if isinstance(updated_at, datetime):
             if updated_at.tzinfo is None:
                 updated_at = updated_at.replace(tzinfo=timezone.utc)
-            age_h = (_now() - updated_at).total_seconds() / 3600
-            stale = age_h > 25
+            stale = (_now() - updated_at).total_seconds() / 3600 > 25
 
         return {
-            "projects": doc.get("projects") or [],
-            "updated_at": updated_at.isoformat() if updated_at else None,
-            "stale": stale,
+            "projects":     projects,
+            "updated_at":   updated_at.isoformat() if updated_at else None,
+            "stale":        stale,
+            "analysis_ran": bool(analysis_doc),
         }
     except Exception as exc:
         logger.warning("_build_markets failed: %s", exc)
-        return {"projects": [], "updated_at": None, "stale": True}
+        return {"projects": [], "updated_at": None, "stale": True, "analysis_ran": False}
 
 
 # ---------------------------------------------------------------------------
