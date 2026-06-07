@@ -375,6 +375,7 @@ class MarketAnalyzer:
             "cmc_id":               project.get("cmc_id"),
             "symbol":               symbol,
             "name":                 name,
+            "display_name":         name,   # overwritten by Gemini if it returns a better name
             "analyzed_at":          datetime.now(timezone.utc).isoformat(),
             "description":          None,
             "ecosystem_category":   None,
@@ -403,7 +404,18 @@ class MarketAnalyzer:
             return result
 
         if parsed:
+            # For activity_source_url: prefer a Gemini-returned URL that is
+            # clearly a sub-page (not just the homepage) over the scraped fallback.
+            gemini_url = parsed.get("activity_source_url") or ""
+            base_clean = website.rstrip("/")
+            # If Gemini returned the bare homepage, keep our scraped URL if better
+            if gemini_url and gemini_url.rstrip("/") not in (base_clean, base_clean + "/"):
+                final_activity_url = gemini_url
+            else:
+                final_activity_url = best_url or gemini_url
+
             result.update({
+                "display_name":          parsed.get("display_name") or name,
                 "description":           parsed.get("description"),
                 "ecosystem_category":    parsed.get("ecosystem_category"),
                 "ecosystem_description": parsed.get("ecosystem_description"),
@@ -412,12 +424,12 @@ class MarketAnalyzer:
                 "latest_release":        parsed.get("latest_release"),
                 "latest_news_headline":  parsed.get("latest_news_headline"),
                 "activity_summary":      parsed.get("activity_summary"),
-                "activity_source_url":   parsed.get("activity_source_url") or best_url,
+                "activity_source_url":   final_activity_url,
                 "activity_source_date":  parsed.get("activity_source_date") or today_month,
                 "analysis_confidence":   parsed.get("analysis_confidence", "medium"),
                 # alias for backward compat
                 "roadmap_summary":       parsed.get("activity_summary"),
-                "roadmap_source_url":    parsed.get("activity_source_url") or best_url,
+                "roadmap_source_url":    final_activity_url,
                 "roadmap_source_date":   parsed.get("activity_source_date") or today_month,
             })
         else:
