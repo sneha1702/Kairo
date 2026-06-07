@@ -149,7 +149,8 @@ function App() {
 function kairoMount(attempts) {
   attempts = attempts || 0;
   const ready = window.MorningBrief && window.NarrativeTracker && window.NarrativeHistory
-    && window.ConfigScreen && window.useTweaks && window.TweaksPanel && window.Icon && window.KAIRO;
+    && window.ConfigScreen && window.CryptoMarkets
+    && window.useTweaks && window.TweaksPanel && window.Icon && window.KAIRO;
   if (!ready) {
     if (attempts > 400) {
       const root = document.getElementById("root");
