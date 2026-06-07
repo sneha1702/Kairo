@@ -186,24 +186,27 @@ function MarketCard({ project }) {
           <div style={{ flex: 1, minWidth: 0 }}>
             {/* Project name as prominent heading */}
             <h3 style={{ margin: "0 0 4px", fontWeight: 800, fontSize: 18, color: "var(--ink)", letterSpacing: "-0.015em", lineHeight: 1.2 }}>
-              {project.name}
+              {displayName}
             </h3>
-            {/* Ticker + ecosystem category + market share on one row */}
+            {/* Ticker + ecosystem category on one row */}
             <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 6 }}>
               <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)", fontWeight: 600 }}>
                 {project.symbol}
               </span>
               {project.ecosystem_category && <EcoBadge category={project.ecosystem_category} />}
-              {project.market_share_pct != null && (
-                <span style={{
-                  fontSize: 11.5, fontWeight: 700, padding: "2px 8px", borderRadius: 6,
-                  background: "var(--surface-2)", color: "var(--ink-3)", whiteSpace: "nowrap",
-                  border: "1px solid var(--hairline)",
-                }}>
-                  {parseFloat(project.market_share_pct).toFixed(2)}% of crypto market
-                </span>
-              )}
             </div>
+            {/* Market share chip — shown when CMC data has been refreshed */}
+            {project.market_share_pct != null && project.market_share_pct > 0 && (
+              <div style={{ marginBottom: 6 }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  fontSize: 11.5, fontWeight: 700, padding: "3px 9px", borderRadius: 7,
+                  background: "var(--c-denim)", color: "var(--c-denim-ink)", whiteSpace: "nowrap",
+                }}>
+                  📈 {parseFloat(project.market_share_pct).toFixed(2)}% of total crypto market
+                </span>
+              </div>
+            )}
             <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)", lineHeight: 1.5 }}>
               {project.description || (
                 <span style={{ fontStyle: "italic", color: "var(--ink-4)" }}>
