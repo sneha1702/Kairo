@@ -1206,6 +1206,43 @@ def _build_history(all_narratives: list[dict]) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Markets data (top 20 from MongoDB crypto_markets_config)
+# ---------------------------------------------------------------------------
+
+def _build_markets() -> dict:
+    """Load the latest top-20 markets config from MongoDB."""
+    try:
+        from config.config import Config
+        from app.ingestion.crypto_markets import CryptoMarketsUpdater
+
+        if not Config.MONGO_URI:
+            return {"projects": [], "updated_at": None, "stale": True}
+
+        doc = CryptoMarketsUpdater.load_from_mongo(
+            Config.MONGO_URI, Config.MONGO_DB or "kairo"
+        )
+        if not doc:
+            return {"projects": [], "updated_at": None, "stale": True}
+
+        updated_at = doc.get("updated_at")
+        stale = False
+        if isinstance(updated_at, datetime):
+            if updated_at.tzinfo is None:
+                updated_at = updated_at.replace(tzinfo=timezone.utc)
+            age_h = (_now() - updated_at).total_seconds() / 3600
+            stale = age_h > 25
+
+        return {
+            "projects": doc.get("projects") or [],
+            "updated_at": updated_at.isoformat() if updated_at else None,
+            "stale": stale,
+        }
+    except Exception as exc:
+        logger.warning("_build_markets failed: %s", exc)
+        return {"projects": [], "updated_at": None, "stale": True}
+
+
+# ---------------------------------------------------------------------------
 # Empty data (shown when services are completely unavailable)
 # ---------------------------------------------------------------------------
 
