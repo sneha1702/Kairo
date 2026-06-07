@@ -1306,4 +1306,5 @@ def _empty_data(user_id: str = "default") -> dict:
             "cycles":   [],
             "interpretation": "Run narrative detection to start building pattern history.",
         },
+        "markets": {"projects": [], "updated_at": None, "stale": True},
     }
