@@ -53,9 +53,6 @@ _PROTOCOL_SLUGS = {
     "eigenlayer": "EigenLayer",
 }
 
-# Top bridges by DefiLlama ID (Stargate=1, Arbitrum Bridge=7, Hop=10, Across=41)
-_TOP_BRIDGE_IDS = [1, 7, 10, 41]
-
 
 def _utcnow_str() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
