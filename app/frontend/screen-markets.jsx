@@ -2,7 +2,7 @@
    Kairo — Markets screen
    Beginner-friendly cards with progressive disclosure.
    Cards show core info at a glance; expanded view reveals
-   performance history, TradFi analogy, roadmap summary, and links.
+   performance history, TradFi analogy, activity summary, and links.
    ============================================================ */
 const { useState, useMemo } = React;
 
@@ -148,9 +148,13 @@ function Sep() {
 function MarketCard({ project }) {
   const [open, setOpen] = useState(false);
 
-  const hasAnalysis = !!(project.description || project.ecosystem_category);
-  const hasRoadmap  = !!(project.roadmap_summary);
-  const hasTradFi   = !!(project.trad_fi_equivalent);
+  const hasAnalysis  = !!(project.description || project.ecosystem_category);
+  const hasTradFi    = !!(project.trad_fi_equivalent);
+  // activity: prefer new fields, fall back to legacy roadmap fields
+  const hasActivity  = !!(project.activity_summary || project.roadmap_summary);
+  const activityText = project.activity_summary || project.roadmap_summary;
+  const activityUrl  = project.activity_source_url || project.roadmap_source_url;
+  const activityDate = project.activity_source_date || project.roadmap_source_date;
 
   return (
     <article
@@ -176,16 +180,27 @@ function MarketCard({ project }) {
           {/* Logo */}
           <CryptoLogo symbol={project.symbol} logoUrl={project.logo_url} size={40} />
 
-          {/* Name, badge, description */}
+          {/* Name, badges, description */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-              <span style={{ fontWeight: 800, fontSize: 17, color: "var(--ink)", letterSpacing: "-0.01em" }}>
-                {project.name}
-              </span>
-              <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)", fontWeight: 500 }}>
+            {/* Project name as prominent heading */}
+            <h3 style={{ margin: "0 0 4px", fontWeight: 800, fontSize: 18, color: "var(--ink)", letterSpacing: "-0.015em", lineHeight: 1.2 }}>
+              {project.name}
+            </h3>
+            {/* Ticker + ecosystem category + market share on one row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 6 }}>
+              <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)", fontWeight: 600 }}>
                 {project.symbol}
               </span>
               {project.ecosystem_category && <EcoBadge category={project.ecosystem_category} />}
+              {project.market_share_pct != null && (
+                <span style={{
+                  fontSize: 11.5, fontWeight: 700, padding: "2px 8px", borderRadius: 6,
+                  background: "var(--surface-2)", color: "var(--ink-3)", whiteSpace: "nowrap",
+                  border: "1px solid var(--hairline)",
+                }}>
+                  {parseFloat(project.market_share_pct).toFixed(2)}% of crypto market
+                </span>
+              )}
             </div>
             <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)", lineHeight: 1.5 }}>
               {project.description || (
@@ -208,16 +223,16 @@ function MarketCard({ project }) {
         {/* Toggle */}
         <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* quick peek at what's inside when collapsed */}
-          {!open && (hasAnalysis || hasTradFi || hasRoadmap) && (
+          {!open && (hasAnalysis || hasTradFi || hasActivity) && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {hasTradFi && (
                 <span style={{ fontSize: 11.5, color: "var(--ink-4)", display: "flex", alignItems: "center", gap: 3 }}>
                   💡 Like {project.trad_fi_equivalent}
                 </span>
               )}
-              {hasRoadmap && (
+              {hasActivity && (
                 <span style={{ fontSize: 11.5, color: "var(--ink-4)", display: "flex", alignItems: "center", gap: 3 }}>
-                  🗺 Roadmap summary inside
+                  📡 Activity summary inside
                 </span>
               )}
             </div>
@@ -267,8 +282,15 @@ function MarketCard({ project }) {
             <span style={{ fontSize: 22, lineHeight: 1 }}>📊</span>
             <div>
               <div className="eyebrow" style={{ marginBottom: 5 }}>Total market size</div>
-              <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)" }}>
-                {formatMcap(project.market_cap)}
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)" }}>
+                  {formatMcap(project.market_cap)}
+                </div>
+                {project.market_share_pct != null && (
+                  <span style={{ fontSize: 13, color: "var(--ink-3)", fontWeight: 600 }}>
+                    — {parseFloat(project.market_share_pct).toFixed(2)}% of all crypto
+                  </span>
+                )}
               </div>
               <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 3 }}>
                 {mcapHint(project.market_cap)} — this is the total value of all coins/tokens in circulation
@@ -324,25 +346,49 @@ function MarketCard({ project }) {
 
           <Sep />
 
-          {/* Roadmap */}
-          {hasRoadmap ? (
+          {/* Activity section — news, releases, and roadmap combined */}
+          {hasActivity ? (
             <div style={{ padding: "14px 22px", display: "flex", alignItems: "flex-start", gap: 12 }}>
-              <span style={{ fontSize: 22, lineHeight: 1 }}>🗺</span>
+              <span style={{ fontSize: 22, lineHeight: 1 }}>📡</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="eyebrow" style={{ marginBottom: 8 }}>What they're building next</div>
+                <div className="eyebrow" style={{ marginBottom: 8 }}>What they're actually doing</div>
+
+                {/* Latest release chip */}
+                {project.latest_release && (
+                  <div style={{ marginBottom: 8 }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 7,
+                      background: "var(--c-teal)", color: "var(--c-teal-ink)",
+                    }}>
+                      🚀 Latest release: {project.latest_release}
+                    </span>
+                  </div>
+                )}
+
+                {/* Latest news headline */}
+                {project.latest_news_headline && (
+                  <p style={{ margin: "0 0 8px", fontSize: 14, color: "var(--ink-2)", lineHeight: 1.55, fontWeight: 600 }}>
+                    {project.latest_news_headline}
+                  </p>
+                )}
+
+                {/* Activity summary */}
                 <p style={{ margin: "0 0 10px", fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.7 }}>
-                  {project.roadmap_summary}
+                  {activityText}
                 </p>
+
+                {/* Source row */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  {project.roadmap_source_date && (
+                  {activityDate && (
                     <span style={{ fontSize: 12, color: "var(--ink-4)" }}>
-                      Info as of {project.roadmap_source_date}
+                      Info as of {activityDate}
                     </span>
                   )}
-                  {project.roadmap_source_url && (
+                  {activityUrl && (
                     <>
                       <span style={{ color: "var(--hairline-strong)" }}>·</span>
-                      <a href={project.roadmap_source_url} target="_blank" rel="noopener noreferrer"
+                      <a href={activityUrl} target="_blank" rel="noopener noreferrer"
                         style={{ fontSize: 12, color: "var(--accent-ink)", textDecoration: "underline" }}>
                         view source
                       </a>
@@ -361,9 +407,9 @@ function MarketCard({ project }) {
             </div>
           ) : (
             <div style={{ padding: "14px 22px", display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 18 }}>🗺</span>
+              <span style={{ fontSize: 18 }}>📡</span>
               <span style={{ fontSize: 13, color: "var(--ink-4)", fontStyle: "italic" }}>
-                Roadmap summary not generated yet — run <strong style={{ fontStyle: "normal" }}>AI Market Analysis</strong> in Admin.
+                Latest activity not generated yet — run <strong style={{ fontStyle: "normal" }}>AI Market Analysis</strong> in Admin.
               </span>
             </div>
           )}
@@ -375,8 +421,9 @@ function MarketCard({ project }) {
             {project.website && (
               <LinkButton href={project.website} label="🌐 Official Website" />
             )}
-            {project.roadmap_url && project.roadmap_url !== project.website && (
-              <LinkButton href={project.roadmap_url} label="🗺 Roadmap" accent />
+            {(activityUrl || project.roadmap_url) &&
+              (activityUrl || project.roadmap_url) !== project.website && (
+              <LinkButton href={activityUrl || project.roadmap_url} label="📡 Activity Page" accent />
             )}
           </div>
         </div>
