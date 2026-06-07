@@ -86,8 +86,8 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument(
         "--provider",
         default=os.getenv("INGESTION_PROVIDER", "dune"),
-        choices=("dune", "flipside"),
-        help="Ingestion provider (default: $INGESTION_PROVIDER or 'dune')",
+        choices=("dune", "defillama"),
+        help="Ingestion provider: dune | defillama (default: $INGESTION_PROVIDER or 'dune')",
     )
     return p.parse_args()
 
