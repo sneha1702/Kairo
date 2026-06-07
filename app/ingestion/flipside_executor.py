@@ -9,6 +9,8 @@ the SQL templates use the same {{param}} convention as the Dune queries.
 API reference: https://docs.flipsidecrypto.com/flipside-api/get-started
 """
 
+from __future__ import annotations
+
 import logging
 import re
 import time
