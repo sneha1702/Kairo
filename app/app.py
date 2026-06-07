@@ -546,6 +546,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     screen_narrative_jsx = _read(f"{base}/screen-narrative.jsx")
     screen_history_jsx   = _read(f"{base}/screen-history.jsx")
     screen_config_jsx    = _read(f"{base}/screen-config.jsx")
+    screen_markets_jsx   = _read(f"{base}/screen-markets.jsx")
     app_jsx              = _read(f"{base}/app.jsx")
 
     html = f"""<!DOCTYPE html>
