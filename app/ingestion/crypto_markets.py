@@ -83,6 +83,17 @@ class CryptoMarketsUpdater:
         })
         return {int(k): v for k, v in data.get("data", {}).items()}
 
+    def fetch_global_market_cap(self) -> float:
+        """Return total crypto market cap in USD from CMC global metrics."""
+        try:
+            data = self._cmc_get("/v1/global-metrics/quotes/latest", {"convert": "USD"})
+            return float(
+                data.get("data", {}).get("quote", {}).get("USD", {}).get("total_market_cap") or 0
+            )
+        except Exception as exc:
+            logger.warning("fetch_global_market_cap failed: %s", exc)
+            return 0.0
+
     # ------------------------------------------------------------------
     # Roadmap discovery
     # ------------------------------------------------------------------
