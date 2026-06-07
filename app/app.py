@@ -978,7 +978,91 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
 
     st.divider()
 
-    # ── 5. Service Status ─────────────────────────────────────────────────────
+    # ── 5. AI Market Analysis (Gemini) ────────────────────────────────────────
+    st.subheader("AI Market Analysis")
+    st.caption(
+        "Uses Gemini to generate plain-English project summaries, ecosystem categories, "
+        "traditional finance analogies, and roadmap summaries for each top-20 project. "
+        "Run this after **Refresh Markets Data** above."
+    )
+
+    _ai_fast = st.checkbox(
+        "Fast mode — skip roadmap page fetching (use Gemini knowledge only)",
+        value=False,
+        key="analysis_fast_mode",
+        help="Fetching roadmap pages adds ~10s for the batch but gives Gemini real content to summarise.",
+    )
+    _ai_symbols_raw = st.text_input(
+        "Limit to specific symbols (optional)",
+        value="",
+        placeholder="e.g. BTC ETH SOL — leave blank to analyse all 20",
+        key="analysis_symbols",
+    )
+
+    if st.button("🤖 Run AI Market Analysis", use_container_width=True, key="btn_run_analysis"):
+        import os as _os
+        _mongo_uri = _os.getenv("MONGO_URI") or _Cfg.MONGO_URI
+        _mongo_db  = _os.getenv("MONGO_DB")  or _Cfg.MONGO_DB or "kairo"
+
+        _ai_prog    = st.progress(0, text="Initialising Gemini…")
+        _ai_status  = st.empty()
+        _ai_details = st.empty()
+
+        try:
+            from app.markets.analyzer import MarketAnalyzer
+
+            _analyzer     = MarketAnalyzer(_mongo_uri, _mongo_db)
+            _ai_symbols   = [s.strip().upper() for s in _ai_symbols_raw.split() if s.strip()] or None
+            _fetch_roads  = not _ai_fast
+
+            # Phase-1 progress: roadmap fetching (if enabled)
+            if _fetch_roads:
+                _ai_prog.progress(5, text="Fetching roadmap pages in parallel…")
+
+            # We run analysis in a loop and update progress via callback
+            _results_container: list = []
+            _total_est = len(_ai_symbols) if _ai_symbols else 20
+
+            def _progress_cb(current, total, name):
+                pct  = int(5 + 90 * current / total)
+                _ai_prog.progress(pct, text=f"Analysed {name} ({current}/{total})…")
+                _results_container.append(name)
+
+            _results = _analyzer.analyze_all(
+                symbols=_ai_symbols,
+                fetch_roadmaps=_fetch_roads,
+                dry_run=False,
+                progress_cb=_progress_cb,
+            )
+
+            _ok    = sum(1 for r in _results if not r.get("analysis_error"))
+            _errs  = sum(1 for r in _results if     r.get("analysis_error"))
+            _cached_build_data.clear()
+            _ai_prog.progress(100, text="Done.")
+
+            if _errs:
+                _ai_status.warning(
+                    f"Analysis complete — {_ok}/{len(_results)} projects OK, {_errs} had errors. "
+                    "Switch to the Markets tab to review."
+                )
+            else:
+                _ai_status.success(
+                    f"AI analysis complete — {_ok} projects analysed. "
+                    "Switch to the Markets tab to see summaries, TradFi analogies, and roadmap breakdowns."
+                )
+            st.rerun()
+
+        except ValueError as _exc:
+            _ai_prog.empty()
+            _ai_status.error(f"{_exc}")
+        except Exception as _exc:
+            _ai_prog.empty()
+            _ai_status.error(f"Analysis failed: {_exc}")
+            logger.exception("AI market analysis failed")
+
+    st.divider()
+
+    # ── 6. Service Status ─────────────────────────────────────────────────────
     st.subheader("Service Status")
     st.write("Elasticsearch:",    "✅ connected" if _es      is not None else "❌ not connected")
     st.write("Narrative Engine:", "✅ ready"     if _engine  is not None else "❌ not ready")
