@@ -72,15 +72,14 @@ class Config:
     # CoinMarketCap (free tier — https://coinmarketcap.com/api/)
     CMC_API_KEY: str = os.getenv("CMC_API_KEY", "")
 
-    # Ingestion provider selection: "dune" | "flipside"
+    # Ingestion provider selection: "dune" | "defillama"
     INGESTION_PROVIDER: str = os.getenv("INGESTION_PROVIDER", "dune")
 
     # Dune pipeline settings
     QUERY_DIR: str = os.getenv("QUERY_DIR", "app/ingestion/query")
     DUNE_API_KEY: str = os.getenv("DUNE_API_KEY", "")
 
-    # Flipside pipeline settings
-    FLIPSIDE_API_KEY: str = os.getenv("FLIPSIDE_API_KEY", "")
+    # DefiLlama pipeline settings (no API key required — public free API)
     # How far back each Dune query looks. Env var > dune_params.json > default of 4h.
     # Accepts any integer number of hours (e.g. 2, 4, 24, 168, 720, 8760).
     DUNE_QUERY_WINDOW_HOURS: int = int(
