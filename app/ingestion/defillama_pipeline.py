@@ -118,6 +118,19 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
         end_time: str | None = None,
         time_window_hours: int | None = None,
     ) -> dict[str, IngestionResult]:
+        # Always clear the HTTP cache so each run_all() (i.e. each backfill chunk)
+        # fetches fresh data instead of reusing the previous chunk's cached responses.
+        self._client.clear_cache()
+
+        resolved_end = end_time or _utcnow_str()
+        backfill_mode = _is_backfill(resolved_end)
+        if backfill_mode:
+            logger.info(
+                "Backfill mode detected (end_time=%s). Signals without historical "
+                "DefiLlama data will be skipped: %s",
+                resolved_end, sorted(_NO_HISTORICAL_DATA),
+            )
+
         names = query_names if query_names else list(QUERY_TO_INDEX.keys())
         results: dict[str, IngestionResult] = {}
         for name in names:
@@ -125,14 +138,14 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
                 query_name=name,
                 sql_path=Path("."),
                 params={
-                    "end_time": end_time or _utcnow_str(),
+                    "end_time": resolved_end,
                     "time_window_hours": time_window_hours or 168,
                 },
                 cadence_hours=24,
                 signal_category=QUERY_TO_SIGNAL.get(name, ""),
                 target_index=QUERY_TO_INDEX.get(name, name),
             )
-            results[name] = self.run_one(qc, dry_run=dry_run)
+            results[name] = self.run_one(qc, dry_run=dry_run, backfill=backfill_mode)
         return results
 
     def run_one(self, qc: QueryConfig, dry_run: bool = False) -> IngestionResult:
