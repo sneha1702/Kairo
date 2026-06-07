@@ -51,14 +51,55 @@ _UNSUPPORTED = frozenset({
 
 # Protocol slugs used by DefiLlama
 _PROTOCOL_SLUGS = {
-    "aave-v3":   "Aave V3",
-    "lido":      "Lido",
+    "aave-v3":    "Aave V3",
+    "lido":       "Lido",
     "eigenlayer": "EigenLayer",
 }
+
+# Signals where DefiLlama only exposes the current 24h window — no historical
+# parameter exists in the free API. Skip these when end_time is in the past
+# (backfill mode) to avoid storing misleading current-state data under a
+# historical time_bucket label.
+_NO_HISTORICAL_DATA = frozenset({
+    "volume_spike_detection",
+    "dex_trading_concentration",
+})
+
+# How many hours in the past end_time must be to consider this a backfill call.
+_BACKFILL_THRESHOLD_HOURS = 48
 
 
 def _utcnow_str() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _parse_end_dt(end_time: str) -> datetime:
+    """Parse 'YYYY-MM-DD HH:MM:SS' (or ISO) to UTC datetime."""
+    dt = datetime.fromisoformat(end_time.replace(" ", "T"))
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def _is_backfill(end_time: str) -> bool:
+    """True when end_time is more than _BACKFILL_THRESHOLD_HOURS hours in the past."""
+    try:
+        end_dt = _parse_end_dt(end_time)
+        return (datetime.now(timezone.utc) - end_dt) > timedelta(hours=_BACKFILL_THRESHOLD_HOURS)
+    except (ValueError, TypeError):
+        return False
+
+
+def _tvl_at(series: list[dict], end_ts: int, field: str = "totalLiquidityUSD") -> float:
+    """
+    Return the value of *field* for the latest entry in *series* whose date <= end_ts.
+    *series* must be sorted chronologically (ascending date), as DefiLlama returns it.
+    """
+    val = 0.0
+    for entry in series:
+        if entry.get("date", 0) <= end_ts:
+            val = entry.get(field) or 0.0
+        else:
+            break
+    return val
 
 
 class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
