@@ -46,6 +46,27 @@ _SKIP_QUERIES = {"wallet_concentration"}
 # 7-day chunks keep each Dune query well under the free-tier timeout
 _DEFAULT_CHUNK_DAYS = 7
 _DEFAULT_DELAY_SECONDS = 30   # pause between chunks to avoid Dune rate limits
+_CHECKPOINT_FILENAME = "backfill_checkpoint.json"
+
+
+def _checkpoint_key(end_time_str: str, chunk_hours: int) -> str:
+    return f"{end_time_str}|{chunk_hours}h"
+
+
+def _load_checkpoint(query_dir: Path) -> set[str]:
+    path = query_dir / _CHECKPOINT_FILENAME
+    if not path.exists():
+        return set()
+    try:
+        data = json.loads(path.read_text())
+        return set(data.get("completed", []))
+    except Exception:
+        return set()
+
+
+def _save_checkpoint(query_dir: Path, completed: set[str]) -> None:
+    path = query_dir / _CHECKPOINT_FILENAME
+    path.write_text(json.dumps({"completed": sorted(completed)}, indent=2))
 
 
 def _parse_args() -> argparse.Namespace:
