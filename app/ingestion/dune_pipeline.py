@@ -51,6 +51,7 @@ from app.ingestion.base_pipeline import (
 from app.ingestion.dune_index_manager import DuneIndexManager
 from app.brain.elasticsearch_manager import ElasticsearchManager
 from app.ingestion.dune_api_executor import DuneApiExecutor, DuneApiError
+from app.ingestion import signal_transformer
 
 logging.basicConfig(
     level=logging.INFO,
