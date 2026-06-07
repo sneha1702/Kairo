@@ -3,14 +3,16 @@ DefiLlamaIngestionPipeline: implements BaseIngestionPipeline using DefiLlama's
 free public REST API.
 
 Supported signals (6/12):
-  volume_spike_detection      → /overview/dexs
-  dex_trading_concentration   → /overview/dexs
-  bridge_activity             → /bridges + /bridgevolume/Ethereum
-  stablecoin_liquidity_flow   → /stablecoins
-  ecosystem_sector_rotation   → /protocols (grouped by category, TVL change)
-  protocol_inflow_leaderboard → /protocol/{slug} for Aave v3, Lido, EigenLayer
+  protocol_inflow_leaderboard → /protocol/{slug} — HISTORICAL: full TVL time series
+  bridge_activity             → /protocols (bridge category) — CURRENT STATE ONLY
+  stablecoin_liquidity_flow   → /stablecoins — CURRENT STATE ONLY
+  ecosystem_sector_rotation   → /protocols grouped by category — CURRENT STATE ONLY
 
-Unsupported signals (6/12) — skipped with success=True, rows_fetched=0:
+Backfill-skipped signals — DefiLlama has no historical free-tier endpoint:
+  volume_spike_detection      → /overview/dexs only has current 24h window
+  dex_trading_concentration   → /overview/dexs only has current 24h window
+
+Unsupported signals (6/12) — require per-wallet/per-tx on-chain data:
   whale_transaction_filter, smart_money_accumulation, token_inflow_outflow,
   wallet_concentration, new_holder_growth, post_bridge_deployment
 """
@@ -19,7 +21,7 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
