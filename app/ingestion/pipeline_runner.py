@@ -37,7 +37,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SUPPORTED_PROVIDERS = ("dune", "flipside")
+SUPPORTED_PROVIDERS = ("dune", "defillama")
 
 
 def build_pipeline(provider: str) -> BaseIngestionPipeline:
@@ -46,8 +46,8 @@ def build_pipeline(provider: str) -> BaseIngestionPipeline:
     if provider == "dune":
         from app.ingestion.dune_pipeline import build_pipeline as _build
         return _build()
-    if provider == "flipside":
-        from app.ingestion.flipside_pipeline import build_flipside_pipeline as _build
+    if provider == "defillama":
+        from app.ingestion.defillama_pipeline import build_defillama_pipeline as _build
         return _build()
     raise ValueError(
         f"Unknown provider '{provider}'. Supported: {', '.join(SUPPORTED_PROVIDERS)}"
