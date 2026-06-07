@@ -107,3 +107,4 @@ SELECT
     CARDINALITY(signals) AS signal_count
 FROM preoutput
 ORDER BY bridge_usd DESC
+LIMIT 50
