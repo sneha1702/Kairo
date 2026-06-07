@@ -2,7 +2,7 @@
    Kairo — app shell, navigation, tweaks
    ============================================================ */
 const { useState, useEffect } = React;
-let Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen;
+let Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen, CryptoMarkets;
 let useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor;
 
 const NAV = [
