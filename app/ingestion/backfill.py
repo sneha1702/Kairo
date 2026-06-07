@@ -131,7 +131,9 @@ def main() -> None:
 
     chunks = _build_chunks(start_dt, end_dt, args.chunk_days)
     chunk_hours = args.chunk_days * 24
-    query_dir = Path(__file__).parent / "query"
+    # Checkpoint lives in the ingestion directory (not the query subdir) so it
+    # works for all providers, including those that have no query/ folder.
+    checkpoint_dir = Path(__file__).parent
 
     logger.info(
         "Backfill plan: %s → %s  |  %d chunk(s) × %d days  |  %d queries  |  dry_run=%s",
