@@ -287,18 +287,22 @@ function MarketCard({ project }) {
             <span style={{ fontSize: 22, lineHeight: 1 }}>📊</span>
             <div>
               <div className="eyebrow" style={{ marginBottom: 5 }}>Total market size</div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)" }}>
-                  {formatMcap(project.market_cap)}
-                </div>
-                {project.market_share_pct != null && (
-                  <span style={{ fontSize: 13, color: "var(--ink-3)", fontWeight: 600 }}>
-                    — {parseFloat(project.market_share_pct).toFixed(2)}% of all crypto
-                  </span>
-                )}
+              <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)", marginBottom: 3 }}>
+                {formatMcap(project.market_cap)}
               </div>
-              <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 3 }}>
-                {mcapHint(project.market_cap)} — this is the total value of all coins/tokens in circulation
+              {project.market_share_pct != null && project.market_share_pct > 0 && (
+                <div style={{ marginBottom: 4 }}>
+                  <span style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    fontSize: 12, fontWeight: 700, padding: "2px 9px", borderRadius: 7,
+                    background: "var(--c-denim)", color: "var(--c-denim-ink)",
+                  }}>
+                    📈 {parseFloat(project.market_share_pct).toFixed(2)}% of all crypto
+                  </span>
+                </div>
+              )}
+              <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 2 }}>
+                {mcapHint(project.market_cap)} — total value of all coins/tokens in circulation
               </div>
             </div>
           </div>
