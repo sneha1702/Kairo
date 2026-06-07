@@ -28,8 +28,6 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from elasticsearch import Elasticsearch
-
 from config.config import Config
 from app.ingestion.base_pipeline import QUERY_TO_INDEX
 from app.ingestion.pipeline_runner import build_pipeline
