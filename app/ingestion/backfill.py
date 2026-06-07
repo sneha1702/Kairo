@@ -85,6 +85,12 @@ def _parse_args() -> argparse.Namespace:
                    help="Skip chunks already recorded in backfill_checkpoint.json (safe to re-run)")
     p.add_argument("--reset-checkpoint", action="store_true",
                    help="Delete backfill_checkpoint.json and start fresh")
+    p.add_argument(
+        "--provider",
+        default=os.getenv("INGESTION_PROVIDER", "dune"),
+        choices=("dune", "flipside"),
+        help="Ingestion provider (default: $INGESTION_PROVIDER or 'dune')",
+    )
     return p.parse_args()
 
 
