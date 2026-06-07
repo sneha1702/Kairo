@@ -32,6 +32,7 @@ from app.ingestion.base_pipeline import (
     QueryConfig,
 )
 from app.ingestion.defillama_client import DefiLlamaClient, DefiLlamaApiError
+from app.ingestion import signal_transformer
 
 logger = logging.getLogger(__name__)
 
