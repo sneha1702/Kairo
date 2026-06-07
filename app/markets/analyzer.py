@@ -1,16 +1,21 @@
 """
-analyzer.py — Gemini-powered plain-English analysis for top 20 crypto projects.
+analyzer.py — Gemini-powered analysis for top 20 crypto projects.
 
-Completely standalone: zero imports from app.ingestion, app.synthesize, app.brain.
+Fetches latest releases, news, and roadmap pages per project, then uses Gemini
+to generate plain-English summaries covering: what the project does, where it
+fits in crypto, its traditional-finance equivalent, and its latest activity
+(releases shipped, news published, what's planned next).
 
-Reads:   MongoDB crypto_markets_config  (CMC price/ranking data)
-Writes:  MongoDB crypto_market_analysis (Gemini analysis results)
+Standalone: no imports from app.ingestion, app.synthesize, or app.brain.
 
-Usage (CLI):
+Reads:   MongoDB crypto_markets_config   (CMC price/ranking data)
+Writes:  MongoDB crypto_market_analysis  (Gemini analysis results)
+
+Usage:
     python -m app.markets.analyzer              # analyze all 20 projects
     python -m app.markets.analyzer --dry        # print results, skip MongoDB write
     python -m app.markets.analyzer BTC ETH SOL  # analyze specific tickers only
-    python -m app.markets.analyzer --fast       # skip roadmap page fetching (uses Gemini knowledge)
+    python -m app.markets.analyzer --fast       # skip page fetching (Gemini knowledge only)
 """
 
 from __future__ import annotations
@@ -31,68 +36,175 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-# MongoDB collections (separate from narrative/ingestion collections)
-_COLLECTION_CMC      = "crypto_markets_config"    # written by crypto_markets.py
-_COLLECTION_ANALYSIS = "crypto_market_analysis"   # written by this module
+_COLLECTION_CMC      = "crypto_markets_config"
+_COLLECTION_ANALYSIS = "crypto_market_analysis"
 _DOC_ID              = "top20"
 
 # ---------------------------------------------------------------------------
-# Gemini prompts
+# URL path probing lists (tried with HEAD, first hit wins per category)
 # ---------------------------------------------------------------------------
 
-_PROMPT_TEMPLATE = """\
-You are a friendly crypto educator. Your audience is a complete beginner — someone who has \
-never owned or studied crypto. Use everyday language. Avoid all jargon. If you must use a \
-technical term, explain it immediately in parentheses.
+_RELEASES_PATHS = [
+    "/releases", "/en/releases",
+    "/changelog", "/en/changelog",
+    "/versions", "/release-notes",
+    "/downloads",
+]
+_NEWS_PATHS = [
+    "/news", "/en/news",
+    "/blog", "/en/blog",
+    "/updates", "/announcements",
+    "/press", "/media",
+]
+_ROADMAP_PATHS = [
+    "/roadmap", "/en/roadmap",
+    "/about/roadmap", "/docs/roadmap",
+    "/community/roadmap", "/plan", "/plans",
+]
 
-Analyze the crypto project below and return a single JSON object.
+# ---------------------------------------------------------------------------
+# Gemini prompt
+# ---------------------------------------------------------------------------
+
+_PROMPT = """\
+You are a friendly crypto journalist writing for readers who have never owned crypto.
+Use simple, everyday English. Avoid all jargon. If a technical term is unavoidable,
+explain it in plain words right afterwards.
+
+Analyze the crypto project below and return ONE JSON object.
 
 PROJECT: {name} ({symbol})
-MARKET CAP RANK: #{rank} (rank #{rank} out of ALL crypto projects by total value)
-OFFICIAL WEBSITE: {website}
-{roadmap_block}
+MARKET CAP RANK: #{rank}
+WEBSITE: {website}
 
-Fill in every field. Return ONLY the raw JSON — no markdown, no code fences, no commentary.
+{pages_block}
+
+Fill in ALL fields. Return ONLY the raw JSON — no markdown, no code fences, no extra text.
 
 {{
-  "description": "<One sentence, max 30 words. What does {name} DO? Explain it like you would to a curious 12-year-old. No crypto jargon.>",
+  "description": "<One sentence, max 30 words. What does {name} DO? Explain it like the reader is 12 and has never heard of crypto.>",
 
-  "ecosystem_category": "<Pick exactly one: L1 | L2 | Sidechain | DeFi | Stablecoin | Oracle | Exchange | Privacy | Interop | Payments | Other>",
+  "ecosystem_category": "<Exactly one: L1 | L2 | Sidechain | DeFi | Stablecoin | Oracle | Exchange | Privacy | Interop | Payments | Other>",
 
-  "ecosystem_description": "<One sentence, max 30 words. Where does {name} sit in the crypto world? e.g. 'It is the main blockchain that thousands of other projects are built on top of.'>",
+  "ecosystem_description": "<One sentence, max 30 words. Where does {name} sit in the crypto ecosystem? e.g. 'It is the main blockchain that thousands of other apps are built on top of.'>",
 
-  "trad_fi_equivalent": "<1–6 words. The single closest equivalent in traditional finance or tech — e.g. 'Gold', 'The New York Stock Exchange', 'Visa or Mastercard', 'A central bank', 'Google Play Store'>",
+  "trad_fi_equivalent": "<1–6 words. The closest traditional-finance or technology equivalent — e.g. 'Gold', 'The New York Stock Exchange', 'Visa or Mastercard', 'A central bank', 'Google Play Store'>",
 
   "trad_fi_explanation": "<One sentence, max 30 words. Why is that a fair comparison? Be specific.>",
 
-  "roadmap_summary": "<Max 90 words. Plain English. What are the 2–3 most important things {name} is working on or planning next? Focus on what this means for everyday users, not developers. No jargon.>",
+  "latest_release": "<Most recent release or version number with approximate date if known, e.g. 'v27.0 (Apr 2024)' or 'Dencun upgrade (Mar 2024)'. Write null if not a versioned-software project.>",
 
-  "roadmap_source_url": "<The single best URL where someone can read about {name}'s roadmap or upcoming plans — use the roadmap URL if provided, otherwise the main website>",
+  "latest_news_headline": "<One sentence: the single most recent and important thing that happened — a launch, upgrade, partnership, milestone, or policy change. Use page content if available, else your knowledge.>",
 
-  "roadmap_source_date": "<Date of this roadmap information as YYYY-MM. Use {today_month} if you are drawing on your training knowledge.>",
+  "activity_summary": "<Max 90 words. Plain English. Cover: (1) what they shipped or announced most recently, (2) what is actively being built or tested right now, (3) what is planned next. Focus on what this means for users, not developers. No jargon.>",
+
+  "activity_source_url": "<The best URL for this information — prefer the releases or news page if one was found, otherwise the main website>",
+
+  "activity_source_date": "<Date of this information as YYYY-MM. Use {today_month} if drawing on your training knowledge.>",
 
   "analysis_confidence": "<high | medium | low — how confident are you that this analysis is accurate?>"
 }}
 """
 
-_ROADMAP_BLOCK_WITH_TEXT = """\
-ROADMAP URL: {url}
-ROADMAP PAGE TEXT (auto-fetched, truncated to 2 500 chars):
----
-{text}
----
-Use the above page content to answer the roadmap_summary field. If it lists specific upcoming \
-features or dates, mention them.
+# Different page-block templates depending on what was fetched
+_PAGES_WITH_CONTENT = """\
+FETCHED PAGES (auto-fetched — use this content to fill activity fields):
+
+{sections}
+
+Use the above content where available. For anything not covered, draw on your training knowledge.\
 """
 
-_ROADMAP_BLOCK_URL_ONLY = """\
-ROADMAP/WEBSITE URL: {url}
-(Could not fetch page content. Use your training knowledge about {name}'s recent roadmap.)
+_PAGES_NO_CONTENT = """\
+(Page fetching was skipped or failed. Draw on your training knowledge about {name}'s \
+most recent releases, news, and upcoming plans.)\
 """
 
-_ROADMAP_BLOCK_NONE = """\
-(No roadmap URL available. Use your training knowledge about {name}'s upcoming plans.)
-"""
+
+# ---------------------------------------------------------------------------
+# Thread-safe page fetcher (module-level — no shared session)
+# ---------------------------------------------------------------------------
+
+def _fetch_text(url: str, timeout: int = 5) -> str:
+    """Fetch readable text from a URL. Thread-safe (new request per call)."""
+    if not url:
+        return ""
+    try:
+        r = requests.get(
+            url, timeout=timeout,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; KairoBot/1.0)"},
+        )
+        if r.status_code != 200:
+            return ""
+        soup = BeautifulSoup(r.text, "html.parser")
+        for tag in soup(["script", "style", "nav", "footer", "header", "aside", "noscript"]):
+            tag.decompose()
+        text = soup.get_text(separator=" ", strip=True)
+        return re.sub(r"\s+", " ", text).strip()
+    except Exception:
+        return ""
+
+
+def _probe_first(base: str, paths: list[str], timeout: int = 4) -> Optional[str]:
+    """Return the first URL among base+paths that responds with HTTP < 400."""
+    for path in paths:
+        try:
+            r = requests.head(
+                base + path, timeout=timeout, allow_redirects=True,
+                headers={"User-Agent": "Mozilla/5.0"},
+            )
+            if r.status_code < 400:
+                return base + path
+        except Exception:
+            continue
+    return None
+
+
+def _fetch_activity_for_project(project: dict) -> tuple[int, dict[str, tuple[str, str]]]:
+    """
+    Discover and fetch up to 3 page types (releases, news, roadmap) for one project.
+    Returns (cmc_id, {page_type: (url, text)})
+    Thread-safe — creates no shared state.
+    """
+    cmc_id  = project["cmc_id"]
+    base    = (project.get("website") or "").rstrip("/")
+    rdm_url = project.get("roadmap_url") or ""
+
+    pages: dict[str, tuple[str, str]] = {}
+
+    if not base:
+        return cmc_id, pages
+
+    # Releases / changelog
+    rel_url = _probe_first(base, _RELEASES_PATHS)
+    if rel_url:
+        text = _fetch_text(rel_url)
+        if text:
+            pages["releases"] = (rel_url, text[:2000])
+
+    # News / blog
+    news_url = _probe_first(base, _NEWS_PATHS)
+    if news_url:
+        text = _fetch_text(news_url)
+        if text:
+            pages["news"] = (news_url, text[:1500])
+
+    # Roadmap / plans (use the pre-discovered URL from CMC step if available)
+    if rdm_url and rdm_url != base:
+        # Only fetch if it's not the same as releases/news we already got
+        already = {u for u, _ in pages.values()}
+        if rdm_url not in already:
+            text = _fetch_text(rdm_url)
+            if text:
+                pages["roadmap"] = (rdm_url, text[:1500])
+    else:
+        rdm_discovered = _probe_first(base, _ROADMAP_PATHS)
+        if rdm_discovered:
+            text = _fetch_text(rdm_discovered)
+            if text:
+                pages["roadmap"] = (rdm_discovered, text[:1500])
+
+    return cmc_id, pages
 
 
 # ---------------------------------------------------------------------------
@@ -101,24 +213,22 @@ _ROADMAP_BLOCK_NONE = """\
 
 class MarketAnalyzer:
     """
-    Gemini-powered market analyzer. Completely independent — no imports from
-    app.ingestion, app.synthesize, or app.brain.
+    Gemini-powered market analyzer.
+    Fully independent — no imports from app.ingestion / app.synthesize / app.brain.
     """
 
     def __init__(self, mongo_uri: str, mongo_db: str = "kairo"):
         self.mongo_uri = mongo_uri
         self.mongo_db  = mongo_db
-        self._client   = None   # Gemini client, lazy-init
+        self._gemini   = None
         self._model    = None
-        self._http     = requests.Session()
-        self._http.headers["User-Agent"] = "Mozilla/5.0 (compatible; KairoMarketBot/1.0)"
 
     # ------------------------------------------------------------------
     # Gemini client (lazy, independent from NarrativeEngine)
     # ------------------------------------------------------------------
 
     def _init_gemini(self) -> None:
-        if self._client:
+        if self._gemini:
             return
         from google import genai
         from config.config import Config
@@ -126,91 +236,75 @@ class MarketAnalyzer:
         location = os.getenv("GOOGLE_CLOUD_LOCATION") or Config.GOOGLE_CLOUD_LOCATION
         model    = os.getenv("GEMINI_MODEL")          or Config.GEMINI_MODEL
         if not project:
-            raise ValueError("GOOGLE_CLOUD_PROJECT not set — cannot initialise Gemini")
-        self._client = genai.Client(vertexai=True, project=project, location=location)
+            raise ValueError("GOOGLE_CLOUD_PROJECT not configured")
+        self._gemini = genai.Client(vertexai=True, project=project, location=location)
         self._model  = model
-        logger.info("Gemini initialised (project=%s, model=%s)", project, model)
+        logger.info("Gemini ready (project=%s, model=%s)", project, model)
 
     def _call_gemini(self, prompt: str) -> str:
         self._init_gemini()
-        response = self._client.models.generate_content(
-            model=self._model,
-            contents=prompt,
+        response = self._gemini.models.generate_content(
+            model=self._model, contents=prompt
         )
         return getattr(response, "text", "") or ""
 
     # ------------------------------------------------------------------
-    # Roadmap page fetching
+    # Parallel activity-page fetching
     # ------------------------------------------------------------------
 
-    def _fetch_page_text(self, url: str, timeout: int = 6) -> str:
-        """Fetch readable text from a URL. Returns empty string on any failure."""
-        if not url:
-            return ""
-        try:
-            r = self._http.get(url, timeout=timeout)
-            if r.status_code != 200:
-                return ""
-            soup = BeautifulSoup(r.text, "html.parser")
-            for tag in soup(["script", "style", "nav", "footer", "header", "aside", "noscript"]):
-                tag.decompose()
-            text = soup.get_text(separator=" ", strip=True)
-            text = re.sub(r"\s+", " ", text).strip()
-            return text[:2500]
-        except Exception as exc:
-            logger.debug("page fetch failed for %s: %s", url, exc)
-            return ""
-
-    def _fetch_all_roadmaps_parallel(
-        self, projects: list[dict], max_workers: int = 8
-    ) -> dict[int, str]:
-        """Fetch all roadmap pages in parallel. Returns {cmc_id: page_text}."""
-        results: dict[int, str] = {}
-        to_fetch = [
-            (p["cmc_id"], p.get("roadmap_url") or p.get("website", ""))
-            for p in projects
-            if p.get("roadmap_url") or p.get("website")
-        ]
+    def _fetch_all_activity_pages(
+        self, projects: list[dict], max_workers: int = 10
+    ) -> dict[int, dict[str, tuple[str, str]]]:
+        """
+        Fetch releases / news / roadmap pages for all projects in parallel.
+        Returns {cmc_id: {page_type: (url, text)}}
+        """
+        results: dict[int, dict] = {}
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            futures = {
-                pool.submit(self._fetch_page_text, url): cmc_id
-                for cmc_id, url in to_fetch
-            }
+            futures = {pool.submit(_fetch_activity_for_project, p): p for p in projects}
             for fut in as_completed(futures):
-                cmc_id = futures[fut]
                 try:
-                    results[cmc_id] = fut.result()
-                except Exception:
-                    results[cmc_id] = ""
+                    cmc_id, pages = fut.result()
+                    results[cmc_id] = pages
+                    total = sum(len(t) for _, t in pages.values())
+                    logger.debug("pages fetched for id=%s: %s (%d chars)",
+                                 cmc_id, list(pages.keys()), total)
+                except Exception as exc:
+                    proj = futures[fut]
+                    logger.warning("page fetch failed for %s: %s", proj.get("symbol"), exc)
+                    results[proj["cmc_id"]] = {}
         return results
 
     # ------------------------------------------------------------------
     # Prompt building
     # ------------------------------------------------------------------
 
-    def _build_roadmap_block(
-        self, project: dict, page_text: str, fetch_roadmaps: bool
+    @staticmethod
+    def _build_pages_block(
+        pages: dict[str, tuple[str, str]], project_name: str
     ) -> str:
-        name        = project.get("name", "")
-        roadmap_url = project.get("roadmap_url") or project.get("website", "")
-
-        if not fetch_roadmaps:
-            if roadmap_url:
-                return _ROADMAP_BLOCK_URL_ONLY.format(url=roadmap_url, name=name)
-            return _ROADMAP_BLOCK_NONE.format(name=name)
-
-        if page_text:
-            return _ROADMAP_BLOCK_WITH_TEXT.format(url=roadmap_url, text=page_text)
-        if roadmap_url:
-            return _ROADMAP_BLOCK_URL_ONLY.format(url=roadmap_url, name=name)
-        return _ROADMAP_BLOCK_NONE.format(name=name)
+        if not pages:
+            return _PAGES_NO_CONTENT.format(name=project_name)
+        sections = []
+        labels = {
+            "releases": "RELEASES / CHANGELOG PAGE",
+            "news":     "NEWS / BLOG PAGE",
+            "roadmap":  "ROADMAP / PLANS PAGE",
+        }
+        for kind in ("releases", "news", "roadmap"):
+            if kind in pages:
+                url, text = pages[kind]
+                sections.append(
+                    f"--- {labels[kind]} ({url}) ---\n{text}\n"
+                )
+        return _PAGES_WITH_CONTENT.format(sections="\n".join(sections))
 
     # ------------------------------------------------------------------
     # JSON parsing
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _parse_response(raw: str) -> Optional[dict]:
+    def _parse(raw: str) -> Optional[dict]:
         text = raw.strip()
         if "```" in text:
             for block in text.split("```"):
@@ -218,12 +312,12 @@ class MarketAnalyzer:
                 if block.startswith("{"):
                     text = block
                     break
-        start = text.find("{")
-        end   = text.rfind("}") + 1
-        if start < 0 or end <= 0:
+        s = text.find("{")
+        e = text.rfind("}") + 1
+        if s < 0 or e <= 0:
             return None
         try:
-            return json.loads(text[start:end])
+            return json.loads(text[s:e])
         except json.JSONDecodeError:
             return None
 
@@ -231,46 +325,66 @@ class MarketAnalyzer:
     # Per-project analysis
     # ------------------------------------------------------------------
 
-    def _analyze_one(self, project: dict, roadmap_text: str, fetch_roadmaps: bool) -> dict:
-        name        = project.get("name", "")
-        symbol      = project.get("symbol", "")
-        rank        = project.get("rank", 0)
-        website     = project.get("website", "")
-        roadmap_url = project.get("roadmap_url") or website
+    def _analyze_one(
+        self,
+        project: dict,
+        pages: dict[str, tuple[str, str]],
+        fetch_pages: bool,
+    ) -> dict:
+        name    = project.get("name", "")
+        symbol  = project.get("symbol", "")
+        rank    = project.get("rank", 0)
+        website = project.get("website", "")
+
         today_month = datetime.now(timezone.utc).strftime("%Y-%m")
 
-        roadmap_block = self._build_roadmap_block(project, roadmap_text, fetch_roadmaps)
+        pages_block = (
+            self._build_pages_block(pages, name)
+            if fetch_pages
+            else _PAGES_NO_CONTENT.format(name=name)
+        )
 
-        prompt = _PROMPT_TEMPLATE.format(
+        prompt = _PROMPT.format(
             name=name,
             symbol=symbol,
             rank=rank,
             website=website or "(not available)",
-            roadmap_block=roadmap_block,
+            pages_block=pages_block,
             today_month=today_month,
         )
 
-        result = {
+        # Default result (used on error)
+        best_url = (
+            next((url for url, _ in pages.values()), None)
+            or project.get("roadmap_url")
+            or website
+        )
+        result: dict = {
             "cmc_id":               project.get("cmc_id"),
             "symbol":               symbol,
             "name":                 name,
             "analyzed_at":          datetime.now(timezone.utc).isoformat(),
-            # Fields Gemini fills in:
             "description":          None,
             "ecosystem_category":   None,
             "ecosystem_description": None,
             "trad_fi_equivalent":   None,
             "trad_fi_explanation":  None,
-            "roadmap_summary":      None,
-            "roadmap_source_url":   roadmap_url,
-            "roadmap_source_date":  today_month,
+            "latest_release":       None,
+            "latest_news_headline": None,
+            "activity_summary":     None,
+            "activity_source_url":  best_url,
+            "activity_source_date": today_month,
             "analysis_confidence":  "low",
             "analysis_error":       None,
+            # backward-compat alias consumed by older kairo_data builds
+            "roadmap_summary":      None,
+            "roadmap_source_url":   best_url,
+            "roadmap_source_date":  today_month,
         }
 
         try:
-            raw     = self._call_gemini(prompt)
-            parsed  = self._parse_response(raw)
+            raw    = self._call_gemini(prompt)
+            parsed = self._parse(raw)
         except Exception as exc:
             logger.error("Gemini failed for %s: %s", name, exc)
             result["analysis_error"] = str(exc)
@@ -283,10 +397,16 @@ class MarketAnalyzer:
                 "ecosystem_description": parsed.get("ecosystem_description"),
                 "trad_fi_equivalent":    parsed.get("trad_fi_equivalent"),
                 "trad_fi_explanation":   parsed.get("trad_fi_explanation"),
-                "roadmap_summary":       parsed.get("roadmap_summary"),
-                "roadmap_source_url":    parsed.get("roadmap_source_url") or roadmap_url,
-                "roadmap_source_date":   parsed.get("roadmap_source_date") or today_month,
+                "latest_release":        parsed.get("latest_release"),
+                "latest_news_headline":  parsed.get("latest_news_headline"),
+                "activity_summary":      parsed.get("activity_summary"),
+                "activity_source_url":   parsed.get("activity_source_url") or best_url,
+                "activity_source_date":  parsed.get("activity_source_date") or today_month,
                 "analysis_confidence":   parsed.get("analysis_confidence", "medium"),
+                # alias for backward compat
+                "roadmap_summary":       parsed.get("activity_summary"),
+                "roadmap_source_url":    parsed.get("activity_source_url") or best_url,
+                "roadmap_source_date":   parsed.get("activity_source_date") or today_month,
             })
         else:
             result["analysis_error"] = "Could not parse Gemini response as JSON"
@@ -300,24 +420,22 @@ class MarketAnalyzer:
     def analyze_all(
         self,
         symbols: Optional[list[str]] = None,
-        fetch_roadmaps: bool = True,
+        fetch_pages: bool = True,
         gemini_delay_s: float = 1.5,
         dry_run: bool = False,
         progress_cb=None,
     ) -> list[dict]:
         """
         Analyze all (or a subset of) top-20 projects.
-
-        progress_cb(current: int, total: int, project_name: str) → None
+        progress_cb(current: int, total: int, project_name: str)
         """
-        # ── Load project list from MongoDB ──────────────────────────────────
-        mc = pymongo.MongoClient(self.mongo_uri, serverSelectionTimeoutMS=8000)
+        mc  = pymongo.MongoClient(self.mongo_uri, serverSelectionTimeoutMS=8000)
         doc = mc[self.mongo_db][_COLLECTION_CMC].find_one({"_id": _DOC_ID})
         mc.close()
 
         if not doc or not doc.get("projects"):
             raise ValueError(
-                f"No market data in MongoDB {self.mongo_db}.{_COLLECTION_CMC}. "
+                f"No market data in {self.mongo_db}.{_COLLECTION_CMC}. "
                 "Run 'python -m app.ingestion.crypto_markets' first."
             )
 
@@ -327,22 +445,24 @@ class MarketAnalyzer:
             projects = [p for p in projects if p.get("symbol", "").upper() in upper]
 
         total = len(projects)
-        logger.info("Analysing %d project(s)…", total)
+        logger.info("Starting analysis of %d project(s)…", total)
 
-        # ── Phase 1: fetch roadmap pages in parallel (saves ~minutes) ───────
-        roadmap_texts: dict[int, str] = {}
-        if fetch_roadmaps and not dry_run:
-            logger.info("Fetching %d roadmap pages in parallel…", total)
-            roadmap_texts = self._fetch_all_roadmaps_parallel(projects)
+        # Phase 1: fetch all activity pages in parallel
+        all_pages: dict[int, dict] = {}
+        if fetch_pages:
+            logger.info("Phase 1: fetching releases/news/roadmap pages in parallel…")
+            all_pages = self._fetch_all_activity_pages(projects)
+            fetched = sum(1 for p in all_pages.values() if p)
+            logger.info("Phase 1 done: %d/%d projects had fetchable pages", fetched, total)
 
-        # ── Phase 2: Gemini calls (sequential, rate-limit safe) ─────────────
+        # Phase 2: sequential Gemini calls
         results: list[dict] = []
         for i, project in enumerate(projects):
-            name = project.get("name", project.get("symbol", "?"))
-            logger.info("[%d/%d] Gemini analysis: %s", i + 1, total, name)
+            name  = project.get("name", project.get("symbol", "?"))
+            pages = all_pages.get(project.get("cmc_id", -1), {})
+            logger.info("[%d/%d] Gemini: %s (%d page types)", i + 1, total, name, len(pages))
 
-            page_text = roadmap_texts.get(project.get("cmc_id"), "")
-            analysis  = self._analyze_one(project, page_text, fetch_roadmaps)
+            analysis = self._analyze_one(project, pages, fetch_pages)
             results.append(analysis)
 
             if progress_cb:
@@ -360,18 +480,11 @@ class MarketAnalyzer:
         mc = pymongo.MongoClient(self.mongo_uri, serverSelectionTimeoutMS=8000)
         mc[self.mongo_db][_COLLECTION_ANALYSIS].update_one(
             {"_id": _DOC_ID},
-            {"$set": {
-                "analyzed_at": datetime.now(timezone.utc),
-                "projects":    results,
-            }},
+            {"$set": {"analyzed_at": datetime.now(timezone.utc), "projects": results}},
             upsert=True,
         )
         mc.close()
         logger.info("Saved %d analyses to %s.%s", len(results), self.mongo_db, _COLLECTION_ANALYSIS)
-
-    # ------------------------------------------------------------------
-    # Static loader (used by kairo_data.py)
-    # ------------------------------------------------------------------
 
     @staticmethod
     def load_from_mongo(mongo_uri: str, mongo_db: str = "kairo") -> Optional[dict]:
@@ -398,46 +511,36 @@ def _cli_main() -> None:
     load_dotenv()
     from config.config import Config
 
-    dry_run      = "--dry"  in sys.argv
-    fast_mode    = "--fast" in sys.argv
-    symbols      = [a.upper() for a in sys.argv[1:] if not a.startswith("--")]
-
-    if dry_run:
-        logger.info("DRY RUN — results will not be saved to MongoDB")
-    if fast_mode:
-        logger.info("FAST MODE — skipping roadmap page fetching")
+    dry_run   = "--dry"  in sys.argv
+    fast_mode = "--fast" in sys.argv
+    symbols   = [a.upper() for a in sys.argv[1:] if not a.startswith("--")]
 
     mongo_uri = os.getenv("MONGO_URI") or Config.MONGO_URI
     mongo_db  = os.getenv("MONGO_DB")  or Config.MONGO_DB or "kairo"
-
     if not mongo_uri:
-        print("ERROR: MONGO_URI not configured")
-        sys.exit(1)
+        print("ERROR: MONGO_URI not configured"); sys.exit(1)
 
     analyzer = MarketAnalyzer(mongo_uri, mongo_db)
 
-    def _cb(current, total, name):
-        print(f"  [{current:>2}/{total}] ✓ {name}")
-
     results = analyzer.analyze_all(
         symbols=symbols or None,
-        fetch_roadmaps=not fast_mode,
+        fetch_pages=not fast_mode,
         dry_run=dry_run,
-        progress_cb=_cb,
+        progress_cb=lambda c, t, n: print(f"  [{c:>2}/{t}] ✓ {n}"),
     )
 
-    print(f"\n{'#':>3}  {'Sym':<8}  {'Ecosystem':<14}  {'TradFi':<24}  Conf   Status")
-    print("─" * 75)
+    print(f"\n{'Sym':<8}  {'Ecosystem':<14}  {'TradFi':<22}  {'Release':<20}  Conf")
+    print("─" * 80)
     for r in results:
-        err  = "❌" if r.get("analysis_error") else "✓"
-        eco  = r.get("ecosystem_category") or "—"
-        trad = (r.get("trad_fi_equivalent") or "—")[:23]
+        err  = "❌ " if r.get("analysis_error") else "   "
+        eco  = (r.get("ecosystem_category") or "—")[:13]
+        trad = (r.get("trad_fi_equivalent") or "—")[:21]
+        rel  = (r.get("latest_release") or "—")[:19]
         conf = r.get("analysis_confidence") or "—"
-        print(f"  {r.get('symbol','?'):<8}  {eco:<14}  {trad:<24}  {conf:<6} {err}")
+        print(f"{err}{r.get('symbol','?'):<8}  {eco:<14}  {trad:<22}  {rel:<20}  {conf}")
 
-    print(f"\nTotal: {len(results)} projects")
     if not dry_run:
-        print(f"Saved → MongoDB: {mongo_db}.{_COLLECTION_ANALYSIS}")
+        print(f"\nSaved → {mongo_db}.{_COLLECTION_ANALYSIS}")
 
 
 if __name__ == "__main__":
