@@ -158,21 +158,8 @@ def main() -> None:
     if args.resume and completed_chunks:
         logger.info("Resuming — %d chunk(s) already completed", len(completed_chunks))
 
-    es_client = Elasticsearch(
-        Config.ES_URL,
-        api_key=Config.ES_API_KEY_ID,
-        request_timeout=60,
-    )
-    executor = DuneApiExecutor(
-        api_key=Config.DUNE_API_KEY,
-        query_dir=query_dir,
-    )
-    pipeline = DuneIngestionPipeline(
-        es_client=es_client,
-        dune_executor=executor,
-        query_dir=query_dir,
-        config_path=query_dir / "config.yaml",
-    )
+    logger.info("Provider: %s", args.provider)
+    pipeline = build_pipeline(args.provider)
 
     total_indexed = 0
     total_failed  = 0
