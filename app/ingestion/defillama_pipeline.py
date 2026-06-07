@@ -112,12 +112,18 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
             return result
 
         try:
-            rows = self._dispatch(qc)
-            result.rows_fetched = len(rows)
-            logger.info("[%s] Fetched %d rows", qc.query_name, len(rows))
+            raw_rows = self._dispatch(qc)
+            result.rows_fetched = len(raw_rows)
+            logger.info("[%s] Fetched %d rows", qc.query_name, len(raw_rows))
 
-            if rows:
-                indexed, failed = self._bulk_index(rows, qc.target_index)
+            if raw_rows:
+                docs = signal_transformer.normalize(
+                    query_name=qc.query_name,
+                    provider=self.provider_name,
+                    raw_rows=raw_rows,
+                    qc=qc,
+                )
+                indexed, failed = self._bulk_index(docs, qc.target_index)
                 result.docs_indexed = indexed
                 result.docs_failed  = failed
 
