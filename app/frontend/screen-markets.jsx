@@ -155,6 +155,8 @@ function MarketCard({ project }) {
   const activityText = project.activity_summary || project.roadmap_summary;
   const activityUrl  = project.activity_source_url || project.roadmap_source_url;
   const activityDate = project.activity_source_date || project.roadmap_source_date;
+  // display name: use Gemini's common name (e.g. "Binance Coin") if available, else CMC name
+  const displayName  = project.display_name || project.name;
 
   return (
     <article
