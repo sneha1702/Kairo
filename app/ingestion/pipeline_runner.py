@@ -60,7 +60,7 @@ def _parse_args() -> argparse.Namespace:
         "--provider",
         default=os.getenv("INGESTION_PROVIDER", "dune"),
         choices=list(SUPPORTED_PROVIDERS),
-        help="Ingestion provider (default: $INGESTION_PROVIDER or 'dune')",
+        help="Ingestion provider: dune | defillama (default: $INGESTION_PROVIDER or 'dune')",
     )
     group = p.add_mutually_exclusive_group()
     group.add_argument(
