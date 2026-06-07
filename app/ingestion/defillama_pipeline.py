@@ -238,61 +238,49 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
         return rows
 
     def _fetch_bridge_activity(self, params: dict) -> list[dict]:
-        end_time = params.get("end_time", _utcnow_str())
-        tw_hours  = int(params.get("time_window_hours", 168))
-        bridges_data = self._client.bridges()
-        bridge_list  = bridges_data.get("bridges", [])
-
-        # Filter to known top bridges only to reduce API calls
-        top_ids = {b["id"] for b in bridge_list if b.get("id") in _TOP_BRIDGE_IDS}
-        if not top_ids:
-            top_ids = {b["id"] for b in bridge_list[:4]}
+        """
+        Uses /protocols (free) filtered to Bridge category on Ethereum.
+        TVL change_1d acts as a proxy for net inflow/outflow.
+        """
+        end_time  = params.get("end_time", _utcnow_str())
+        protocols = self._client.protocols()
 
         rows = []
-        for bridge in bridge_list:
-            bid = bridge.get("id")
-            if bid not in top_ids:
+        for p in protocols:
+            if (p.get("category") or "").lower() != "bridge":
                 continue
-            try:
-                vol_data = self._client.bridge_volume(bid, chain="Ethereum")
-            except DefiLlamaApiError as exc:
-                logger.warning("[bridge_activity] bridge_id=%s: %s", bid, exc)
+            if "Ethereum" not in (p.get("chains") or []):
                 continue
 
-            # vol_data is a list of {date, depositUSD, withdrawUSD, ...}
-            if not isinstance(vol_data, list) or not vol_data:
-                continue
-
-            latest = vol_data[-1] if vol_data else {}
-            prev   = vol_data[-2] if len(vol_data) >= 2 else {}
-
-            deposit_usd  = latest.get("depositUSD", 0) or 0
-            withdraw_usd = latest.get("withdrawUSD", 0) or 0
-            net_usd      = deposit_usd - withdraw_usd
-
-            prev_deposit = prev.get("depositUSD", 0) or 0
-            multiplier   = round(deposit_usd / prev_deposit, 2) if prev_deposit else None
+            tvl       = p.get("tvl") or 0
+            change_1d = p.get("change_1d") or 0.0
+            prev_tvl  = tvl / (1 + change_1d / 100) if change_1d != -100 else tvl
+            net_flow  = tvl - prev_tvl
 
             signals = []
-            if deposit_usd >= 50_000_000:
+            if net_flow >= 50_000_000:
                 signals.append("HIGH_BRIDGE_INFLOW")
-            if net_usd < -10_000_000:
+            if net_flow <= -10_000_000:
                 signals.append("NET_BRIDGE_OUTFLOW")
-            if multiplier and multiplier >= 2.0:
+            if change_1d >= 20:
                 signals.append("ACCELERATING_BRIDGE_VOLUME")
+            if tvl >= 1_000_000_000:
+                signals.append("LARGE_BRIDGE_TVL")
 
             rows.append({
-                "bridge_name":        bridge.get("displayName", bridge.get("name", "")),
-                "deposit_usd":        round(deposit_usd, 2),
-                "withdraw_usd":       round(withdraw_usd, 2),
-                "net_flow_usd":       round(net_usd, 2),
-                "volume_multiplier":  multiplier,
-                "time_bucket":        end_time,
-                "category":           "bridge",
-                "signals":            signals,
-                "signal_count":       len(signals),
+                "bridge_name":       p.get("name", ""),
+                "tvl_usd":           round(tvl, 2),
+                "prev_tvl_usd":      round(prev_tvl, 2),
+                "net_flow_usd":      round(net_flow, 2),
+                "change_1d_pct":     round(change_1d, 2),
+                "chains":            p.get("chains", []),
+                "time_bucket":       end_time,
+                "category":          "bridge",
+                "signals":           signals,
+                "signal_count":      len(signals),
             })
-        return rows
+
+        return sorted(rows, key=lambda r: r["tvl_usd"], reverse=True)[:15]
 
     def _fetch_stablecoin_flow(self, params: dict) -> list[dict]:
         end_time = params.get("end_time", _utcnow_str())
