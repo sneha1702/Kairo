@@ -409,6 +409,118 @@ For issues and questions:
 - Email: [your-email]
 
 ---
+
+## Ingestion Architecture Principles
+
+The ingestion subsystem is designed so that adding or replacing a data provider (Dune, DefiLlama, or anything future) requires zero changes to Elasticsearch mappings, MongoDB schemas, or the Gemini synthesis layer.
+
+### Layer overview
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                    Data Sources                          │
+│   Dune Analytics API          DefiLlama REST API         │
+│   (SQL / Trino)               (pre-aggregated, no auth)  │
+└───────────────┬───────────────────────┬──────────────────┘
+                │                       │
+    ┌───────────▼──────────┐ ┌──────────▼──────────────┐
+    │  DuneIngestionPipeline│ │DefiLlamaIngestionPipeline│
+    │  (dune_pipeline.py)   │ │(defillama_pipeline.py)   │
+    └───────────┬──────────┘ └──────────┬───────────────┘
+                │     raw rows           │     raw rows
+                └──────────┬────────────┘
+                           │
+              ┌────────────▼────────────────┐
+              │     signal_transformer.py    │
+              │  1. Field mapping            │
+              │  2. Schema enforcement       │
+              │  3. Metadata envelope        │
+              │  4. Deterministic _id        │
+              └────────────┬────────────────┘
+                           │  canonical docs
+          ┌────────────────┼────────────────┐
+          │                │                │
+  ┌───────▼──────┐ ┌───────▼──────┐ ┌──────▼──────┐
+  │ Elasticsearch │ │   MongoDB    │ │   Gemini    │
+  │  (12 indices) │ │  (narratives)│ │  synthesis  │
+  └──────────────┘ └──────────────┘ └─────────────┘
+```
+
+### 1. Provider abstraction (`base_pipeline.py`)
+
+Every provider implements `BaseIngestionPipeline`, an abstract class with two methods:
+
+- `run_all(query_names, dry_run, end_time, time_window_hours)` — runs all (or a subset of) the 12 signals.
+- `run_one(qc: QueryConfig, dry_run)` — runs a single signal and returns an `IngestionResult`.
+
+Shared constants (`QUERY_TO_INDEX`, `QUERY_TO_SIGNAL`, `CADENCE_GROUPS`) live here so every provider references the same signal names and target ES indices.
+
+Selecting a provider at runtime:
+
+```bash
+python pipeline_runner.py --provider dune        # default
+python pipeline_runner.py --provider defillama
+# or via env var
+export INGESTION_PROVIDER=defillama
+```
+
+### 2. Signal transformer (`signal_transformer.py`)
+
+The transformer is the single normalization layer between any provider's raw output and any downstream store. It has three responsibilities:
+
+**Field mapping** — per-signal mapping functions translate provider-specific field names to canonical names. For example, DefiLlama's `circulating_usd` becomes `total_usd`, `delta_usd` is split into `mint_usd` / `burn_usd`. Dune rows already use canonical names and pass through unchanged.
+
+**Schema enforcement** — after mapping, every document is filtered to the exact field set declared in `DuneIndexManager._INDEX_MAPPINGS`. Any undeclared field is silently dropped before the ES write. This makes `strict_dynamic_mapping_exception` impossible regardless of what a provider returns.
+
+```
+canonical field set = _META_FIELDS ∪ _SIGNAL_FIELDS[query_name]
+```
+
+The 12 allowed field sets are the single source of truth; Elasticsearch mappings, MongoDB, and Gemini all read from the same normalized output.
+
+**Metadata envelope + deterministic `_id`** — every doc gets `ingested_at`, `query_name`, `signal_category`, `window_start`, `params_snapshot`, and a SHA-256 `_id` derived from the natural key for that signal (e.g. `symbol + window_start` for most, `tx_hash` for whale transactions). The same data ingested twice produces the same `_id`, so re-runs are idempotent upserts.
+
+### 3. Elasticsearch index management (`dune_index_manager.py`)
+
+All 12 signal indices are created once by `DuneIndexManager.ensure_all_indices()` with `dynamic: strict` mappings. On subsequent runs, `ensure_index` calls `put_mapping` to sync any new fields added to the definition without recreating or wiping the index. Shard/replica settings are omitted for Elastic Cloud Serverless compatibility.
+
+### 4. Supported signals per provider
+
+| Signal | Dune | DefiLlama | Notes |
+|---|---|---|---|
+| `whale_transaction_filter` | SQL | skipped | requires per-tx on-chain data |
+| `smart_money_accumulation` | SQL | skipped | requires wallet labels |
+| `token_inflow_outflow` | SQL | skipped | requires per-tx on-chain data |
+| `bridge_activity` | SQL | `/protocols` (bridge category) | DefiLlama uses TVL delta as flow proxy |
+| `wallet_concentration` | SQL | skipped | requires full transfer history |
+| `volume_spike_detection` | SQL | `/overview/dexs` | DefiLlama: 24h vol + change_1d |
+| `new_holder_growth` | SQL | skipped | requires per-address first-transfer data |
+| `dex_trading_concentration` | SQL | `/overview/dexs` | DefiLlama: market share per protocol |
+| `post_bridge_deployment` | SQL | skipped | requires per-tx on-chain data |
+| `stablecoin_liquidity_flow` | SQL | `/stablecoins` | circulating + prevDay delta |
+| `ecosystem_sector_rotation` | SQL | `/protocols` | grouped by category, TVL change |
+| `protocol_inflow_leaderboard` | SQL | `/protocol/{slug}` | Aave v3, Lido, EigenLayer TVL delta |
+
+### 5. Adding a new provider
+
+1. Create `app/ingestion/{provider}_pipeline.py` implementing `BaseIngestionPipeline`.
+2. In `signal_transformer.py`, add per-signal mapping functions and register them in `_TRANSFORMS["{provider}"]`.
+3. Register the provider in `pipeline_runner.py`'s `SUPPORTED_PROVIDERS` and `build_pipeline()`.
+4. No changes to ES mappings, MongoDB, or Gemini — the transformer guarantees schema compliance.
+
+### 6. Historical backfill (`backfill.py`)
+
+```bash
+python backfill.py --start 2026-03-01 --end 2026-06-01 --provider dune
+python backfill.py --start 2026-03-01 --end 2026-06-01 --provider defillama --chunk-days 7
+python backfill.py --resume    # skip already-completed chunks (checkpoint in backfill_checkpoint.json)
+python backfill.py --dry-run   # print plan without executing
+```
+
+Backfill advances in `--chunk-days` windows (default 7 days). Each completed chunk is recorded in `backfill_checkpoint.json` so interrupted runs can resume safely without re-consuming Dune API quota.
+
+---
+
 ## Dune Data Ingestion In Elastic
 
 ---
