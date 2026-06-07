@@ -1241,6 +1241,7 @@ def _build_markets() -> dict:
 
         # ── Merge by cmc_id ───────────────────────────────────────────────────
         _ANALYSIS_FIELDS = (
+            "display_name",
             "description", "ecosystem_category", "ecosystem_description",
             "trad_fi_equivalent", "trad_fi_explanation",
             "roadmap_summary", "roadmap_source_url", "roadmap_source_date",
