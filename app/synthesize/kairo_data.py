@@ -250,6 +250,8 @@ def build_kairo_data(
         narratives  = _build_narratives(mongo_narratives)
         history     = _build_history(mongo_narratives)
 
+        markets = _build_markets()
+
         return {
             "user": user,
             "story": story,
@@ -263,6 +265,7 @@ def build_kairo_data(
             "trackers": trackers,
             "narratives": narratives,
             "history": history,
+            "markets": markets,
         }
 
     except Exception as exc:
