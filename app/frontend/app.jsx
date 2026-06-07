@@ -160,7 +160,7 @@ function kairoMount(attempts) {
     setTimeout(() => kairoMount(attempts + 1), 25);
     return;
   }
-  ({ Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen,
+  ({ Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen, CryptoMarkets,
      useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor } = window);
   ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 }
