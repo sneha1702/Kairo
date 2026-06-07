@@ -1,84 +1,100 @@
 /* ============================================================
-   Kairo — Markets screen: top 20 crypto by market cap
+   Kairo — Markets screen
+   Beginner-friendly cards with progressive disclosure.
+   Cards show core info at a glance; expanded view reveals
+   performance history, TradFi analogy, roadmap summary, and links.
    ============================================================ */
 const { useState, useMemo } = React;
 
-/* ---- helpers ---- */
+/* ──────────────────────────────────────────────────────────
+   Sub-components
+   ────────────────────────────────────────────────────────── */
 
-function PerfCell({ value }) {
-  if (value === null || value === undefined) {
-    return <span style={{ color: "var(--ink-4)", fontFamily: "var(--font-mono)" }}>—</span>;
-  }
-  const num = parseFloat(value);
-  const pos = num >= 0;
-  const color = pos ? "var(--pos)" : "oklch(0.55 0.12 22)";
+const ECO_COLORS = {
+  L1:         { bg: "var(--c-sage)",   ink: "var(--c-sage-ink)"   },
+  L2:         { bg: "var(--c-denim)",  ink: "var(--c-denim-ink)"  },
+  Sidechain:  { bg: "var(--c-teal)",   ink: "var(--c-teal-ink)"   },
+  DeFi:       { bg: "var(--c-peach)",  ink: "var(--c-peach-ink)"  },
+  Stablecoin: { bg: "var(--c-lav)",    ink: "var(--c-lav-ink)"    },
+  Oracle:     { bg: "var(--c-rose)",   ink: "var(--c-rose-ink)"   },
+  Exchange:   { bg: "var(--c-teal)",   ink: "var(--c-teal-ink)"   },
+  Payments:   { bg: "var(--c-lav)",    ink: "var(--c-lav-ink)"    },
+  Privacy:    { bg: "var(--surface-2)","ink": "var(--ink-3)"       },
+  Interop:    { bg: "var(--c-sage)",   ink: "var(--c-sage-ink)"   },
+};
+
+function EcoBadge({ category }) {
+  if (!category) return null;
+  const s = ECO_COLORS[category] || { bg: "var(--surface-2)", ink: "var(--ink-3)" };
   return (
-    <span className="mono" style={{ color, fontWeight: 600, fontSize: 13.5 }}>
-      {pos ? "+" : ""}{num.toFixed(2)}%
+    <span style={{
+      padding: "2px 9px", borderRadius: 6, fontSize: 11.5, fontWeight: 700,
+      background: s.bg, color: s.ink, letterSpacing: "0.02em", whiteSpace: "nowrap",
+    }}>
+      {category}
     </span>
   );
 }
 
-function PriceCell({ value }) {
-  if (!value && value !== 0) return <span style={{ color: "var(--ink-4)" }}>—</span>;
+function PerfPill({ value, label }) {
   const num = parseFloat(value);
-  let fmt;
-  if (num >= 1000) fmt = "$" + num.toLocaleString("en-US", { maximumFractionDigits: 0 });
-  else if (num >= 1) fmt = "$" + num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  else if (num >= 0.01) fmt = "$" + num.toFixed(4);
-  else fmt = "$" + num.toFixed(6);
-  return <span className="mono" style={{ color: "var(--ink)", fontWeight: 500, fontSize: 13.5 }}>{fmt}</span>;
-}
-
-function McapCell({ value }) {
-  if (!value && value !== 0) return <span style={{ color: "var(--ink-4)" }}>—</span>;
-  const num = parseFloat(value);
-  let fmt;
-  if (num >= 1e12) fmt = "$" + (num / 1e12).toFixed(2) + "T";
-  else if (num >= 1e9) fmt = "$" + (num / 1e9).toFixed(1) + "B";
-  else if (num >= 1e6) fmt = "$" + (num / 1e6).toFixed(0) + "M";
-  else fmt = "$" + num.toLocaleString("en-US");
-  return <span className="mono" style={{ color: "var(--ink-3)", fontSize: 13 }}>{fmt}</span>;
-}
-
-function RoadmapButton({ url, name, isAuto }) {
-  if (!url) return <span style={{ color: "var(--ink-4)", fontSize: 12 }}>—</span>;
+  if (value === null || value === undefined || isNaN(num)) {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 4, whiteSpace: "nowrap" }}>{label}</div>
+        <span className="mono" style={{ fontSize: 13.5, color: "var(--ink-4)" }}>—</span>
+      </div>
+    );
+  }
+  const pos = num >= 0;
+  const color = pos ? "var(--pos)" : "oklch(0.52 0.13 22)";
+  const bg    = pos ? "oklch(0.95 0.035 150)" : "oklch(0.96 0.028 22)";
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      title={isAuto ? `Auto-discovered roadmap for ${name}` : `${name} website`}
-      style={{
-        display: "inline-flex", alignItems: "center", gap: 4,
-        padding: "3px 10px 3px 8px", borderRadius: 7,
-        background: "var(--surface-2)", border: "1px solid var(--hairline)",
-        color: "var(--accent-ink)", fontSize: 12.5, fontWeight: 600,
-        textDecoration: "none", transition: "background 0.12s",
-        whiteSpace: "nowrap",
-      }}
-      onMouseEnter={e => e.currentTarget.style.background = "var(--accent-soft)"}
-      onMouseLeave={e => e.currentTarget.style.background = "var(--surface-2)"}
-    >
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3" />
-      </svg>
-      {isAuto ? "Roadmap" : "Site"}
-    </a>
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 11, color: "var(--ink-4)", marginBottom: 4, whiteSpace: "nowrap" }}>{label}</div>
+      <div style={{
+        display: "inline-flex", alignItems: "center", gap: 3,
+        padding: "3px 10px", borderRadius: 8, background: bg,
+      }}>
+        <span style={{ fontSize: 10, color }}>{pos ? "▲" : "▼"}</span>
+        <span className="mono" style={{ fontWeight: 700, fontSize: 14, color }}>
+          {Math.abs(num).toFixed(2)}%
+        </span>
+      </div>
+    </div>
   );
 }
 
-function CryptoLogo({ symbol, logoUrl, size = 30 }) {
+/* compact inline perf — used in card header */
+function PerfInline({ value }) {
+  const num = parseFloat(value);
+  if (value === null || value === undefined || isNaN(num)) return null;
+  const pos   = num >= 0;
+  const color = pos ? "var(--pos)" : "oklch(0.52 0.13 22)";
+  const bg    = pos ? "oklch(0.95 0.035 150)" : "oklch(0.96 0.028 22)";
+  return (
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: 3,
+      padding: "3px 9px", borderRadius: 7, background: bg,
+    }}>
+      <span style={{ fontSize: 10, color }}>{pos ? "▲" : "▼"}</span>
+      <span className="mono" style={{ fontWeight: 700, fontSize: 13, color }}>
+        {Math.abs(num).toFixed(2)}%
+      </span>
+      <span style={{ fontSize: 11, color, marginLeft: 1, fontWeight: 500 }}>today</span>
+    </div>
+  );
+}
+
+function CryptoLogo({ symbol, logoUrl, size = 38 }) {
   const [err, setErr] = useState(false);
   const COLORS = ["#E8967A","#7B9FE0","#7BC4AA","#C4A97B","#9B7BC4","#7BC4C4","#C47B9B","#B4C47B"];
-  const bg = COLORS[(symbol || "?").charCodeAt(0) % COLORS.length];
+  const bg = COLORS[((symbol || "").charCodeAt(0) || 0) % COLORS.length];
   if (logoUrl && !err) {
     return (
-      <img
-        src={logoUrl} alt={symbol} width={size} height={size}
+      <img src={logoUrl} alt={symbol} width={size} height={size}
         style={{ borderRadius: "50%", display: "block", flexShrink: 0 }}
-        onError={() => setErr(true)}
-      />
+        onError={() => setErr(true)} />
     );
   }
   return (
@@ -93,221 +109,490 @@ function CryptoLogo({ symbol, logoUrl, size = 30 }) {
   );
 }
 
-function SortArrow({ dir }) {
-  if (!dir) return <span style={{ opacity: 0.3, marginLeft: 3, fontSize: 10 }}>⇅</span>;
-  return <span style={{ color: "var(--accent-ink)", marginLeft: 3, fontSize: 10 }}>{dir === "asc" ? "↑" : "↓"}</span>;
+function formatPrice(val) {
+  const n = parseFloat(val);
+  if (!n && n !== 0) return "—";
+  if (n >= 1000) return "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  if (n >= 1)    return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (n >= 0.01) return "$" + n.toFixed(4);
+  return "$" + n.toFixed(6);
 }
 
-/* ---- main component ---- */
+function formatMcap(val) {
+  const n = parseFloat(val);
+  if (!n) return "—";
+  if (n >= 1e12) return "$" + (n/1e12).toFixed(2) + " trillion";
+  if (n >= 1e9)  return "$" + (n/1e9).toFixed(1)  + " billion";
+  if (n >= 1e6)  return "$" + (n/1e6).toFixed(0)  + " million";
+  return "$" + n.toLocaleString();
+}
+
+function mcapHint(val) {
+  const n = parseFloat(val);
+  if (n >= 500e9)  return "one of the largest crypto projects";
+  if (n >= 100e9)  return "very large project";
+  if (n >= 10e9)   return "large project";
+  if (n >= 1e9)    return "mid-size project";
+  return "smaller project";
+}
+
+/* separator line used inside expanded sections */
+function Sep() {
+  return <div style={{ height: 1, background: "var(--hairline)", margin: "0 22px" }} />;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Individual project card
+   ────────────────────────────────────────────────────────── */
+
+function MarketCard({ project }) {
+  const [open, setOpen] = useState(false);
+
+  const hasAnalysis = !!(project.description || project.ecosystem_category);
+  const hasRoadmap  = !!(project.roadmap_summary);
+  const hasTradFi   = !!(project.trad_fi_equivalent);
+
+  return (
+    <article
+      className="card"
+      style={{ marginBottom: 10, overflow: "hidden", transition: "box-shadow 0.15s" }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 8px oklch(0.5 0.02 60 / 0.10), 0 8px 28px oklch(0.5 0.02 60 / 0.09)"}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = "var(--shadow-card)"}
+    >
+      {/* ── Always-visible header ── */}
+      <div style={{ padding: "18px 22px 14px" }}>
+        <div style={{ display: "flex", gap: 13, alignItems: "flex-start" }}>
+
+          {/* Rank badge */}
+          <div style={{
+            minWidth: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center",
+            borderRadius: 8, background: "var(--surface-2)", flexShrink: 0, marginTop: 4,
+          }}>
+            <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-4)" }}>
+              {project.rank}
+            </span>
+          </div>
+
+          {/* Logo */}
+          <CryptoLogo symbol={project.symbol} logoUrl={project.logo_url} size={40} />
+
+          {/* Name, badge, description */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+              <span style={{ fontWeight: 800, fontSize: 17, color: "var(--ink)", letterSpacing: "-0.01em" }}>
+                {project.name}
+              </span>
+              <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)", fontWeight: 500 }}>
+                {project.symbol}
+              </span>
+              {project.ecosystem_category && <EcoBadge category={project.ecosystem_category} />}
+            </div>
+            <p style={{ margin: 0, fontSize: 14, color: "var(--ink-3)", lineHeight: 1.5 }}>
+              {project.description || (
+                <span style={{ fontStyle: "italic", color: "var(--ink-4)" }}>
+                  Run <strong style={{ fontStyle: "normal" }}>AI Market Analysis</strong> in Admin to get a plain-English summary.
+                </span>
+              )}
+            </p>
+          </div>
+
+          {/* Price + today's perf */}
+          <div style={{ flexShrink: 0, textAlign: "right" }}>
+            <div className="mono" style={{ fontWeight: 800, fontSize: 19, color: "var(--ink)", letterSpacing: "-0.02em", marginBottom: 5 }}>
+              {formatPrice(project.price_usd)}
+            </div>
+            <PerfInline value={project.perf_1d} />
+          </div>
+        </div>
+
+        {/* Toggle */}
+        <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {/* quick peek at what's inside when collapsed */}
+          {!open && (hasAnalysis || hasTradFi || hasRoadmap) && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {hasTradFi && (
+                <span style={{ fontSize: 11.5, color: "var(--ink-4)", display: "flex", alignItems: "center", gap: 3 }}>
+                  💡 Like {project.trad_fi_equivalent}
+                </span>
+              )}
+              {hasRoadmap && (
+                <span style={{ fontSize: 11.5, color: "var(--ink-4)", display: "flex", alignItems: "center", gap: 3 }}>
+                  🗺 Roadmap summary inside
+                </span>
+              )}
+            </div>
+          )}
+          {!open && !hasAnalysis && <span />}
+
+          <button
+            onClick={() => setOpen(v => !v)}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "5px 13px", borderRadius: 8, cursor: "pointer",
+              border: "1px solid var(--hairline)",
+              background: open ? "var(--accent-soft)" : "var(--surface-2)",
+              color:  open ? "var(--accent-ink)"  : "var(--ink-3)",
+              fontSize: 12.5, fontWeight: 600, transition: "background 0.14s, color 0.14s",
+              marginLeft: "auto",
+            }}
+          >
+            {open ? "▲ Less" : "▼ More details"}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Expanded details ── */}
+      {open && (
+        <div>
+          <Sep />
+
+          {/* Performance section */}
+          <div style={{ padding: "16px 22px" }}>
+            <div className="eyebrow" style={{ marginBottom: 14 }}>Performance over time</div>
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+              <PerfPill value={project.perf_1d}  label="Past 24 hours" />
+              <PerfPill value={project.perf_7d}  label="Past 7 days"   />
+              <PerfPill value={project.perf_30d} label="Past 30 days"  />
+            </div>
+            <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--ink-4)", lineHeight: 1.5 }}>
+              These numbers show how the price changed compared to the same point in time before.
+              A positive % means the price went up; negative means it went down.
+            </p>
+          </div>
+
+          <Sep />
+
+          {/* Market size */}
+          <div style={{ padding: "14px 22px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <span style={{ fontSize: 22, lineHeight: 1 }}>📊</span>
+            <div>
+              <div className="eyebrow" style={{ marginBottom: 5 }}>Total market size</div>
+              <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)" }}>
+                {formatMcap(project.market_cap)}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 3 }}>
+                {mcapHint(project.market_cap)} — this is the total value of all coins/tokens in circulation
+              </div>
+            </div>
+          </div>
+
+          {/* Ecosystem description */}
+          {project.ecosystem_description && (
+            <>
+              <Sep />
+              <div style={{ padding: "14px 22px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <span style={{ fontSize: 22, lineHeight: 1 }}>🌐</span>
+                <div>
+                  <div className="eyebrow" style={{ marginBottom: 5 }}>Where it fits in crypto</div>
+                  <EcoBadge category={project.ecosystem_category} />
+                  <p style={{ margin: "8px 0 0", fontSize: 14, color: "var(--ink-2)", lineHeight: 1.6 }}>
+                    {project.ecosystem_description}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          <Sep />
+
+          {/* TradFi equivalent */}
+          {hasTradFi ? (
+            <div style={{ padding: "14px 22px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <span style={{ fontSize: 22, lineHeight: 1 }}>💡</span>
+              <div>
+                <div className="eyebrow" style={{ marginBottom: 5 }}>In traditional finance, this is like…</div>
+                <div style={{
+                  display: "inline-block", padding: "5px 14px", borderRadius: 9,
+                  background: "var(--accent-soft)", color: "var(--accent-ink)",
+                  fontWeight: 700, fontSize: 15, marginBottom: 8,
+                }}>
+                  {project.trad_fi_equivalent}
+                </div>
+                <p style={{ margin: 0, fontSize: 14, color: "var(--ink-2)", lineHeight: 1.6 }}>
+                  {project.trad_fi_explanation}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: "14px 22px", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 18 }}>💡</span>
+              <span style={{ fontSize: 13, color: "var(--ink-4)", fontStyle: "italic" }}>
+                Traditional finance comparison not generated yet — run <strong style={{ fontStyle: "normal" }}>AI Market Analysis</strong> in Admin.
+              </span>
+            </div>
+          )}
+
+          <Sep />
+
+          {/* Roadmap */}
+          {hasRoadmap ? (
+            <div style={{ padding: "14px 22px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <span style={{ fontSize: 22, lineHeight: 1 }}>🗺</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="eyebrow" style={{ marginBottom: 8 }}>What they're building next</div>
+                <p style={{ margin: "0 0 10px", fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.7 }}>
+                  {project.roadmap_summary}
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  {project.roadmap_source_date && (
+                    <span style={{ fontSize: 12, color: "var(--ink-4)" }}>
+                      Info as of {project.roadmap_source_date}
+                    </span>
+                  )}
+                  {project.roadmap_source_url && (
+                    <>
+                      <span style={{ color: "var(--hairline-strong)" }}>·</span>
+                      <a href={project.roadmap_source_url} target="_blank" rel="noopener noreferrer"
+                        style={{ fontSize: 12, color: "var(--accent-ink)", textDecoration: "underline" }}>
+                        view source
+                      </a>
+                    </>
+                  )}
+                  {project.analysis_confidence && (
+                    <>
+                      <span style={{ color: "var(--hairline-strong)" }}>·</span>
+                      <span style={{ fontSize: 11.5, color: "var(--ink-4)" }}>
+                        AI confidence: {project.analysis_confidence}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: "14px 22px", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 18 }}>🗺</span>
+              <span style={{ fontSize: 13, color: "var(--ink-4)", fontStyle: "italic" }}>
+                Roadmap summary not generated yet — run <strong style={{ fontStyle: "normal" }}>AI Market Analysis</strong> in Admin.
+              </span>
+            </div>
+          )}
+
+          <Sep />
+
+          {/* Links row */}
+          <div style={{ padding: "14px 22px", display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {project.website && (
+              <LinkButton href={project.website} label="🌐 Official Website" />
+            )}
+            {project.roadmap_url && project.roadmap_url !== project.website && (
+              <LinkButton href={project.roadmap_url} label="🗺 Roadmap" accent />
+            )}
+          </div>
+        </div>
+      )}
+    </article>
+  );
+}
+
+function LinkButton({ href, label, accent }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <a
+      href={href} target="_blank" rel="noopener noreferrer"
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "7px 15px", borderRadius: 9, fontSize: 13.5, fontWeight: 600,
+        textDecoration: "none", transition: "background 0.13s",
+        border: "1px solid var(--hairline)",
+        background: hov
+          ? (accent ? "var(--accent-soft)" : "var(--surface)")
+          : (accent ? "oklch(0.97 0.016 50)" : "var(--surface-2)"),
+        color: accent ? "var(--accent-ink)" : "var(--ink-2)",
+      }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+    >
+      {label}
+    </a>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+   Toolbar
+   ────────────────────────────────────────────────────────── */
+
+const SORT_OPTS = [
+  { key: "rank",     label: "By size"    },
+  { key: "perf_1d",  label: "Best today" },
+  { key: "perf_7d",  label: "Best week"  },
+  { key: "perf_30d", label: "Best month" },
+];
+
+function Toolbar({ sort, setSort, search, setSearch }) {
+  return (
+    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 20 }}>
+      {/* Sort pill group */}
+      <div style={{
+        display: "flex", gap: 3, background: "var(--surface-2)",
+        padding: 3, borderRadius: 11, border: "1px solid var(--hairline)",
+      }}>
+        {SORT_OPTS.map(o => (
+          <button key={o.key} onClick={() => setSort(o.key)} style={{
+            padding: "5px 13px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer",
+            background: sort === o.key ? "var(--surface)" : "transparent",
+            color:      sort === o.key ? "var(--ink)"    : "var(--ink-3)",
+            boxShadow:  sort === o.key ? "var(--shadow-soft)" : "none",
+            border:     sort === o.key ? "1px solid var(--hairline)" : "1px solid transparent",
+            transition: "all 0.12s",
+          }}>{o.label}</button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div style={{ position: "relative", flex: "1 1 200px", maxWidth: 280 }}>
+        <span style={{
+          position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
+          color: "var(--ink-4)", fontSize: 13, pointerEvents: "none",
+        }}>🔍</span>
+        <input
+          type="text" placeholder="Search name or symbol…"
+          value={search} onChange={e => setSearch(e.target.value)}
+          style={{
+            width: "100%", padding: "7px 10px 7px 30px",
+            borderRadius: 9, border: "1px solid var(--hairline-strong)",
+            background: "var(--surface)", color: "var(--ink)",
+            fontSize: 13.5, outline: "none", boxSizing: "border-box",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+   Main screen
+   ────────────────────────────────────────────────────────── */
 
 function CryptoMarkets() {
   const markets = window.KAIRO && window.KAIRO.markets;
-  const [sortKey, setSortKey] = useState("rank");
-  const [sortDir, setSortDir] = useState("asc");
+  const [sort,   setSort]   = useState("rank");
+  const [search, setSearch] = useState("");
 
   const projects = useMemo(() => {
-    if (!markets || !markets.projects || !markets.projects.length) return [];
-    const arr = [...markets.projects];
-    arr.sort((a, b) => {
-      let av = a[sortKey], bv = b[sortKey];
-      if (typeof av === "string") { av = av.toLowerCase(); bv = (bv || "").toLowerCase(); }
-      if (av == null) av = sortDir === "asc" ? Infinity : -Infinity;
-      if (bv == null) bv = sortDir === "asc" ? Infinity : -Infinity;
-      return sortDir === "asc" ? (av > bv ? 1 : av < bv ? -1 : 0) : (av < bv ? 1 : av > bv ? -1 : 0);
-    });
+    if (!markets || !markets.projects) return [];
+    let arr = [...markets.projects];
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      arr = arr.filter(p =>
+        (p.name   || "").toLowerCase().includes(q) ||
+        (p.symbol || "").toLowerCase().includes(q) ||
+        (p.ecosystem_category || "").toLowerCase().includes(q)
+      );
+    }
+    if (sort === "rank") arr.sort((a, b) => a.rank - b.rank);
+    else arr.sort((a, b) => parseFloat(b[sort] || -Infinity) - parseFloat(a[sort] || -Infinity));
     return arr;
-  }, [markets, sortKey, sortDir]);
+  }, [markets, sort, search]);
 
-  function toggleSort(key) {
-    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir(key === "rank" || key === "name" ? "asc" : "desc"); }
-  }
-
-  const thStyle = (key, right = false, extra = {}) => ({
-    padding: "10px 14px",
-    textAlign: right ? "right" : "left",
-    fontSize: 11.5,
-    fontWeight: 700,
-    color: sortKey === key ? "var(--accent-ink)" : "var(--ink-3)",
-    letterSpacing: "0.06em",
-    textTransform: "uppercase",
-    cursor: "pointer",
-    userSelect: "none",
-    whiteSpace: "nowrap",
-    borderBottom: "1px solid var(--hairline)",
-    background: "var(--surface)",
-    position: "sticky",
-    top: 0,
-    zIndex: 2,
-    ...extra,
-  });
-
-  const updatedAt = markets && markets.updated_at
-    ? new Date(markets.updated_at).toLocaleString("en-US", {
-        month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-      })
-    : null;
-
-  /* ── empty states ── */
+  /* ── Empty / loading states ── */
   if (!markets || !markets.projects) {
     return (
       <div className="screen-enter" style={{ padding: "60px 0", textAlign: "center" }}>
-        <div style={{ fontSize: 32, marginBottom: 14 }}>📊</div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 8 }}>
-          Markets data not loaded yet
-        </div>
-        <p style={{ fontSize: 14, color: "var(--ink-3)", maxWidth: 440, margin: "0 auto 20px" }}>
-          Run the daily update script once to populate this tab. You'll need a free CoinMarketCap API key.
+        <div style={{ fontSize: 40, marginBottom: 14 }}>📊</div>
+        <h3 style={{ fontWeight: 800, fontSize: 20, color: "var(--ink)", marginBottom: 10 }}>
+          Markets not loaded yet
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--ink-3)", maxWidth: 420, margin: "0 auto 24px", lineHeight: 1.65 }}>
+          Head to the <strong>Admin tab → Markets Data</strong> section, add your free
+          CoinMarketCap key, and click <strong>Refresh Markets Data</strong>.
+          Then click <strong>Run AI Analysis</strong> to get beginner-friendly explanations.
         </p>
         <div style={{
-          display: "inline-block", padding: "12px 20px", borderRadius: 10,
+          display: "inline-block", padding: "14px 22px", borderRadius: 12,
           background: "var(--surface-2)", border: "1px solid var(--hairline)",
-          fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--ink-2)", textAlign: "left",
+          fontFamily: "var(--font-mono)", fontSize: 12.5, color: "var(--ink-3)",
+          textAlign: "left", lineHeight: 2,
         }}>
-          <div style={{ color: "var(--ink-4)", fontSize: 11, marginBottom: 4 }}># get free key → coinmarketcap.com/api/</div>
-          <div>python -m app.ingestion.crypto_markets</div>
+          <span style={{ color: "var(--ink-4)" }}># step 1 — fetch prices from CoinMarketCap</span><br />
+          python -m app.ingestion.crypto_markets<br />
+          <span style={{ color: "var(--ink-4)" }}># step 2 — generate AI summaries</span><br />
+          python -m app.markets.analyzer
         </div>
       </div>
     );
   }
 
-  if (projects.length === 0) {
-    return (
-      <div className="screen-enter" style={{ padding: "60px 0", textAlign: "center" }}>
-        <div style={{ fontSize: 15, color: "var(--ink-3)" }}>No project data — run the update script.</div>
-      </div>
-    );
-  }
+  const analysisCount = projects.filter(p => p.description).length;
+  const total         = (markets.projects || []).length;
+  const updatedAt     = markets.updated_at
+    ? new Date(markets.updated_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+    : null;
 
   return (
     <div className="screen-enter">
-      {/* ── Header ── */}
-      <div style={{ marginBottom: 28 }}>
+      {/* ── Page header ── */}
+      <div style={{ marginBottom: 22 }}>
         <div className="eyebrow" style={{ marginBottom: 6 }}>Live Markets</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
           <h2 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 }}>
             Top 20 Crypto Projects
           </h2>
           {updatedAt && (
-            <span className="mono" style={{ fontSize: 12.5, color: "var(--ink-4)" }}>
-              updated {updatedAt}
+            <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)" }}>
+              prices updated {updatedAt}
             </span>
+          )}
+        </div>
+
+        {/* Status chips */}
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+          <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+            Ranked by market cap · click any card for details
+          </span>
+          {analysisCount === total && total > 0 && (
+            <span style={{
+              fontSize: 11.5, fontWeight: 700, padding: "2px 9px", borderRadius: 99,
+              background: "var(--c-sage)", color: "var(--c-sage-ink)",
+            }}>✓ AI summaries loaded</span>
+          )}
+          {analysisCount > 0 && analysisCount < total && (
+            <span style={{
+              fontSize: 11.5, fontWeight: 600, padding: "2px 9px", borderRadius: 99,
+              background: "var(--c-peach)", color: "var(--c-peach-ink)",
+            }}>AI summaries: {analysisCount}/{total}</span>
+          )}
+          {analysisCount === 0 && (
+            <span style={{
+              fontSize: 11.5, fontWeight: 600, padding: "2px 9px", borderRadius: 99,
+              background: "var(--surface-2)", color: "var(--ink-4)",
+            }}>AI summaries not yet run</span>
           )}
           {markets.stale && (
             <span style={{
-              fontSize: 12, fontWeight: 600, color: "oklch(0.56 0.10 52)",
-              background: "oklch(0.95 0.03 52)", padding: "2px 9px", borderRadius: 99,
-            }}>
-              outdated — refresh recommended
-            </span>
+              fontSize: 11.5, fontWeight: 600, padding: "2px 9px", borderRadius: 99,
+              background: "oklch(0.95 0.030 52)", color: "oklch(0.50 0.10 52)",
+            }}>⚠ prices may be outdated</span>
           )}
         </div>
-        <p style={{ marginTop: 6, color: "var(--ink-3)", fontSize: 14 }}>
-          Ranked by market cap &nbsp;·&nbsp; 1d / 7d / 30d performance &nbsp;·&nbsp; Roadmap links auto-discovered from official sites
-        </p>
+
+        <Toolbar sort={sort} setSort={setSort} search={search} setSearch={setSearch} />
       </div>
 
-      {/* ── Table ── */}
-      <div className="card" style={{ overflow: "hidden" }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-            <thead>
-              <tr>
-                <th onClick={() => toggleSort("rank")} style={thStyle("rank", false, { width: 52, paddingLeft: 22 })}>
-                  # <SortArrow dir={sortKey === "rank" ? sortDir : null} />
-                </th>
-                <th onClick={() => toggleSort("name")} style={thStyle("name")}>
-                  Project <SortArrow dir={sortKey === "name" ? sortDir : null} />
-                </th>
-                <th onClick={() => toggleSort("price_usd")} style={thStyle("price_usd", true)}>
-                  Price <SortArrow dir={sortKey === "price_usd" ? sortDir : null} />
-                </th>
-                <th onClick={() => toggleSort("perf_1d")} style={thStyle("perf_1d", true)}>
-                  1 Day <SortArrow dir={sortKey === "perf_1d" ? sortDir : null} />
-                </th>
-                <th onClick={() => toggleSort("perf_7d")} style={thStyle("perf_7d", true)}>
-                  7 Days <SortArrow dir={sortKey === "perf_7d" ? sortDir : null} />
-                </th>
-                <th onClick={() => toggleSort("perf_30d")} style={thStyle("perf_30d", true)}>
-                  30 Days <SortArrow dir={sortKey === "perf_30d" ? sortDir : null} />
-                </th>
-                <th onClick={() => toggleSort("market_cap")} style={thStyle("market_cap", true)}>
-                  Mkt Cap <SortArrow dir={sortKey === "market_cap" ? sortDir : null} />
-                </th>
-                <th style={{ ...thStyle(null, false), cursor: "default", textAlign: "center", width: 120 }}>
-                  Roadmap
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((p) => (
-                <tr
-                  key={p.cmc_id || p.symbol}
-                  style={{ borderBottom: "1px solid var(--hairline)", transition: "background 0.1s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "color-mix(in oklch, var(--surface-2) 70%, transparent)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >
-                  <td style={{ padding: "13px 10px 13px 22px", width: 52 }}>
-                    <span className="mono" style={{ color: "var(--ink-4)", fontSize: 13, fontWeight: 500 }}>
-                      {p.rank}
-                    </span>
-                  </td>
-                  <td style={{ padding: "13px 14px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <CryptoLogo symbol={p.symbol} logoUrl={p.logo_url} size={30} />
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: "var(--ink)", lineHeight: 1.2 }}>{p.name}</div>
-                        <div className="mono" style={{ fontSize: 11, color: "var(--ink-4)", fontWeight: 500, marginTop: 1 }}>{p.symbol}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ padding: "13px 14px", textAlign: "right" }}><PriceCell value={p.price_usd} /></td>
-                  <td style={{ padding: "13px 14px", textAlign: "right" }}><PerfCell value={p.perf_1d} /></td>
-                  <td style={{ padding: "13px 14px", textAlign: "right" }}><PerfCell value={p.perf_7d} /></td>
-                  <td style={{ padding: "13px 14px", textAlign: "right" }}><PerfCell value={p.perf_30d} /></td>
-                  <td style={{ padding: "13px 14px", textAlign: "right" }}><McapCell value={p.market_cap} /></td>
-                  <td style={{ padding: "13px 14px", textAlign: "center" }}>
-                    <RoadmapButton url={p.roadmap_url} name={p.name} isAuto={p.roadmap_url_auto} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* ── Card list ── */}
+      {projects.length === 0 && search ? (
+        <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-3)", fontSize: 14 }}>
+          No projects match "{search}"
         </div>
+      ) : (
+        projects.map(p => <MarketCard key={p.cmc_id || p.symbol} project={p} />)
+      )}
 
-        {/* ── Table footer ── */}
-        <div style={{
-          padding: "10px 20px", borderTop: "1px solid var(--hairline)",
-          background: "var(--surface-2)",
-          display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8,
-        }}>
-          <span style={{ fontSize: 12, color: "var(--ink-4)" }}>
-            Source: CoinMarketCap &nbsp;·&nbsp; {projects.length} projects &nbsp;·&nbsp; Click column headers to sort
-          </span>
-          <span style={{ fontSize: 12, color: "var(--ink-4)" }}>
-            "Roadmap" = auto-discovered &nbsp;·&nbsp; "Site" = official website (no roadmap path found)
-          </span>
-        </div>
-      </div>
-
-      {/* ── Refresh hint ── */}
+      {/* ── Footer hint ── */}
       <div style={{
-        marginTop: 20, padding: "14px 20px", borderRadius: 12,
+        marginTop: 24, padding: "13px 18px", borderRadius: 12,
         background: "var(--surface-2)", border: "1px solid var(--hairline)",
+        fontSize: 12.5, color: "var(--ink-4)", lineHeight: 1.65,
       }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-2)", marginBottom: 4 }}>Keep this data fresh</div>
-        <p style={{ fontSize: 12.5, color: "var(--ink-3)", lineHeight: 1.65, margin: 0 }}>
-          Run daily to refresh rankings, prices, and auto-rediscover roadmap links as the top 20 changes:
-          <br />
-          <code style={{
-            fontFamily: "var(--font-mono)", background: "var(--surface)", fontSize: 12,
-            padding: "2px 8px", borderRadius: 5, color: "var(--ink-2)", marginTop: 4, display: "inline-block",
-          }}>
-            python -m app.ingestion.crypto_markets
-          </code>
-          &nbsp;&nbsp;
-          <span style={{ color: "var(--ink-4)" }}>— or add to your cron / CI schedule</span>
-        </p>
+        <strong style={{ color: "var(--ink-3)" }}>Keep this fresh:</strong> run
+        <code style={{ fontFamily: "var(--font-mono)", background: "var(--surface)", padding: "1px 6px", borderRadius: 5, margin: "0 4px" }}>
+          python -m app.ingestion.crypto_markets
+        </code>
+        daily to refresh prices, then
+        <code style={{ fontFamily: "var(--font-mono)", background: "var(--surface)", padding: "1px 6px", borderRadius: 5, margin: "0 4px" }}>
+          python -m app.markets.analyzer
+        </code>
+        to refresh AI summaries. Or use the buttons in Admin → Markets.
       </div>
     </div>
   );
