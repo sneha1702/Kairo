@@ -16,9 +16,8 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-_BASE    = "https://api.llama.fi"
-_BRIDGES = "https://bridges.llama.fi"
-_STABLE  = "https://stablecoins.llama.fi"
+_BASE   = "https://api.llama.fi"
+_STABLE = "https://stablecoins.llama.fi"
 
 _RATE_LIMIT_DELAY = 0.5   # seconds between requests
 
