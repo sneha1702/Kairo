@@ -1,6 +1,7 @@
 """
 FlipsideExecutor: submits SQL to the Flipside Data API v2 (JSON-RPC) and returns rows.
 
+
 Unlike the Dune executor, there is no saved-query concept — every call submits
 fresh SQL.  Parameters are rendered into the SQL string before submission, so
 the SQL templates use the same {{param}} convention as the Dune queries.
