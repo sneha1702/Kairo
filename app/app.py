@@ -955,8 +955,9 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
         if not _key:
             st.error("CMC_API_KEY required. Get a free key at coinmarketcap.com/api/ and add it above.")
         else:
-            _mongo_uri = _secret("MONGO_URI") if callable(locals().get("_secret")) else _Cfg.MONGO_URI
-            _mongo_db  = _secret("MONGO_DB")  if callable(locals().get("_secret")) else (_Cfg.MONGO_DB or "kairo")
+            import os as _os
+            _mongo_uri = _os.getenv("MONGO_URI") or _Cfg.MONGO_URI
+            _mongo_db  = _os.getenv("MONGO_DB")  or _Cfg.MONGO_DB or "kairo"
             _mkt_prog = st.progress(0, text="Fetching CoinMarketCap data…")
             try:
                 from app.ingestion.crypto_markets import CryptoMarketsUpdater
