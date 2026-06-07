@@ -54,18 +54,6 @@ class DefiLlamaClient:
         """GET /protocol/{slug} — historical TVL for a single protocol."""
         return self._get(_BASE, f"/protocol/{slug}")
 
-    def bridges(self) -> dict:
-        """GET /bridges — list of all bridges with metadata."""
-        return self._get(_BRIDGES, "/bridges", params={"showAggregate": "true"})
-
-    def bridge_volume(self, bridge_id: int, chain: str = "Ethereum") -> dict:
-        """GET /bridgevolume/{chain}?id={bridge_id}"""
-        return self._get(
-            _BRIDGES,
-            f"/bridgevolume/{chain}",
-            params={"id": str(bridge_id)},
-        )
-
     def stablecoins(self, include_prices: bool = True) -> dict:
         """GET /stablecoins?includePrices=true"""
         return self._get(
