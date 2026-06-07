@@ -140,3 +140,4 @@ SELECT
     CARDINALITY(signals) AS signal_count
 FROM preoutput
 ORDER BY total_usd DESC
+LIMIT 10
