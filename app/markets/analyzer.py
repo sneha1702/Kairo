@@ -148,15 +148,25 @@ def _fetch_text(url: str, timeout: int = 5) -> str:
 
 
 def _probe_first(base: str, paths: list[str], timeout: int = 4) -> Optional[str]:
-    """Return the first URL among base+paths that responds with HTTP < 400."""
+    """
+    Return the first URL among base+paths that responds < 400 AND does not
+    redirect back to the homepage (which would mean the path doesn't exist).
+    """
+    base_norm = base.rstrip("/")
     for path in paths:
+        target = base_norm + path
         try:
             r = requests.head(
-                base + path, timeout=timeout, allow_redirects=True,
+                target, timeout=timeout, allow_redirects=True,
                 headers={"User-Agent": "Mozilla/5.0"},
             )
-            if r.status_code < 400:
-                return base + path
+            if r.status_code >= 400:
+                continue
+            # Reject if the server silently redirected us back to the root
+            final = str(r.url).rstrip("/")
+            if final == base_norm or final == base_norm + "/index" or final == base_norm + "/home":
+                continue
+            return target
         except Exception:
             continue
     return None
