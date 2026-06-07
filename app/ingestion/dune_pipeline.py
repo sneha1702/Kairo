@@ -239,15 +239,21 @@ class DuneIngestionPipeline:
             ))
         return result
 
-    # Dune returns timestamps as "2026-05-30 11:32:23.000 UTC"; ES requires ISO 8601.
-    _DUNE_TS = re.compile(r"^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d+)?) UTC$")
+    # Dune returns timestamps as "2026-05-30 11:32:23.000 UTC" or "2026-04-19 00:00:00";
+    # ES date fields require ISO 8601 (T separator, optional Z suffix).
+    _DUNE_TS_UTC = re.compile(r"^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d+)?) UTC$")
+    _DUNE_TS_BARE = re.compile(r"^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d+)?)$")
 
     def _normalize_doc(self, doc: dict) -> dict:
         for k, v in list(doc.items()):
             if isinstance(v, str):
-                m = self._DUNE_TS.match(v)
+                m = self._DUNE_TS_UTC.match(v)
                 if m:
                     doc[k] = f"{m.group(1)}T{m.group(2)}Z"
+                    continue
+                m = self._DUNE_TS_BARE.match(v)
+                if m:
+                    doc[k] = f"{m.group(1)}T{m.group(2)}"
             # Arrays (e.g. signals) and other non-string types pass through unchanged.
         return doc
 
