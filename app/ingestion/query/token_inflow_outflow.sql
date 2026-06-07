@@ -74,3 +74,4 @@ SELECT
     CARDINALITY(signals) AS signal_count
 FROM preoutput
 ORDER BY ABS(net_flow_usd) DESC
+LIMIT 20
