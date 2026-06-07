@@ -1030,7 +1030,7 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
 
             _results = _analyzer.analyze_all(
                 symbols=_ai_symbols,
-                fetch_roadmaps=_fetch_roads,
+                fetch_pages=_fetch_roads,
                 dry_run=False,
                 progress_cb=_progress_cb,
             )
