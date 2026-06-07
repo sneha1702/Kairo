@@ -1,16 +1,16 @@
 """
 Provider-agnostic ingestion runner.
 
-Selects the pipeline implementation (Dune, Flipside, …) at runtime based on
+Selects the pipeline implementation (Dune, DefiLlama, …) at runtime based on
 the --provider flag or the INGESTION_PROVIDER env var, then runs it with the
 same arguments as the individual pipeline CLIs.
 
 Usage:
-  python pipeline_runner.py                            # uses INGESTION_PROVIDER env var (default: dune)
-  python pipeline_runner.py --provider flipside
+  python pipeline_runner.py                              # uses INGESTION_PROVIDER env var (default: dune)
+  python pipeline_runner.py --provider defillama
   python pipeline_runner.py --provider dune --queries whale_transaction_filter
-  python pipeline_runner.py --provider flipside --cadence 6
-  python pipeline_runner.py --provider flipside --dry-run
+  python pipeline_runner.py --provider defillama --cadence 6
+  python pipeline_runner.py --provider defillama --dry-run
 """
 
 import argparse
