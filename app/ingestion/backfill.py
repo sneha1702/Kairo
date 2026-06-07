@@ -51,8 +51,8 @@ def _checkpoint_key(end_time_str: str, chunk_hours: int) -> str:
     return f"{end_time_str}|{chunk_hours}h"
 
 
-def _load_checkpoint(query_dir: Path) -> set[str]:
-    path = query_dir / _CHECKPOINT_FILENAME
+def _load_checkpoint(checkpoint_dir: Path) -> set[str]:
+    path = checkpoint_dir / _CHECKPOINT_FILENAME
     if not path.exists():
         return set()
     try:
@@ -62,8 +62,8 @@ def _load_checkpoint(query_dir: Path) -> set[str]:
         return set()
 
 
-def _save_checkpoint(query_dir: Path, completed: set[str]) -> None:
-    path = query_dir / _CHECKPOINT_FILENAME
+def _save_checkpoint(checkpoint_dir: Path, completed: set[str]) -> None:
+    path = checkpoint_dir / _CHECKPOINT_FILENAME
     path.write_text(json.dumps({"completed": sorted(completed)}, indent=2))
 
 
@@ -149,12 +149,12 @@ def main() -> None:
         return
 
     if args.reset_checkpoint:
-        ck_path = query_dir / _CHECKPOINT_FILENAME
+        ck_path = checkpoint_dir / _CHECKPOINT_FILENAME
         if ck_path.exists():
             ck_path.unlink()
             logger.info("Checkpoint file deleted — starting fresh")
 
-    completed_chunks: set[str] = _load_checkpoint(query_dir) if args.resume else set()
+    completed_chunks: set[str] = _load_checkpoint(checkpoint_dir) if args.resume else set()
     if args.resume and completed_chunks:
         logger.info("Resuming — %d chunk(s) already completed", len(completed_chunks))
 
@@ -196,7 +196,7 @@ def main() -> None:
                 logger.error("  [%s] failed: %s", name, err)
         else:
             completed_chunks.add(ck_key)
-            _save_checkpoint(query_dir, completed_chunks)
+            _save_checkpoint(checkpoint_dir, completed_chunks)
 
         logger.info("  Chunk result: +%d indexed, %d failed", chunk_indexed, chunk_failed)
 
