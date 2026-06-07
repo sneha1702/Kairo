@@ -37,12 +37,12 @@ class DefiLlamaClient:
 
     # ── Public helpers ───────────────────────────────────────────────────────────
 
-    def dex_overview(self, chain: str = "Ethereum") -> dict:
-        """GET /overview/dexs?chain={chain}&excludeTotalDataChart=true"""
+    def dex_overview(self) -> dict:
+        """GET /overview/dexs — all DEX protocols with 24h volume and change fields."""
         return self._get(
             _BASE,
-            f"/overview/dexs",
-            params={"chain": chain, "excludeTotalDataChart": "true", "excludeTotalDataChartBreakdown": "true"},
+            "/overview/dexs",
+            params={"excludeTotalDataChart": "true", "excludeTotalDataChartBreakdown": "true"},
         )
 
     def protocols(self) -> list[dict]:
