@@ -122,3 +122,4 @@ SELECT
     CARDINALITY(signals) AS signal_count
 FROM preoutput
 ORDER BY volume_multiplier DESC
+LIMIT 10
