@@ -292,13 +292,14 @@ def _cli_main() -> None:
     updater = CryptoMarketsUpdater(cmc_key, mongo_uri, mongo_db)
     projects = updater.update(discover_roadmaps=not no_roadmap, dry_run=dry_run)
 
-    print(f"\n{'#':>3}  {'Symbol':<8}  {'Name':<22}  {'1d':>9}  {'7d':>9}  {'30d':>10}  Roadmap")
-    print("-" * 85)
+    print(f"\n{'#':>3}  {'Symbol':<8}  {'Name':<22}  {'Share':>7}  {'1d':>9}  {'7d':>9}  {'30d':>10}  Activity URL")
+    print("-" * 100)
     for p in projects:
-        roadmap_tag = "✓ auto" if p.get("roadmap_url_auto") else ("site" if p.get("roadmap_url") else "—")
+        share = f"{p.get('market_share_pct', 0):.2f}%"
+        url_tag = "✓" if p.get("roadmap_url_auto") else ("site" if p.get("roadmap_url") else "—")
         print(
-            f"{p['rank']:>3}  {p['symbol']:<8}  {p['name']:<22}  "
-            f"{p['perf_1d']:>+8.2f}%  {p['perf_7d']:>+8.2f}%  {p['perf_30d']:>+9.2f}%  {roadmap_tag}"
+            f"{p['rank']:>3}  {p['symbol']:<8}  {p['name']:<22}  {share:>7}  "
+            f"{p['perf_1d']:>+8.2f}%  {p['perf_7d']:>+8.2f}%  {p['perf_30d']:>+9.2f}%  {url_tag}"
         )
 
     print(f"\nTotal: {len(projects)} projects")
