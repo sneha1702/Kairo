@@ -933,7 +933,51 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
 
     st.divider()
 
-    # ── 4. Service Status ─────────────────────────────────────────────────────
+    # ── 4. Markets Update ─────────────────────────────────────────────────────
+    st.subheader("Markets Data (Top 20)")
+    st.caption("Fetches top 20 by market cap from CoinMarketCap and stores in MongoDB.")
+
+    _cmc_key = st.text_input(
+        "CoinMarketCap API Key",
+        value=_Cfg.CMC_API_KEY or "",
+        type="password",
+        key="admin_cmc_key",
+        help="Free key from coinmarketcap.com/api/  —  stored only in session, not saved to disk.",
+    )
+    _no_roadmap = st.checkbox(
+        "Skip roadmap discovery (faster, website links only)",
+        value=False,
+        key="markets_skip_roadmap",
+    )
+
+    if st.button("🔄 Refresh Markets Data", use_container_width=True, key="btn_refresh_markets"):
+        _key = _cmc_key or _Cfg.CMC_API_KEY
+        if not _key:
+            st.error("CMC_API_KEY required. Get a free key at coinmarketcap.com/api/ and add it above.")
+        else:
+            _mongo_uri = _secret("MONGO_URI") if callable(locals().get("_secret")) else _Cfg.MONGO_URI
+            _mongo_db  = _secret("MONGO_DB")  if callable(locals().get("_secret")) else (_Cfg.MONGO_DB or "kairo")
+            _mkt_prog = st.progress(0, text="Fetching CoinMarketCap data…")
+            try:
+                from app.ingestion.crypto_markets import CryptoMarketsUpdater
+                _mkt_prog.progress(20, text="Calling CoinMarketCap API…")
+                _upd = CryptoMarketsUpdater(_key, _mongo_uri, _mongo_db)
+                _mkt_prog.progress(40, text="Fetching listings + metadata…")
+                _projects = _upd.build_projects(discover_roadmaps=not _no_roadmap)
+                _mkt_prog.progress(85, text="Saving to MongoDB…")
+                _upd.save_to_mongo(_projects)
+                _cached_build_data.clear()
+                _mkt_prog.progress(100, text="Done.")
+                st.success(f"Updated {len(_projects)} projects. Switch to the Markets tab to view.")
+                st.rerun()
+            except Exception as _exc:
+                _mkt_prog.empty()
+                st.error(f"Markets update failed: {_exc}")
+                logger.exception("Markets update failed")
+
+    st.divider()
+
+    # ── 5. Service Status ─────────────────────────────────────────────────────
     st.subheader("Service Status")
     st.write("Elasticsearch:",    "✅ connected" if _es      is not None else "❌ not connected")
     st.write("Narrative Engine:", "✅ ready"     if _engine  is not None else "❌ not ready")
