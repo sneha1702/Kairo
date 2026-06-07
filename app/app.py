@@ -252,20 +252,8 @@ st.markdown(
 # Set autocomplete="off" on Streamlit text inputs so Chrome stops warning about
 # the empty autocomplete attribute. Streamlit strips <script> from st.markdown,
 # so reach into the parent DOM from a zero-height component iframe.
-components.html(
-    """
-    <script>
-    (function tick() {
-      try {
-        var doc = window.parent.document;
-        doc.querySelectorAll('.stTextInput input').forEach(function (el) {
-          if (el.getAttribute('autocomplete') !== 'off') el.setAttribute('autocomplete', 'off');
-        });
-      } catch (e) {}
-      setTimeout(tick, 600);
-    })();
-    </script>
-    """,
+st.iframe(
+    src="about:blank",
     height=0,
 )
 
