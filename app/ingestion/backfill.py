@@ -31,8 +31,8 @@ if ROOT_DIR not in sys.path:
 from elasticsearch import Elasticsearch
 
 from config.config import Config
-from app.ingestion.dune_api_executor import DuneApiExecutor
-from app.ingestion.dune_pipeline import DuneIngestionPipeline, QUERY_TO_INDEX
+from app.ingestion.base_pipeline import QUERY_TO_INDEX
+from app.ingestion.pipeline_runner import build_pipeline
 
 logging.basicConfig(
     level=logging.INFO,
