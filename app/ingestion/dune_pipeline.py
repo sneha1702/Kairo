@@ -62,6 +62,8 @@ logger = logging.getLogger(__name__)
 # ── Pipeline ───────────────────────────────────────────────────────────────────
 
 class DuneIngestionPipeline(BaseIngestionPipeline):
+    provider_name = "dune"
+
     def __init__(
         self,
         es_client: Elasticsearch,
