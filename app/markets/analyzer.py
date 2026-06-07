@@ -75,13 +75,15 @@ Analyze the crypto project below and return ONE JSON object.
 
 PROJECT: {name} ({symbol})
 MARKET CAP RANK: #{rank}
-WEBSITE: {website}
+OFFICIAL WEBSITE: {website}
 
 {pages_block}
 
-Fill in ALL fields. Return ONLY the raw JSON — no markdown, no code fences, no extra text.
+Return ONLY the raw JSON — no markdown, no code fences, no extra text.
 
 {{
+  "display_name": "<The full commonly-known name people use for this project. Examples: BNB → 'Binance Coin', XRP → 'Ripple', ADA → 'Cardano', DOT → 'Polkadot', AVAX → 'Avalanche', LINK → 'Chainlink', TRX → 'TRON', TON → 'Toncoin'. If the CMC name is already the well-known common name (Bitcoin, Ethereum, Tether, Solana, etc.), repeat it unchanged.>",
+
   "description": "<One sentence, max 30 words. What does {name} DO? Explain it like the reader is 12 and has never heard of crypto.>",
 
   "ecosystem_category": "<Exactly one: L1 | L2 | Sidechain | DeFi | Stablecoin | Oracle | Exchange | Privacy | Interop | Payments | Other>",
@@ -94,11 +96,11 @@ Fill in ALL fields. Return ONLY the raw JSON — no markdown, no code fences, no
 
   "latest_release": "<Most recent release or version number with approximate date if known, e.g. 'v27.0 (Apr 2024)' or 'Dencun upgrade (Mar 2024)'. Write null if not a versioned-software project.>",
 
-  "latest_news_headline": "<One sentence: the single most recent and important thing that happened — a launch, upgrade, partnership, milestone, or policy change. Use page content if available, else your knowledge.>",
+  "latest_news_headline": "<One sentence: the single most recent and important thing that happened — a launch, upgrade, partnership, milestone, or policy change. Use page content if available, else your training knowledge.>",
 
   "activity_summary": "<Max 90 words. Plain English. Cover: (1) what they shipped or announced most recently, (2) what is actively being built or tested right now, (3) what is planned next. Focus on what this means for users, not developers. No jargon.>",
 
-  "activity_source_url": "<The best URL for this information — prefer the releases or news page if one was found, otherwise the main website>",
+  "activity_source_url": "<IMPORTANT: Return the DIRECT URL of this project's releases, news, blog, or roadmap page — NOT the homepage. Use your training knowledge to find the correct page. Examples: Bitcoin → 'https://bitcoin.org/en/releases/', Ethereum → 'https://ethereum.org/en/history/', Tether → 'https://tether.io/news/', Solana → 'https://solana.com/news', BNB Chain → 'https://www.bnbchain.org/en/blog', Ripple → 'https://ripple.com/insights/', Cardano → 'https://roadmap.cardano.org'. If a fetched page URL is shown above and it is specifically a news/releases/roadmap page (not a redirect to the homepage), prefer that URL. If you are genuinely uncertain, return the main website URL.>",
 
   "activity_source_date": "<Date of this information as YYYY-MM. Use {today_month} if drawing on your training knowledge.>",
 
