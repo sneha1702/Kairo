@@ -69,6 +69,9 @@ class Config:
     MONGO_URI: str = os.getenv("MONGO_URI","")
     MONGO_DB: str = os.getenv("MONGO_DB","")
 
+    # CoinMarketCap (free tier — https://coinmarketcap.com/api/)
+    CMC_API_KEY: str = os.getenv("CMC_API_KEY", "")
+
     # Dune pipeline settings
     QUERY_DIR: str = os.getenv("QUERY_DIR", "app/ingestion/query")
     DUNE_API_KEY: str = os.getenv("DUNE_API_KEY", "")
