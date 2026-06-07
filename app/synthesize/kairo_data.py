@@ -1244,6 +1244,8 @@ def _build_markets() -> dict:
             "description", "ecosystem_category", "ecosystem_description",
             "trad_fi_equivalent", "trad_fi_explanation",
             "roadmap_summary", "roadmap_source_url", "roadmap_source_date",
+            "activity_summary", "latest_release", "latest_news_headline",
+            "activity_source_url", "activity_source_date",
             "analysis_confidence", "analyzed_at",
         )
         projects = []
