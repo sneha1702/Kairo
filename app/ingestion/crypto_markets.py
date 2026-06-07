@@ -163,8 +163,11 @@ class CryptoMarketsUpdater:
         listings = self.fetch_top20_listings()
 
         cmc_ids = [item["id"] for item in listings]
-        logger.info("Fetching metadata for %d projects…", len(cmc_ids))
-        info_map = self.fetch_project_info(cmc_ids)
+        logger.info("Fetching metadata + global market cap…")
+        info_map, total_mcap = (
+            self.fetch_project_info(cmc_ids),
+            self.fetch_global_market_cap(),
+        )
 
         # Build base project records
         projects: list[dict] = []
@@ -175,6 +178,8 @@ class CryptoMarketsUpdater:
             websites = info.get("urls", {}).get("website") or []
             website = websites[0] if websites else ""
             logo_url = info.get("logo") or f"https://s2.coinmarketcap.com/static/img/coins/64x64/{cmc_id}.png"
+            project_mcap = float(quote.get("market_cap") or 0)
+            market_share = round(project_mcap / total_mcap * 100, 3) if total_mcap > 0 else 0.0
             projects.append({
                 "rank": rank,
                 "cmc_id": cmc_id,
@@ -185,7 +190,8 @@ class CryptoMarketsUpdater:
                 "perf_1d": float(quote.get("percent_change_24h") or 0),
                 "perf_7d": float(quote.get("percent_change_7d") or 0),
                 "perf_30d": float(quote.get("percent_change_30d") or 0),
-                "market_cap": float(quote.get("market_cap") or 0),
+                "market_cap": project_mcap,
+                "market_share_pct": market_share,
                 "volume_24h": float(quote.get("volume_24h") or 0),
                 "website": website,
                 "roadmap_url": None,
