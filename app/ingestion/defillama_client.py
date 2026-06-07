@@ -61,6 +61,10 @@ class DefiLlamaClient:
             params={"includePrices": "true" if include_prices else "false"},
         )
 
+    def clear_cache(self) -> None:
+        """Discard all cached responses. Call between backfill chunks."""
+        self._cache.clear()
+
     # ── Internal ─────────────────────────────────────────────────────────────────
 
     def _get(self, base: str, path: str, params: dict | None = None) -> Any:
