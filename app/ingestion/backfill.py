@@ -81,6 +81,10 @@ def _parse_args() -> argparse.Namespace:
                    help=f"Seconds to wait between chunks (default {_DEFAULT_DELAY_SECONDS})")
     p.add_argument("--dry-run", action="store_true",
                    help="Print plan without executing any Dune queries or ES writes")
+    p.add_argument("--resume", action="store_true",
+                   help="Skip chunks already recorded in backfill_checkpoint.json (safe to re-run)")
+    p.add_argument("--reset-checkpoint", action="store_true",
+                   help="Delete backfill_checkpoint.json and start fresh")
     return p.parse_args()
 
 
