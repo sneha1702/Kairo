@@ -110,6 +110,7 @@ function App() {
   if (view === "today") screen = <MorningBrief layout={t.morningLayout} onOpenNarrative={openNarrative} />;
   else if (view === "narr") screen = <NarrativeTracker treatment={t.trackerTreatment} activeId={activeNarr} onSelect={setActiveNarr} />;
   else if (view === "history") screen = <NarrativeHistory />;
+  else if (view === "markets") screen = <CryptoMarkets />;
   else screen = <ConfigScreen />;
 
   return (
