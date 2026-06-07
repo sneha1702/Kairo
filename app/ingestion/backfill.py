@@ -127,6 +127,7 @@ def main() -> None:
 
     chunks = _build_chunks(start_dt, end_dt, args.chunk_days)
     chunk_hours = args.chunk_days * 24
+    query_dir = Path(__file__).parent / "query"
 
     logger.info(
         "Backfill plan: %s → %s  |  %d chunk(s) × %d days  |  %d queries  |  dry_run=%s",
@@ -141,12 +142,21 @@ def main() -> None:
         logger.info("[DRY RUN] Done — no queries executed")
         return
 
+    if args.reset_checkpoint:
+        ck_path = query_dir / _CHECKPOINT_FILENAME
+        if ck_path.exists():
+            ck_path.unlink()
+            logger.info("Checkpoint file deleted — starting fresh")
+
+    completed_chunks: set[str] = _load_checkpoint(query_dir) if args.resume else set()
+    if args.resume and completed_chunks:
+        logger.info("Resuming — %d chunk(s) already completed", len(completed_chunks))
+
     es_client = Elasticsearch(
         Config.ES_URL,
         api_key=Config.ES_API_KEY_ID,
         request_timeout=60,
     )
-    query_dir = Path(__file__).parent / "query"
     executor = DuneApiExecutor(
         api_key=Config.DUNE_API_KEY,
         query_dir=query_dir,
@@ -163,6 +173,13 @@ def main() -> None:
 
     for i, (chunk_start, chunk_end) in enumerate(chunks, 1):
         end_time_str = chunk_end.strftime("%Y-%m-%d %H:%M:%S")
+        ck_key = _checkpoint_key(end_time_str, chunk_hours)
+
+        if ck_key in completed_chunks:
+            logger.info("── Chunk %d/%d  end_time=%s  SKIPPED (already completed) ──",
+                        i, len(chunks), end_time_str)
+            continue
+
         logger.info(
             "── Chunk %d/%d  end_time=%s  window=%dh ──",
             i, len(chunks), end_time_str, chunk_hours,
@@ -184,6 +201,9 @@ def main() -> None:
         if errors:
             for name, err in errors:
                 logger.error("  [%s] failed: %s", name, err)
+        else:
+            completed_chunks.add(ck_key)
+            _save_checkpoint(query_dir, completed_chunks)
 
         logger.info("  Chunk result: +%d indexed, %d failed", chunk_indexed, chunk_failed)
 
