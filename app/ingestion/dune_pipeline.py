@@ -104,7 +104,7 @@ class DuneIngestionPipeline(BaseIngestionPipeline):
 
     def run_one(self, qc: QueryConfig, dry_run: bool = False) -> IngestionResult:
         start = time.monotonic()
-        result = IngestionResult(query_name=qc.query_name)
+        result = IngestionResult(query_name=qc.query_name, provider="dune")
         try:
             sql = qc.sql_path.read_text()
 
