@@ -119,9 +119,13 @@ class DuneIngestionPipeline(BaseIngestionPipeline):
             result.rows_fetched = len(rows)
 
             ingested_at = datetime.now(timezone.utc)
-            docs = self._add_metadata_envelope(rows, qc, ingested_at)
-            for doc in docs:
-                doc["_id"] = self._make_doc_id(qc, doc, ingested_at)
+            docs = signal_transformer.normalize(
+                query_name=qc.query_name,
+                provider="dune",
+                raw_rows=rows,
+                qc=qc,
+                ingested_at=ingested_at,
+            )
 
             ok, failed = self._bulk_index(docs, qc.target_index)
             result.docs_indexed = ok
