@@ -433,10 +433,18 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
 
     # ── Elasticsearch bulk index ─────────────────────────────────────────────────
 
-    def _bulk_index(self, rows: list[dict], index: str) -> tuple[int, int]:
+    def _bulk_index(self, docs: list[dict], index: str) -> tuple[int, int]:
         from elasticsearch.helpers import bulk, BulkIndexError
 
-        actions = [{"_index": index, "_source": row} for row in rows]
+        actions = []
+        for doc in docs:
+            doc = dict(doc)
+            doc_id = doc.pop("_id", None)
+            action: dict = {"_index": index, "_source": doc}
+            if doc_id:
+                action["_id"] = doc_id
+            actions.append(action)
+
         try:
             success, errors = bulk(self._es, actions, raise_on_error=False)
             failed = len(errors) if errors else 0
@@ -446,7 +454,7 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
             return success, failed
         except BulkIndexError as exc:
             logger.error("Bulk index error for %s: %s", index, exc)
-            return 0, len(rows)
+            return 0, len(docs)
 
 
 def build_defillama_pipeline() -> DefiLlamaIngestionPipeline:
