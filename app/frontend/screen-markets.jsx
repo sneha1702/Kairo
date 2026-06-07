@@ -232,7 +232,7 @@ function MarketCard({ project }) {
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {hasTradFi && (
                 <span style={{ fontSize: 11.5, color: "var(--ink-4)", display: "flex", alignItems: "center", gap: 3 }}>
-                  💡 Like {project.trad_fi_equivalent}
+                  💡 Like {project.trad_fi_equivalent} in traditional finance
                 </span>
               )}
               {hasActivity && (
