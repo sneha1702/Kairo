@@ -9,6 +9,7 @@ const NAV = [
   { id: "today",   label: "Today",      icon: "today" },
   { id: "narr",    label: "Narratives", icon: "narr" },
   { id: "history", label: "History",    icon: "history" },
+  { id: "markets", label: "Markets",    icon: "markets" },
   { id: "config",  label: "Config",     icon: "watch" },
 ];
 
