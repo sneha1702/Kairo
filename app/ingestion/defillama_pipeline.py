@@ -457,11 +457,12 @@ def build_defillama_pipeline() -> DefiLlamaIngestionPipeline:
         sys.path.insert(0, ROOT_DIR)
 
     from config.config import Config
-    from elasticsearch import Elasticsearch
+    from app.brain.elasticsearch_manager import ElasticsearchManager
 
-    es = Elasticsearch(
+    es_manager = ElasticsearchManager(
         Config.ES_URL,
-        basic_auth=(Config.ES_USERNAME, Config.ES_PASSWORD),
-        verify_certs=False,
+        Config.ES_USERNAME,
+        Config.ES_PASSWORD,
+        Config.ES_API_KEY_ID,
     )
-    return DefiLlamaIngestionPipeline(es_client=es)
+    return DefiLlamaIngestionPipeline(es_client=es_manager.get_client())
