@@ -97,6 +97,36 @@ def _is_backfill(end_time: str) -> bool:
         return False
 
 
+def _log_fetch_summary(query_name: str, rows: list[dict]) -> None:
+    """Log a compact data summary so duplicate-data issues are visible in logs."""
+    if not rows:
+        return
+    tb = rows[0].get("time_bucket", "?")
+    if query_name == "bridge_activity":
+        sample = "  |  ".join(
+            f"{r.get('bridge_name','?')}  TVL=${r.get('tvl_usd',0)/1e9:.2f}B  Δ${r.get('net_flow_usd',0)/1e6:.1f}M"
+            for r in rows[:3]
+        )
+    elif query_name == "stablecoin_liquidity_flow":
+        sample = "  |  ".join(
+            f"{r.get('symbol','?')}  ${r.get('circulating_usd',0)/1e9:.2f}B  Δ${r.get('delta_usd',0)/1e6:.1f}M"
+            for r in rows[:3]
+        )
+    elif query_name == "ecosystem_sector_rotation":
+        sample = "  |  ".join(
+            f"{r.get('category','?')}  ${r.get('tvl_usd',0)/1e9:.2f}B  {r.get('tvl_change_pct',0):+.2f}%"
+            for r in rows[:3]
+        )
+    elif query_name == "protocol_inflow_leaderboard":
+        sample = "  |  ".join(
+            f"{r.get('symbol','?')}  TVL=${r.get('tvl_usd',0)/1e9:.2f}B  Δ${r.get('net_flow_usd',0)/1e6:.1f}M"
+            for r in rows[:3]
+        )
+    else:
+        sample = f"{len(rows)} rows"
+    logger.info("[%s] time_bucket=%s  data: %s", query_name, tb, sample)
+
+
 def _tvl_at(series: list[dict], end_ts: int, field: str = "totalLiquidityUSD") -> float:
     """
     Return the value of *field* for the latest entry in *series* whose date <= end_ts.
