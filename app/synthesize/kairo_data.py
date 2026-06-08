@@ -940,8 +940,14 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
         force_id = forces[0] if forces else "smart-money"
         detected_dt = top.get("detected_at")
 
+        n_ev = len(key_evidence[:5])
         for i, ev in enumerate(reversed(key_evidence[:5])):
-            ep_day = i + 1
+            # Spread episodes across the narrative's actual lifespan (Day 1 → Day `day`)
+            # so the most recent episode always lands on or near today.
+            if n_ev <= 1:
+                ep_day = day
+            else:
+                ep_day = max(1, round(1 + (day - 1) * i / (n_ev - 1)))
             try:
                 if detected_dt:
                     if isinstance(detected_dt, str):
@@ -951,7 +957,7 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
                     if base.tzinfo is None:
                         base = base.replace(tzinfo=timezone.utc)
                     import datetime as _dt
-                    ep_date_dt = base + _dt.timedelta(days=i)
+                    ep_date_dt = base + _dt.timedelta(days=(ep_day - 1))
                     if ep_date_dt.date() > _now().date():
                         ep_date_dt = _now()
                     ep_date = ep_date_dt.strftime("%b %-d")
