@@ -957,17 +957,17 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
             # detected_at = Day 1 and each subsequent episode reflects real elapsed days.
             try:
                 if _base is not None:
-                    days_offset = round((day - 1) * i / max(n_ev - 1, 1)) if n_ev > 1 else (day - 1)
+                    days_offset = round(day * i / max(n_ev - 1, 1)) if n_ev > 1 else day
                     ep_date_dt = _base + _dt.timedelta(days=days_offset)
                     if ep_date_dt.date() > _now().date():
                         ep_date_dt = _now()
-                    ep_day = (_base.date() - ep_date_dt.date()).days * -1 + 1  # = days_offset + 1
+                    ep_day = (ep_date_dt.date() - _base.date()).days  # 0-indexed: Day 0 = detected_at
                     ep_date = ep_date_dt.strftime("%b %-d")
                 else:
-                    ep_day = max(1, round(1 + (day - 1) * i / max(n_ev - 1, 1))) if n_ev > 1 else day
+                    ep_day = round(day * i / max(n_ev - 1, 1)) if n_ev > 1 else day
                     ep_date = f"Day {ep_day}"
             except Exception:
-                ep_day = i + 1
+                ep_day = i
                 ep_date = f"Day {ep_day}"
 
             ep_strength = round(max(5.0, strength - (len(key_evidence) - 1 - i) * 0.3), 1)
