@@ -217,9 +217,10 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
             return result
 
         try:
-            raw_rows = self._dispatch(qc)
+            raw_rows = self._dispatch(qc, backfill=backfill)
             result.rows_fetched = len(raw_rows)
             logger.info("[%s] Fetched %d rows", qc.query_name, len(raw_rows))
+            _log_fetch_summary(qc.query_name, raw_rows)
 
             if raw_rows:
                 docs = signal_transformer.normalize(
