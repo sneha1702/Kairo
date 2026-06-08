@@ -56,13 +56,22 @@ _PROTOCOL_SLUGS = {
     "eigenlayer": "EigenLayer",
 }
 
-# Signals where DefiLlama only exposes the current 24h window — no historical
+# Signals where DefiLlama only exposes the current snapshot — no historical
 # parameter exists in the free API. Skip these when end_time is in the past
 # (backfill mode) to avoid storing misleading current-state data under a
 # historical time_bucket label.
+#
+# NOT included here (historical data IS available):
+#   bridge_activity             — fixed to use per-protocol /protocol/{slug} TVL series
+#   protocol_inflow_leaderboard — uses /protocol/{slug} TVL series via _tvl_at()
 _NO_HISTORICAL_DATA = frozenset({
     "volume_spike_detection",
     "dex_trading_concentration",
+    # /stablecoins returns current circulating supply with no date parameter
+    "stablecoin_liquidity_flow",
+    # /protocols returns current TVL; computing historical sector breakdown
+    # would require hundreds of individual /protocol/{slug} calls
+    "ecosystem_sector_rotation",
 })
 
 # How many hours in the past end_time must be to consider this a backfill call.
