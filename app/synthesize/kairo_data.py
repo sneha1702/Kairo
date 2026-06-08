@@ -66,7 +66,7 @@ def _now() -> datetime:
 
 
 def _days_since(dt_val: Any) -> int:
-    """Return days since dt_val (datetime or ISO string), minimum 1."""
+    """Return days since dt_val (datetime or ISO string), 0-indexed: 0 = same day."""
     try:
         if isinstance(dt_val, str):
             dt_val = datetime.fromisoformat(dt_val.replace("Z", "+00:00"))
@@ -74,10 +74,10 @@ def _days_since(dt_val: Any) -> int:
             if dt_val.tzinfo is None:
                 dt_val = dt_val.replace(tzinfo=timezone.utc)
             delta = _now() - dt_val
-            return max(1, delta.days + 1)
+            return max(0, delta.days)
     except Exception:
         pass
-    return 1
+    return 0
 
 
 def _safe_float(v: Any, default: float = 0.0) -> float:
