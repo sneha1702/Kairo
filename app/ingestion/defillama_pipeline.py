@@ -148,7 +148,7 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
             results[name] = self.run_one(qc, dry_run=dry_run, backfill=backfill_mode)
         return results
 
-    def run_one(self, qc: QueryConfig, dry_run: bool = False) -> IngestionResult:
+    def run_one(self, qc: QueryConfig, dry_run: bool = False, backfill: bool = False) -> IngestionResult:
         t0 = time.time()
         result = IngestionResult(
             query_name=qc.query_name,
@@ -157,6 +157,16 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
 
         if qc.query_name in _UNSUPPORTED:
             logger.info("[%s] Skipped — not supported by DefiLlama", qc.query_name)
+            result.success = True
+            result.duration_seconds = time.time() - t0
+            return result
+
+        if backfill and qc.query_name in _NO_HISTORICAL_DATA:
+            logger.info(
+                "[%s] Skipped — DefiLlama /overview/dexs only exposes the current "
+                "24h window; storing it under a historical time_bucket would be misleading",
+                qc.query_name,
+            )
             result.success = True
             result.duration_seconds = time.time() - t0
             return result
