@@ -246,18 +246,22 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
 
     # ── Dispatcher ───────────────────────────────────────────────────────────────
 
-    def _dispatch(self, qc: QueryConfig) -> list[dict]:
-        name = qc.query_name
+    def _dispatch(self, qc: QueryConfig, backfill: bool = False) -> list[dict]:
+        name   = qc.query_name
         params = qc.params
-        dispatch = {
-            "volume_spike_detection":      self._fetch_volume_spike,
-            "dex_trading_concentration":   self._fetch_dex_concentration,
-            "bridge_activity":             self._fetch_bridge_activity,
-            "stablecoin_liquidity_flow":   self._fetch_stablecoin_flow,
-            "ecosystem_sector_rotation":   self._fetch_sector_rotation,
-            "protocol_inflow_leaderboard": self._fetch_protocol_inflow,
-        }
-        return dispatch[name](params)
+        if name == "volume_spike_detection":
+            return self._fetch_volume_spike(params)
+        if name == "dex_trading_concentration":
+            return self._fetch_dex_concentration(params)
+        if name == "bridge_activity":
+            return self._fetch_bridge_activity(params, backfill=backfill)
+        if name == "stablecoin_liquidity_flow":
+            return self._fetch_stablecoin_flow(params)
+        if name == "ecosystem_sector_rotation":
+            return self._fetch_sector_rotation(params)
+        if name == "protocol_inflow_leaderboard":
+            return self._fetch_protocol_inflow(params)
+        raise ValueError(f"Unknown signal: {name}")
 
     # ── Signal fetch methods ─────────────────────────────────────────────────────
 
