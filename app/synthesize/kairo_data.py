@@ -941,29 +941,33 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
         detected_dt = top.get("detected_at")
 
         n_ev = len(key_evidence[:5])
-        for i, ev in enumerate(reversed(key_evidence[:5])):
-            # Spread episodes across the narrative's actual lifespan (Day 1 → Day `day`)
-            # so the most recent episode always lands on or near today.
-            if n_ev <= 1:
-                ep_day = day
-            else:
-                ep_day = max(1, round(1 + (day - 1) * i / (n_ev - 1)))
+        import datetime as _dt
+        _base: datetime | None = None
+        if detected_dt:
             try:
-                if detected_dt:
-                    if isinstance(detected_dt, str):
-                        base = datetime.fromisoformat(detected_dt.replace("Z", "+00:00"))
-                    else:
-                        base = detected_dt
-                    if base.tzinfo is None:
-                        base = base.replace(tzinfo=timezone.utc)
-                    import datetime as _dt
-                    ep_date_dt = base + _dt.timedelta(days=(ep_day - 1))
+                _base = datetime.fromisoformat(detected_dt.replace("Z", "+00:00")) if isinstance(detected_dt, str) else detected_dt
+                if _base.tzinfo is None:
+                    _base = _base.replace(tzinfo=timezone.utc)
+            except Exception:
+                _base = None
+
+        for i, ev in enumerate(reversed(key_evidence[:5])):
+            # Spread episodes evenly from detected_at (Day 1) to today (Day `day`),
+            # then derive the day number from the actual calendar distance so that
+            # detected_at = Day 1 and each subsequent episode reflects real elapsed days.
+            try:
+                if _base is not None:
+                    days_offset = round((day - 1) * i / max(n_ev - 1, 1)) if n_ev > 1 else (day - 1)
+                    ep_date_dt = _base + _dt.timedelta(days=days_offset)
                     if ep_date_dt.date() > _now().date():
                         ep_date_dt = _now()
+                    ep_day = (_base.date() - ep_date_dt.date()).days * -1 + 1  # = days_offset + 1
                     ep_date = ep_date_dt.strftime("%b %-d")
                 else:
+                    ep_day = max(1, round(1 + (day - 1) * i / max(n_ev - 1, 1))) if n_ev > 1 else day
                     ep_date = f"Day {ep_day}"
             except Exception:
+                ep_day = i + 1
                 ep_date = f"Day {ep_day}"
 
             ep_strength = round(max(5.0, strength - (len(key_evidence) - 1 - i) * 0.3), 1)
