@@ -351,48 +351,101 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
             })
         return rows
 
-    def _fetch_bridge_activity(self, params: dict) -> list[dict]:
+    def _fetch_bridge_activity(self, params: dict, backfill: bool = False) -> list[dict]:
         """
-        Uses /protocols (free) filtered to Bridge category on Ethereum.
-        TVL change_1d acts as a proxy for net inflow/outflow.
+        Live mode:    /protocols filtered to Bridge — uses change_1d as net-flow proxy.
+        Backfill mode: fetches /protocol/{slug} TVL time series per bridge, then
+                       reads TVL at end_ts and end_ts-24h via _tvl_at() for an
+                       accurate historical delta instead of today's change_1d.
         """
         end_time  = params.get("end_time", _utcnow_str())
         protocols = self._client.protocols()
 
+        bridge_protos = [
+            p for p in protocols
+            if (p.get("category") or "").lower() == "bridge"
+            and "Ethereum" in (p.get("chains") or [])
+        ]
+        # Sort by current TVL so we prioritise the largest bridges
+        bridge_protos = sorted(bridge_protos, key=lambda p: p.get("tvl") or 0, reverse=True)[:15]
+
         rows = []
-        for p in protocols:
-            if (p.get("category") or "").lower() != "bridge":
-                continue
-            if "Ethereum" not in (p.get("chains") or []):
-                continue
 
-            tvl       = p.get("tvl") or 0
-            change_1d = p.get("change_1d") or 0.0
-            prev_tvl  = tvl / (1 + change_1d / 100) if change_1d != -100 else tvl
-            net_flow  = tvl - prev_tvl
+        if backfill:
+            end_dt  = _parse_end_dt(end_time)
+            end_ts  = int(end_dt.timestamp())
+            prev_ts = end_ts - 86_400  # 24 h earlier
 
-            signals = []
-            if net_flow >= 50_000_000:
-                signals.append("HIGH_BRIDGE_INFLOW")
-            if net_flow <= -10_000_000:
-                signals.append("NET_BRIDGE_OUTFLOW")
-            if change_1d >= 20:
-                signals.append("ACCELERATING_BRIDGE_VOLUME")
-            if tvl >= 1_000_000_000:
-                signals.append("LARGE_BRIDGE_TVL")
+            for p in bridge_protos:
+                slug = p.get("slug") or ""
+                if not slug:
+                    continue
+                try:
+                    data       = self._client.protocol(slug)
+                    tvl_series = data.get("tvl", [])
+                except DefiLlamaApiError as exc:
+                    logger.debug("[bridge_activity] %s: %s — using current TVL fallback", slug, exc)
+                    tvl_series = []
 
-            rows.append({
-                "bridge_name":       p.get("name", ""),
-                "tvl_usd":           round(tvl, 2),
-                "prev_tvl_usd":      round(prev_tvl, 2),
-                "net_flow_usd":      round(net_flow, 2),
-                "change_1d_pct":     round(change_1d, 2),
-                "chains":            p.get("chains", []),
-                "time_bucket":       end_time,
-                "category":          "bridge",
-                "signals":           signals,
-                "signal_count":      len(signals),
-            })
+                if tvl_series:
+                    tvl      = _tvl_at(tvl_series, end_ts)
+                    prev_tvl = _tvl_at(tvl_series, prev_ts)
+                else:
+                    # Fall back to current-state TVL when the time-series call fails
+                    tvl      = p.get("tvl") or 0
+                    prev_tvl = tvl
+
+                if tvl <= 0:
+                    continue
+
+                net_flow  = tvl - prev_tvl
+                change_1d = round(net_flow / prev_tvl * 100, 2) if prev_tvl else 0.0
+
+                signals = []
+                if net_flow  >=  50_000_000: signals.append("HIGH_BRIDGE_INFLOW")
+                if net_flow  <= -10_000_000: signals.append("NET_BRIDGE_OUTFLOW")
+                if change_1d >= 20:          signals.append("ACCELERATING_BRIDGE_VOLUME")
+                if tvl       >= 1_000_000_000: signals.append("LARGE_BRIDGE_TVL")
+
+                rows.append({
+                    "bridge_name":   p.get("name", ""),
+                    "tvl_usd":       round(tvl, 2),
+                    "prev_tvl_usd":  round(prev_tvl, 2),
+                    "net_flow_usd":  round(net_flow, 2),
+                    "change_1d_pct": change_1d,
+                    "chains":        p.get("chains", []),
+                    "time_bucket":   end_time,
+                    "category":      "bridge",
+                    "signals":       signals,
+                    "signal_count":  len(signals),
+                })
+
+        else:
+            # Live mode — /protocols already has change_1d relative to today
+            for p in bridge_protos:
+                tvl       = p.get("tvl") or 0
+                change_1d = p.get("change_1d") or 0.0
+                prev_tvl  = tvl / (1 + change_1d / 100) if change_1d != -100 else tvl
+                net_flow  = tvl - prev_tvl
+
+                signals = []
+                if net_flow  >=  50_000_000: signals.append("HIGH_BRIDGE_INFLOW")
+                if net_flow  <= -10_000_000: signals.append("NET_BRIDGE_OUTFLOW")
+                if change_1d >= 20:          signals.append("ACCELERATING_BRIDGE_VOLUME")
+                if tvl       >= 1_000_000_000: signals.append("LARGE_BRIDGE_TVL")
+
+                rows.append({
+                    "bridge_name":   p.get("name", ""),
+                    "tvl_usd":       round(tvl, 2),
+                    "prev_tvl_usd":  round(prev_tvl, 2),
+                    "net_flow_usd":  round(net_flow, 2),
+                    "change_1d_pct": round(change_1d, 2),
+                    "chains":        p.get("chains", []),
+                    "time_bucket":   end_time,
+                    "category":      "bridge",
+                    "signals":       signals,
+                    "signal_count":  len(signals),
+                })
 
         return sorted(rows, key=lambda r: r["tvl_usd"], reverse=True)[:15]
 
