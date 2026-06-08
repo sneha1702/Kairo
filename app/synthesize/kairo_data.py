@@ -952,9 +952,8 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
                 _base = None
 
         for i, ev in enumerate(reversed(key_evidence[:5])):
-            # Spread episodes evenly from detected_at (Day 1) to today (Day `day`),
-            # then derive the day number from the actual calendar distance so that
-            # detected_at = Day 1 and each subsequent episode reflects real elapsed days.
+            # Spread episodes evenly from detected_at (Day 0) to today (Day `day`),
+            # then derive ep_day from calendar distance: Day 0 = detected_at, Day N = N days later.
             try:
                 if _base is not None:
                     days_offset = round(day * i / max(n_ev - 1, 1)) if n_ev > 1 else day
