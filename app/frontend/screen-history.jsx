@@ -7,7 +7,13 @@ const K = window.KAIRO;
 let Icon, ForceTag, StatusBadge, CardLabel, StrengthCurve;
 
 /* ---- age label helper ---- */
-function _ageLabel(days) {
+function _ageLabel(days, granularity) {
+  if (granularity === 'week') {
+    const w = days;
+    if (w <= 1)  return "1 week";
+    if (w <= 4)  return `${w} weeks`;
+    return `${Math.floor(w / 4)} month${Math.floor(w / 4) > 1 ? "s" : ""}`;
+  }
   if (days === 1) return "Day 1";
   if (days <= 7)  return `${days} days`;
   if (days <= 28) return `${Math.floor(days / 7)} week${Math.floor(days / 7) > 1 ? "s" : ""}`;
