@@ -257,7 +257,7 @@ function Episode({ ep, last }) {
       </div>
       <div style={{ paddingBottom: last ? 0 : 26, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
-          <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-3)" }}>Day {ep.day} · {ep.date}</span>
+          <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-3)" }}>{ep.granularity === 'week' ? 'Week' : 'Day'} {ep.day} · {ep.date}</span>
           <ForceTag id={ep.force} size="sm" />
         </div>
         <h3 style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>{ep.headline}</h3>
