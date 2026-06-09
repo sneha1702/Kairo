@@ -372,7 +372,11 @@ def _build_story(top: dict, dune_context: dict) -> dict:
         assets = (top.get("top_tokens") or [])[:3]
         day = _days_since(top.get("detected_at"))
         trend_id = str(name).lower().replace(" ", "-").replace("'", "")
-        trend_label = f"Ongoing narrative · Day {day}"
+        _is_historical = day > 14
+        trend_label = (
+            f"Ongoing narrative · Week {day // 7}" if _is_historical
+            else f"Ongoing narrative · Day {day}"
+        )
 
         impl = top.get("implications") or ""
         if impl and isinstance(impl, str) and len(impl) > 20 and len(impl) < 140:
