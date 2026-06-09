@@ -143,7 +143,7 @@ function NarrativeRail({ onDrill }) {
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
               <ForceTag id={n.force} size="sm" />
-              <span className="mono" style={{ fontSize: 12, color: "var(--ink-3)" }}>Day {n.day}</span>
+              <span className="mono" style={{ fontSize: 12, color: "var(--ink-3)" }}>{n.granularity === 'week' ? 'Week' : 'Day'} {n.day}</span>
             </div>
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, lineHeight: 1.3 }}>{n.title}</h3>
             {(n.phase || n.summary_line) && (
