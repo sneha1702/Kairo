@@ -128,11 +128,15 @@ function NarrativeHistory() {
         <article className="card" style={{ padding: "calc(var(--card-pad) + 4px)" }}>
           <CardLabel icon="narr">How this narrative developed</CardLabel>
           <p style={{ fontSize: 13.5, color: "var(--ink-3)", marginTop: -6, marginBottom: 22, lineHeight: 1.6 }}>
-            {t.day <= 7
-              ? "Each day this narrative has been active, from when it first appeared to now."
-              : t.day <= 28
-              ? "Older days are grouped into weekly summaries — recent activity shown individually."
-              : "Older weeks are rolled into a single summary. The most recent activity is shown individually."
+            {t.granularity === 'week'
+              ? (t.day <= 4
+                ? "Each week this narrative has been active, from when it first appeared to now."
+                : "Older weeks are rolled into a single summary. The most recent weeks are shown individually.")
+              : (t.day <= 7
+                ? "Each day this narrative has been active, from when it first appeared to now."
+                : t.day <= 28
+                ? "Older days are grouped into weekly summaries — recent activity shown individually."
+                : "Older weeks are rolled into a single summary. The most recent activity is shown individually.")
             }
           </p>
           {episodes.map((ep, i, arr) => (
