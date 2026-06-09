@@ -188,7 +188,7 @@ function TrackerHeader({ t }) {
             <span style={{
               display: "inline-flex", alignItems: "center", gap: 7, background: "var(--ink)", color: "var(--paper)",
               borderRadius: 99, padding: "5px 13px", fontSize: 13, fontWeight: 700,
-            }} className="mono">Day {t.day || "—"}</span>
+            }} className="mono">{t.granularity === 'week' ? 'Week' : 'Day'} {t.day || "—"}</span>
             <StatusBadge status={t.status} />
             {t.phase && <PhaseChip phase={t.phase} />}
             {t.smart_money_intent && <SmartIntentBadge intent={t.smart_money_intent} />}
