@@ -1113,13 +1113,17 @@ def _build_narratives(all_narratives: list[dict]) -> list[dict]:
             plain = (n.get("plain_english_summary") or n.get("implications") or "").strip()
             first_dot = plain.find(". ")
             summary_line = (plain[:first_dot + 1] if first_dot != -1 else plain)[:160]
+            is_hist = day > 14
+            display_day = day // 7 if is_hist else day
 
             result.append({
                 "id":               nid,
                 "title":            name,
                 "status":           status,
                 "strength":         round(conf * 10, 1),
-                "day":              day,
+                "day":              display_day,
+                "actual_days":      day,
+                "granularity":      "week" if is_hist else "day",
                 "assets":           assets,
                 "force":            force,
                 "phase":            phase,
