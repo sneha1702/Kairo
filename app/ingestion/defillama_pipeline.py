@@ -549,9 +549,18 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
         return sorted(rows, key=lambda r: r["tvl_usd"], reverse=True)[:15]
 
     def _fetch_protocol_inflow(self, params: dict) -> list[dict]:
+        """
+        Fetches /protocol/{slug} for each tracked protocol and computes TVL delta.
+        Uses _tvl_at() to read TVL at end_time and end_time-24h from the full
+        historical series — so backfill chunks correctly reflect the past state
+        rather than always returning today's latest entry.
+        """
         end_time = params.get("end_time", _utcnow_str())
-        rows = []
+        end_dt   = _parse_end_dt(end_time)
+        end_ts   = int(end_dt.timestamp())
+        prev_ts  = end_ts - 86_400  # 24 h earlier
 
+        rows = []
         for slug, display_name in _PROTOCOL_SLUGS.items():
             try:
                 data = self._client.protocol(slug)
@@ -559,25 +568,25 @@ class DefiLlamaIngestionPipeline(BaseIngestionPipeline):
                 logger.warning("[protocol_inflow_leaderboard] %s: %s", slug, exc)
                 continue
 
-            # tvl field is a list of {date, totalLiquidityUSD}
             tvl_series = data.get("tvl", [])
             if not tvl_series:
                 continue
 
-            current_tvl = tvl_series[-1].get("totalLiquidityUSD", 0) or 0
-            prev_tvl    = tvl_series[-2].get("totalLiquidityUSD", 0) if len(tvl_series) >= 2 else current_tvl
+            current_tvl = _tvl_at(tvl_series, end_ts)
+            prev_tvl    = _tvl_at(tvl_series, prev_ts) or current_tvl
             delta_usd   = current_tvl - prev_tvl
             multiplier  = round(current_tvl / prev_tvl, 2) if prev_tvl else None
 
+            logger.debug(
+                "[protocol_inflow_leaderboard] %s  end_ts=%d  TVL=%.2fB  prev=%.2fB  Δ=%.2fM",
+                slug, end_ts, current_tvl / 1e9, prev_tvl / 1e9, delta_usd / 1e6,
+            )
+
             signals = []
-            if delta_usd >= 100_000_000:
-                signals.append("HIGH_PROTOCOL_INFLOW")
-            if delta_usd <= -100_000_000:
-                signals.append("HIGH_PROTOCOL_OUTFLOW")
-            if multiplier and multiplier >= 2.0:
-                signals.append("ACCELERATING_INFLOW")
-            if current_tvl >= 1_000_000_000:
-                signals.append("BILLION_DOLLAR_PROTOCOL")
+            if delta_usd >= 100_000_000:  signals.append("HIGH_PROTOCOL_INFLOW")
+            if delta_usd <= -100_000_000: signals.append("HIGH_PROTOCOL_OUTFLOW")
+            if multiplier and multiplier >= 2.0: signals.append("ACCELERATING_INFLOW")
+            if current_tvl >= 1_000_000_000:     signals.append("BILLION_DOLLAR_PROTOCOL")
 
             rows.append({
                 "symbol":            display_name,
