@@ -787,8 +787,25 @@ a technically accurate one they cannot follow.
             logger.info("[GEMINI] Parsed %d narratives from response", len(narratives))
 
             built_at = datetime.utcnow().isoformat() + "Z"
+
+            # Detect historical windows: if the data starts more than 14 days ago,
+            # anchor detected_at to the window start so Day 0 = the historical start date.
+            _is_historical = False
+            if data_window_start:
+                try:
+                    _days_back = (datetime.utcnow() - datetime.fromisoformat(data_window_start[:10])).days
+                    _is_historical = _days_back > 14
+                except Exception:
+                    pass
+
             for narrative in narratives:
-                narrative["detected_at"]        = built_at
+                if _is_historical and data_window_start:
+                    # Day 0 = historical start; pad to full ISO format if needed
+                    _anchor = data_window_start if "T" in data_window_start else data_window_start + "T00:00:00Z"
+                    narrative["detected_at"] = _anchor
+                else:
+                    narrative["detected_at"] = built_at
+                narrative["granularity"]        = "week" if _is_historical else "day"
                 narrative["source"]             = "gemini_analysis"
                 narrative["data_window_start"]  = data_window_start
                 narrative["data_window_end"]    = data_window_end
