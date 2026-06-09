@@ -99,7 +99,7 @@ function NarrativeHistory() {
   const episodes  = t.episodes || [];
   const hasCurve  = t.curve && t.curve.length > 1;
   const hasConclusion = t.why_matters || t.implications;
-  const ageLabel  = _ageLabel(t.day || 1);
+  const ageLabel  = _ageLabel(t.day || 1, t.granularity);
 
   return (
     <div className="screen-enter" style={{ display: "flex", flexDirection: "column", gap: "var(--gap)" }}>
