@@ -900,6 +900,9 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
         conf = _safe_float(top.get("confidence_score"), 0.5)
         strength = round(conf * 10, 1)
         day = _days_since(top.get("detected_at"))
+        is_historical = day > 14
+        granularity = "week" if is_historical else "day"
+        display_day = day // 7 if is_historical else day
         trend = (top.get("momentum") or {}).get("trend", "stable")
         status = _MOMENTUM_TREND_TO_STATUS.get(trend, "established")
         sources = top.get("signal_sources") or []
@@ -937,35 +940,39 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
                 _base = None
 
         for i, ev in enumerate(reversed(key_evidence[:5])):
-            # Spread episodes evenly from detected_at (Day 0) to today (Day `day`),
-            # then derive ep_day from calendar distance: Day 0 = detected_at, Day N = N days later.
+            # Spread episodes evenly from detected_at to today.
+            # For historical narratives (day > 14): use week numbers as the unit.
+            # For recent narratives: use day numbers as the unit.
             try:
                 if _base is not None:
                     days_offset = round(day * i / max(n_ev - 1, 1)) if n_ev > 1 else day
                     ep_date_dt = _base + _dt.timedelta(days=days_offset)
                     if ep_date_dt.date() > _now().date():
                         ep_date_dt = _now()
-                    ep_day = (ep_date_dt.date() - _base.date()).days  # 0-indexed: Day 0 = detected_at
+                    actual_day_offset = (ep_date_dt.date() - _base.date()).days
+                    ep_day = actual_day_offset // 7 if is_historical else actual_day_offset
                     ep_date = ep_date_dt.strftime("%b %-d")
                 else:
-                    ep_day = round(day * i / max(n_ev - 1, 1)) if n_ev > 1 else day
-                    ep_date = f"Day {ep_day}"
+                    raw_offset = round(day * i / max(n_ev - 1, 1)) if n_ev > 1 else day
+                    ep_day = raw_offset // 7 if is_historical else raw_offset
+                    ep_date = f"Week {ep_day}" if is_historical else f"Day {ep_day}"
             except Exception:
                 ep_day = i
-                ep_date = f"Day {ep_day}"
+                ep_date = f"Week {i}" if is_historical else f"Day {i}"
 
             ep_strength = round(max(5.0, strength - (len(key_evidence) - 1 - i) * 0.3), 1)
             ev_str = str(ev).strip()
             short_headline = _shorten_headline(ev_str)
             explanation = _build_episode_body(ev_str, top, i)
             episodes.append({
-                "day":      ep_day,
-                "date":     ep_date,
-                "headline": short_headline,
-                "detail":   ev_str if len(ev_str) > len(short_headline) + 5 else "",
-                "body":     explanation,
-                "force":    force_id,
-                "strength": ep_strength,
+                "day":         ep_day,
+                "date":        ep_date,
+                "headline":    short_headline,
+                "detail":      ev_str if len(ev_str) > len(short_headline) + 5 else "",
+                "body":        explanation,
+                "force":       force_id,
+                "strength":    ep_strength,
+                "granularity": granularity,
             })
 
         # Merge episodes that share the same date (caused by capping future dates at today)
@@ -989,12 +996,13 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
 
         if not episodes:
             episodes = [{
-                "day":      day,
-                "date":     _now().strftime("%b %-d"),
-                "headline": f"{name} narrative active",
-                "body":     "On-chain signals confirm the narrative is developing.",
-                "force":    force_id,
-                "strength": strength,
+                "day":         display_day,
+                "date":        _now().strftime("%b %-d"),
+                "headline":    f"{name} narrative active",
+                "body":        "On-chain signals confirm the narrative is developing.",
+                "force":       force_id,
+                "strength":    strength,
+                "granularity": granularity,
             }]
 
         supporting_facts = _build_supporting_facts(dune_context, top)
@@ -1014,7 +1022,9 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
 
         return {
             "title":             name,
-            "day":               day,
+            "day":               display_day,
+            "actual_days":       day,
+            "granularity":       granularity,
             "status":            status,
             "strength":          strength,
             "delta":             "+0.4",
