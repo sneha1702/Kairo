@@ -4,11 +4,12 @@ steps:
       - 'DOCKER_BUILDKIT=0'
     args:
       - build
-      - --platform
-      - linux/amd64
       - -t
-      - us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:latest
+      - us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:cloudrun
       - .
-
-images:
-  - us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:latest
+  - name: 'gcr.io/cloud-builders/docker'
+    env:
+      - 'DOCKER_BUILDKIT=0'
+    args:
+      - push
+      - us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:cloudrun

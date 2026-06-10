@@ -69,24 +69,35 @@ IMAGE="us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:latest"
 
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
-docker build -t $IMAGE .
+docker buildx build -t flask_backend:latest --platform linux/amd64 .
+#docker build -t $IMAGE .
 docker push $IMAGE
 
+# Grant the service account storage access
+gcloud projects add-iam-policy-binding kairoagent-497417 \
+  --member="serviceAccount:360527997635-compute@developer.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+
+# Also grant the Cloud Build SA (covers both accounts Cloud Build may use)
+gcloud projects add-iam-policy-binding kairoagent-497417 \
+  --member="serviceAccount:360527997635@cloudbuild.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+
+ gcloud projects add-iam-policy-binding kairoagent-497417 \
+  --member="serviceAccount:360527997635-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor" 
 ---
 Step 5: Deploy to Cloud Run
 
 gcloud run deploy kairo-app \
-  --image=us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:latest \
+  --image=us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:cloudrun \
   --platform=managed \
   --region=us-central1 \
   --port=8501 \
-  --memory=2Gi \
-  --cpu=2 \
-  --min-instances=0 \
-  --max-instances=3 \
+  --memory=2Gi --cpu=2 \
   --allow-unauthenticated \
   --set-secrets="ES_URL=ES_URL:latest,ES_USERNAME=ES_USERNAME:latest,ES_PASSWORD=ES_PASSWORD:latest,GEMINI_KEY=GEMINI_KEY:latest,MONGO_URI=MONGO_URI:latest,DUNE_API_KEY=DUNE_API_KEY:latest,CMC_API_KEY=CMC_API_KEY:latest" \
-  --set-env-vars="GEMINI_MODEL=gemini-2.5-flash,MONGO_DB=kairo,DEMO_MODE=false,LOG_LEVEL=INFO,MIN_NARRATIVE_CONFIDENCE=0.7,DUNE_QUERY_WINDOW_HOURS=48"
+  --set-env-vars="GEMINI_MODEL=gemini-2.5-flash,MONGO_DB=kairo,DEMO_MODE=false,MIN_NARRATIVE_CONFIDENCE=0.7,DUNE_QUERY_WINDOW_HOURS=48"
 
 Cloud Run will return a live HTTPS URL when done.
 
