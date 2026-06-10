@@ -434,9 +434,15 @@ def run_narrative_generation(
     bucket_h     = max(24, hours // 3)
     signal_trend = es_manager.get_signal_trend(hours_per_bucket=bucket_h, num_buckets=3)
 
-    # ── Step 3: load narrative history from MongoDB ────────────────────────
+    # ── Step 3: load narrative history ────────────────────────────────────
+    # During backfill, prior_narratives is passed directly from the previous
+    # window so we don't depend on MongoDB write propagation between windows.
     current_narratives = tracker.get_current_narratives(user_id, min_confidence=0.0)
-    history_summary    = tracker.get_narratives_summary(user_id)
+    if prior_narratives is not None:
+        history_summary = prior_narratives
+        logger.info("[NARR] Using %d prior-window narratives as history context", len(history_summary))
+    else:
+        history_summary = tracker.get_narratives_summary(user_id)
 
     # ── Step 4: call Gemini ────────────────────────────────────────────────
     logger.info("[NARR] Calling Gemini narrative detection (window=%dh)", hours)
