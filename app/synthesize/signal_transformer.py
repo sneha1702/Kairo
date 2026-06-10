@@ -9,9 +9,13 @@ Three output categories:
 
 Full pipeline (transform → Gemini → MongoDB):
   python -m app.synthesize.signal_transformer               # default 24 h window
-  python -m app.synthesize.signal_transformer --hours 48
+  python -m app.synthesize.signal_transformer --hours 168   # 1-week summary
   python -m app.synthesize.signal_transformer --hours 72 --user-id analyst
   python -m app.synthesize.signal_transformer --dry-run     # transform only, skip Gemini
+
+Bulk / historic backfill (one Gemini call per week, previous week passed as history):
+  python -m app.synthesize.signal_transformer --backfill-days 30
+  python -m app.synthesize.signal_transformer --backfill-days 90 --sleep-between 30
 """
 
 import argparse

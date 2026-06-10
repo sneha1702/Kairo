@@ -1,0 +1,80 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Billions Shifting Across Different Crypto Blockchains",
+    "category": "CrossChain",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.80,
+    "key_evidence": [
+      "Layerzero V2, a major bridging protocol, saw approximately $7.48 billion in capital move across it on June 9th, following a massive $22.65 billion on June 8th.",
+      "Another significant bridge, PORTAL, facilitated around $2.05 billion in capital migration on June 9th, adding to the $6.52 billion moved on June 8th.",
+      "USDT, primarily through the USDT0 bridge, recorded over $3.63 billion in cross-chain activity on June 9th, building on the $7.19 billion transferred on June 8th.",
+      "Other bridges also saw substantial activity, with Axelar moving $145 million on June 9th and $302 million on June 8th, while Merlins Seal handled $368 million and $1.34 billion on those respective days.",
+      "This massive wave of capital movement is running roughly 49% faster than the typical daily pace over the last month, showing a clear acceleration."
+    ],
+    "data_caveat": "While we see huge sums moving across these bridges, the specific destinations and purposes of these funds remain opaque. If they're moving to new, high-yield opportunities, it's one thing; if they're simply repositioning for a large trade or exit, it's another. That distinction would significantly alter the market outlook.",
+    "historical_context": "This narrative was first detected as a sustained pattern of cross-chain capital movement. Over the past two days, the total value moved across various bridges has remained exceptionally high, with several protocols consistently handling billions. This suggests not a one-off event, but a sustained and intensifying trend of money flowing between different parts of the crypto ecosystem.",
+    "implications": "The sheer volume of capital rotating across blockchains suggests that large market participants are actively re-allocating funds, likely in search of better opportunities or preparing for significant market shifts. If this trend continues, we could see specific chains or decentralized finance (DeFi) protocols experiencing sudden surges or drains in liquidity, potentially leading to price volatility in assets associated with those movements. This re-shuffling of capital implies that investors are highly active and seeking to optimize their positions, which often precedes notable market movements.",
+    "plain_english_summary": "Billions of dollars are rapidly moving across different crypto blockchains, far exceeding the usual pace. This suggests big investors are actively repositioning their money, potentially signaling upcoming shifts in market interest or specific asset prices.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "(1) This indicates sophisticated investors are not staying put; they are actively seeking out the next big opportunity or de-risking their portfolios by shifting assets around. It’s a sign of a dynamic, rather than stagnant, market.\n(2) Watch for sudden, significant price movements in major layer-1 (base) blockchains like Ethereum or Solana, or in large DeFi tokens, in the next 24-48 hours. A surge in activity on one chain could hint at where this capital is landing.\n(3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  },
+  {
+    "narrative_id": "institutional_bitcoin",
+    "name": "Big Money Moving Wrapped Bitcoin Positions",
+    "category": "Institutional",
+    "status": "STABLE",
+    "strength": "Medium-Low",
+    "momentum": "Stable",
+    "confidence_score": 0.45,
+    "key_evidence": [
+      "Very large holders moved approximately $6.45 billion worth of Wrapped Bitcoin (WBTC) on May 31st.",
+      "This was followed by significant whale transactions of $5.06 billion on May 30th, $3.04 billion on June 2nd, and $2.71 billion on June 1st.",
+      "Further large movements by these holders were observed with $851 million on June 3rd, $1.82 billion on May 29th, and $909 million on May 28th."
+    ],
+    "data_caveat": "The direction of these large Wrapped Bitcoin movements (whether they are inflows to exchanges, suggesting selling, or outflows to private wallets for holding) is not specified. This critical piece of information would change the interpretation from potential accumulation to distribution, or vice versa.",
+    "historical_context": "This narrative began with consistent large-scale movements of Wrapped Bitcoin by big players. While no new whale transaction data has emerged in the most recent daily window (June 8-9), the prior sustained activity up to June 3rd suggests an ongoing pattern rather than a one-off event. The lack of new data keeps the narrative stable but without fresh momentum.",
+    "implications": "When institutional or very large holders move such substantial amounts of a Bitcoin-linked asset like Wrapped Bitcoin, it often indicates strategic positioning. If these funds were moved for accumulation, it could signal growing confidence in Bitcoin's future price. Conversely, if it was for distribution, it might suggest an expectation of price declines. The continued presence of these large-scale movements suggests significant players are actively managing their Bitcoin exposure.",
+    "plain_english_summary": "Big investors are still holding and moving their Wrapped Bitcoin positions, signaling their continued interest in Bitcoin exposure. We haven't seen new large movements recently, but their past activity was significant.",
+    "top_tokens": [
+      "WBTC"
+    ],
+    "retail_considerations": "(1) This suggests that institutional players are maintaining their strategic positions in a Bitcoin-proxy asset. It reflects their ongoing assessment of Bitcoin's value proposition.\n(2) Watch for new large transactions of Wrapped Bitcoin (WBTC) appearing in the data in the coming days – particularly if these moves are accompanied by changes in Bitcoin's spot price, which could indicate directional betting.\n(3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ]
+  },
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Large Investors Building Up Stablecoin Reserves",
+    "category": "Stablecoins",
+    "status": "STABLE",
+    "strength": "Medium-Low",
+    "momentum": "Stable",
+    "confidence_score": 0.40,
+    "key_evidence": [
+      "Large investors moved approximately $857 million in USDC, a major stablecoin, on June 1st.",
+      "Further significant USDC transfers by these large players included $428 million on May 31st and another $428 million on June 2nd."
+    ],
+    "data_caveat": "We know stablecoins are moving, but whether these movements are accumulating in wallets for future buying, being deployed into specific protocols, or simply moving between large custodial accounts is not clear. The purpose of these transfers is key to understanding their market impact.",
+    "historical_context": "This narrative focuses on substantial stablecoin movements by large investors, initially observed around late May and early June. While there haven't been new whale-level stablecoin movements in the latest data (June 8-9), the pattern detected previously indicated a period where large players were actively managing their liquid capital. This suggests a continued readiness for market action rather than a shift in immediate intent.",
+    "implications": "Significant stablecoin holdings by large investors often act as 'dry powder,' indicating readiness to deploy capital into the market, potentially buying assets like Bitcoin or Ethereum. If these funds are indeed being held in anticipation of an entry point, it could fuel a market rally once that buying pressure is released. Conversely, a lack of new accumulation might imply that these large investors are comfortable with their current liquid positions.",
+    "plain_english_summary": "Big investors are still holding onto significant amounts of stablecoins, which acts like 'dry powder' for future market moves. While no new large transfers have occurred recently, their existing holdings suggest readiness to deploy capital.",
+    "top_tokens": [
+      "USDC"
+    ],
+    "retail_considerations": "(1) This suggests that very large investors have substantial funds on the sidelines, potentially waiting for an opportune moment to enter or exit the market, rather than being fully invested.\n(2) Watch for sudden, large inflows of USDC to major exchanges (centralized exchanges) or into decentralized finance (DeFi) protocols in the next 24-72 hours, which would indicate these stablecoins are being put to work as buying power.\n(3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ]
+  }
+]
+```

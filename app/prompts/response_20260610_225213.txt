@@ -1,0 +1,28 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Billions Shifting Across Different Crypto Blockchains Accelerates",
+    "category": "CrossChain",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "Layerzero V2, a leading bridging protocol, continued to see massive capital transfers, processing $7.48 billion on June 9th, following $22.65 billion on June 8th.",
+      "The PORTAL bridge also facilitated significant activity, moving $2.05 billion on June 9th, building on $6.52 billion from June 8th.",
+      "USDT, a key stablecoin, recorded $3.63 billion in cross-chain activity via the USDT0 bridge on June 9th, after $7.19 billion on June 8th.",
+      "Beyond these, other notable protocols like CCIP saw $1.16 billion, Aster Bridge handled $534.8 million, and Lighter Bridge saw $506.5 million in transfers on June 9th, indicating widespread cross-chain movement.",
+      "This intense bridging activity is running approximately 49% faster than the typical daily pace seen over the last 30 days."
+    ],
+    "data_caveat": "While we see massive amounts moving across bridges, the specific origin and final destination chains for all these funds are not always clear. This makes it challenging to pinpoint which ecosystems are net beneficiaries or losers.",
+    "historical_context": "This narrative was first detected as a sustained theme of large capital movements across blockchains. Day-over-day, the sheer volume of assets being bridged has remained exceptionally high, with June 8th and 9th showing multi-billion dollar transfers across various protocols. This continuous, high-volume flow implies a persistent rotation of capital rather than a one-off event, suggesting active re-positioning by market participants.",
+    "implications": "The consistent and accelerated flow of billions across various bridges suggests a significant capital reallocation is underway. This could signal a major shift in investor interest towards specific blockchain ecosystems or new decentralized applications (dApps). If this trend continues, we might see certain chains experience rapid growth in liquidity and user activity, potentially driving up token prices in those ecosystems in the coming weeks.",
+    "plain_english_summary": "Huge amounts of money, totaling tens of billions, are being moved across different crypto blockchains at a faster pace than usual. This suggests that big investors are actively shifting their funds, potentially looking for new opportunities in various parts of the crypto market.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "(1) This indicates that sophisticated market participants are not content to stay put; they are actively searching for higher returns or new trends across the crypto landscape. (2) Watch for sudden increases in activity or new projects gaining traction on specific blockchains (like Solana or various layer-2 networks) in the next 1-2 weeks — this could be where the newly bridged capital is heading. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```

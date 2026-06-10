@@ -1,0 +1,31 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Billions Shifting Across Different Crypto Blockchains Accelerates",
+    "category": "CrossChain",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.88,
+    "key_evidence": [
+      "Layerzero V2 continues to be a primary channel for capital movement, processing $7.48 billion on June 9th and $22.65 billion on June 8th.",
+      "The PORTAL bridge sustained high activity, facilitating $2.05 billion on June 9th and $6.52 billion on June 8th.",
+      "USDT, a major stablecoin, showed consistent cross-chain transfers with $3.63 billion on June 9th and $7.19 billion on June 8th via the USDT0 bridge.",
+      "A diverse set of other bridges also saw substantial capital transfers, including CCIP ($1.15 billion), Aster Bridge ($534 million), Lighter Bridge ($506 million), Merlin's Seal ($368 million), UNIT ($420 million), and SolvBTC ($394 million) on June 9th alone.",
+      "This broad capital migration activity is accelerating significantly, with total volumes running 49% faster over the past week compared to the 30-day average."
+    ],
+    "data_caveat": "The signal data indicates significant capital movement across bridges but does not specify the origin and destination blockchains for most transfers. Knowing whether funds are moving into specific growth ecosystems or being distributed across chains for rebalancing would provide deeper insight into market intent.",
+    "historical_context": "This trend of massive capital rotation across different blockchains has been consistently observed since at least early May. The daily transfer volumes, especially through major protocols like Layerzero V2 and PORTAL, have remained exceptionally high, indicating a sustained and accelerating reallocation of capital rather than a one-off event. The acceleration noted in recent days suggests a continued intensification of this cross-chain activity.",
+    "implications": "The high and accelerating volume of capital moving across blockchains suggests large players are actively positioning their funds, likely in anticipation of future opportunities or to optimize yields across various ecosystems. If this rotation continues, it could lead to increased liquidity and price action in recipient chains, potentially signaling a shift in market focus. We could see specific blockchain ecosystems experience a liquidity surge within the next few days to a week.",
+    "plain_english_summary": "Billions of dollars are rapidly moving between different crypto blockchains, driven by both established and newer bridging solutions. This accelerating capital shift suggests that major investors are actively adjusting their positions, which could point to upcoming market movements in specific areas.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "(1) This significant and accelerating capital movement suggests that experienced investors are rapidly rebalancing their portfolios, potentially chasing new opportunities or preparing for market changes across various blockchain ecosystems.\n(2) Watch for surges in activity or price momentum on specific smaller or newer blockchains in the next 72 hours, as they might be the destination for some of this rotating capital.\n(3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  }
+]
+```
