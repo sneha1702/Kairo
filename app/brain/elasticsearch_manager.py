@@ -35,6 +35,9 @@ class ElasticsearchManager:
     
     def get_dune_signal_context(self, hours: int = 168) -> Dict[str, Any]:
         """Query the 6 aggregate dune_* indices and return structured context for NarrativeEngine."""
+        if not self._available:
+            self.logger.warning("[ES] Skipping get_dune_signal_context — Elasticsearch not available.")
+            return {}
         since = (datetime.now() - timedelta(hours=hours)).isoformat()
         range_filter = {"range": {"ingested_at": {"gte": since}}}
         self.logger.info("[ES] Fetching Dune signal context — lookback=%dh, since=%s", hours, since)
