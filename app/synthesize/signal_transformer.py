@@ -375,6 +375,7 @@ def run_narrative_generation(
     engine: Any = None,
     tracker: Any = None,
     dry_run: bool = False,
+    prior_narratives: Optional[List[Dict[str, Any]]] = None,
 ) -> List[Dict[str, Any]]:
     """
     Full pipeline: transform ES signals → Gemini → MongoDB.
@@ -383,12 +384,15 @@ def run_narrative_generation(
     (services are initialised from Config when not supplied).
 
     Args:
-        hours:      ES lookback window in hours (default 24).
-        user_id:    MongoDB user partition key.
-        es_manager: Pre-created ElasticsearchManager (or None to auto-create).
-        engine:     Pre-created NarrativeEngine (or None to auto-create).
-        tracker:    Pre-created NarrativeTracker (or None to auto-create).
-        dry_run:    If True, transform and log but skip Gemini + MongoDB write.
+        hours:            ES lookback window in hours (default 24).
+        user_id:          MongoDB user partition key.
+        es_manager:       Pre-created ElasticsearchManager (or None to auto-create).
+        engine:           Pre-created NarrativeEngine (or None to auto-create).
+        tracker:          Pre-created NarrativeTracker (or None to auto-create).
+        dry_run:          If True, transform and log but skip Gemini + MongoDB write.
+        prior_narratives: Narratives from the previous backfill window to inject as
+                          history. When supplied, skips the MongoDB history query so
+                          the backfill loop doesn't depend on DB write propagation.
 
     Returns:
         List of enriched narrative dicts that were saved (empty on dry_run or failure).
