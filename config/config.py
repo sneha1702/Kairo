@@ -40,7 +40,7 @@ class Config:
     
     # Google Gemini
     GEMINI_KEY: str = os.getenv("GEMINI_KEY","")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     
     # Application Settings
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
@@ -67,13 +67,13 @@ class Config:
 
     # MongoDB
     MONGO_URI: str = os.getenv("MONGO_URI","")
-    MONGO_DB: str = os.getenv("MONGO_DB","")
+    MONGO_DB: str = os.getenv("MONGO_DB","kairo")
 
     # CoinMarketCap (free tier — https://coinmarketcap.com/api/)
     CMC_API_KEY: str = os.getenv("CMC_API_KEY", "")
 
     # Ingestion provider selection: "dune" | "defillama"
-    INGESTION_PROVIDER: str = os.getenv("INGESTION_PROVIDER", "dune")
+    INGESTION_PROVIDER: str = os.getenv("INGESTION_PROVIDER", "defillama")
 
     # Dune pipeline settings
     QUERY_DIR: str = os.getenv("QUERY_DIR", "app/ingestion/query")
@@ -90,7 +90,7 @@ class Config:
     NARRATIVE_DETECTION_INTERVAL_HOURS: int = int(
         os.getenv("NARRATIVE_DETECTION_INTERVAL_HOURS", str(_dune_params.get("narrative_detection_interval_hours", 4)))
     )
-    GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
+    GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "kairoagent-497417")
     GOOGLE_CLOUD_LOCATION: str = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
 
     @classmethod
