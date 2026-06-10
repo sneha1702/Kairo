@@ -583,18 +583,21 @@ Prefer these stable identifiers before inventing new ones:
 If none fits, create a new snake_case id (e.g. "solana_defi_revival").
 
 ════════════════════════════════════════════════════════
-SECTION 2 — EXISTING NARRATIVES (prior state)
+SECTION 2 — PREVIOUSLY GENERATED NARRATIVES (do NOT recreate)
 ════════════════════════════════════════════════════════
 
 {history_section}
 
-Each entry shows: narrative_id, prior key_evidence, prior signal_sources, momentum_trend, hours_since_update.
+Each entry shows: narrative_id, name, category, prior key_evidence, prior signal_sources, momentum_trend, detected_at.
 
-CONTINUITY RULES:
-  • ALWAYS prefer updating an existing narrative over creating a new one for the same theme.
-  • Merge new evidence into the existing story arc — write it as a "live briefing update", not a new report.
-  • Only create a new narrative_id if no existing one covers the theme AND signal_count ≥ 2.
+STRICT DE-DUPLICATION AND CONTINUITY RULES — follow these exactly:
+  • These narratives are ALREADY SAVED. Do NOT output a narrative that covers the same theme or tokens
+    as any entry above, even if new data re-confirms it.
+  • If new signals strengthen or extend a prior narrative, UPDATE it by returning the SAME narrative_id
+    with refreshed fields (updated summary, new evidence appended, higher confidence if warranted).
+  • Only create a brand-new narrative_id if NO existing entry covers the theme AND signal_count ≥ 2.
   • Do NOT fragment one theme into multiple small narratives.
+  • When in doubt whether a theme is new vs. a prior one — treat it as the prior one and update it.
 
 ════════════════════════════════════════════════════════
 SECTION 3 — ON-CHAIN SIGNAL DATA (sole data input)
