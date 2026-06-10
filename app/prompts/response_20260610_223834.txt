@@ -1,0 +1,70 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Billions Shifting Across Different Crypto Blockchains",
+    "category": "CrossChain",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.65,
+    "key_evidence": [
+      "Layerzero V2, a major bridging protocol, saw over $22.6 billion in capital move across it on June 8th, followed by an additional $7.4 billion on June 9th.",
+      "Another significant bridge, PORTAL, facilitated approximately $6.5 billion in capital migration on June 8th, with $2 billion more on June 9th.",
+      "USDT, specifically through the USDT0 bridge, recorded over $7.1 billion in cross-chain activity on June 8th and an additional $3.6 billion on June 9th.",
+      "The overall pace of capital movement across these various bridges is accelerating, currently running 49% faster than the 30-day daily average."
+    ],
+    "data_caveat": "While we see massive amounts of capital moving across bridges, the specific origin and destination blockchains for most of these transfers are not detailed, making it hard to pinpoint which ecosystems are gaining or losing liquidity.",
+    "historical_context": "This is the first time we are observing such widespread and accelerated capital migration across multiple major bridge protocols simultaneously in this analysis window. The consistent high volume over two consecutive days suggests a sustained and intensifying trend, rather than a one-off event, indicating large players are actively repositioning their funds across the crypto landscape.",
+    "implications": "This surge in cross-chain activity suggests that major investors are actively rebalancing their portfolios and exploring opportunities across different blockchain ecosystems, potentially signaling a rotation of capital into new sectors or chains. If this trend continues, we could see heightened liquidity and increased activity on certain destination chains in the coming days, possibly leading to price shifts for assets within those networks as new capital gets deployed.",
+    "plain_english_summary": "An enormous amount of money, totaling tens of billions, is rapidly moving between different crypto networks, suggesting big investors are actively changing their positions. This widespread and accelerating movement often signals upcoming shifts in where money is focused within the crypto market.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "(1) This indicates that very large investors and possibly institutions are actively seeking out the best opportunities across various blockchains, rather than staying put. (2) Keep an eye on new or rapidly growing blockchain ecosystems (often called 'Layer 2s' or 'alt-L1s') over the next week; a sudden spike in their activity or token prices could be where this capital is heading. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  },
+  {
+    "narrative_id": "institutional_bitcoin",
+    "name": "Big Money Moving Wrapped Bitcoin Positions",
+    "category": "Institutional",
+    "status": "NEW",
+    "strength": "Medium-High",
+    "momentum": "Stable",
+    "confidence_score": 0.55,
+    "key_evidence": [
+      "Very large holders moved approximately $6.45 billion worth of Wrapped Bitcoin (WBTC) on May 31st, following a $5.06 billion movement on May 30th.",
+      "Significant WBTC whale transactions continued with $3.04 billion on June 2nd and $2.71 billion on June 1st.",
+      "Further large movements by these holders were observed with $851 million on June 3rd, $1.82 billion on May 29th, and $909 million on May 28th."
+    ],
+    "data_caveat": "We can see large amounts of WBTC being moved by big investors, but the specific intent behind these transfers (whether they are buying, selling, or simply consolidating holdings) is not directly visible.",
+    "historical_context": "This narrative, characterized by consistent large-scale Wrapped Bitcoin movements by significant holders, has been ongoing for over a week. The sustained activity, totaling many billions, suggests that these major players are continuously managing and adjusting their Bitcoin exposure, rather than making isolated, one-off trades.",
+    "implications": "The persistent movement of such substantial amounts of Wrapped Bitcoin by large investors suggests a strategic re-evaluation or repositioning of their overall Bitcoin holdings. If these movements are primarily for accumulation or allocation to new platforms, it could indicate a bullish sentiment for Bitcoin, potentially driving up its price as demand increases from these well-funded entities.",
+    "plain_english_summary": "Very large investors are repeatedly moving billions of dollars worth of Wrapped Bitcoin (WBTC) around, a trend that's been consistent for days. This widespread activity by big players could mean they're getting ready for upcoming market moves related to Bitcoin.",
+    "top_tokens": [
+      "WBTC"
+    ],
+    "retail_considerations": "(1) This suggests that wealthy individuals or institutions are actively managing their Bitcoin exposure through its wrapped version, potentially preparing for future market events. (2) Watch the price of Bitcoin closely over the next week; a sustained upward trend could signal that these large WBTC movements were indeed precursors to buying activity. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  },
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Large Investors Building Up Stablecoin Reserves",
+    "category": "Stablecoins",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": "Stable",
+    "confidence_score": 0.45,
+    "key_evidence": [
+      "Large holders moved approximately $857 million in USDC, a major stablecoin, on June 1st.",
+      "Further significant USDC transfers by large players included $428 million on May 31st and another $428 million on June 2nd."
+    ],
+    "data_caveat": "While these large transfers of USDC are clear, the ultimate purpose (e.g., preparing to buy other assets, providing liquidity, or moving to exchanges) is not explicitly known.",
+    "historical_context": "We've observed a pattern of substantial USDC transfers by large holders over the past few days. This consistent activity, involving hundreds of millions of dollars, suggests that big investors are actively managing their liquid crypto assets, possibly as 'dry powder' for future investments.",
+    "implications": "When experienced large investors move significant amounts of stablecoins, it often indicates they are either accumulating cash reserves in anticipation of market opportunities or positioning funds for deployment into other cryptocurrencies or decentralized finance (DeFi) protocols. Continued accumulation could act as a leading indicator for future buying pressure in the broader crypto market.",
+    "plain_english_summary": "Big investors are moving hundreds of millions of dollars in USDC, a common stablecoin, indicating they are strategically positioning their funds. This often means they are building up reserves, potentially to buy other cryptocurrencies or to provide liquidity in the near future.",
+    "top_tokens": [
+      "USDC"
+    ],
+    "retail_considerations": "(1) This suggests that key market players are consolidating their stablecoin holdings, which often precedes significant market moves as they prepare to deploy this capital. (2) Monitor the overall crypto market, particularly major assets like Bitcoin and Ethereum, by the end of the week; a notable increase in trading volume or price could indicate these stablecoins are being put to use. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```

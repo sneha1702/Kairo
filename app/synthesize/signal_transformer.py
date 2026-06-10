@@ -525,6 +525,25 @@ def _parse_args() -> argparse.Namespace:
         default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
     )
+    # ── Bulk / historic backfill ────────────────────────────────────────────
+    p.add_argument(
+        "--backfill-days",
+        type=int,
+        default=0,
+        help=(
+            "Generate narratives for the last N days in 24-hour chunks. "
+            "Overrides --hours when > 0. Processes oldest window first."
+        ),
+    )
+    p.add_argument(
+        "--sleep-between",
+        type=int,
+        default=15,
+        help=(
+            "Seconds to sleep between Gemini calls during backfill "
+            "(default: 15 — stays well under 10 RPM free-tier limit)."
+        ),
+    )
     return p.parse_args()
 
 
@@ -538,18 +557,73 @@ if __name__ == "__main__":
     logging.getLogger("pymongo").setLevel(logging.WARNING)
     logging.getLogger("pymongo.topology").setLevel(logging.WARNING)
 
-    logger.info(
-        "Starting signal transformer — hours=%d, user_id=%s, dry_run=%s",
-        args.hours, args.user_id, args.dry_run,
-    )
+    if args.backfill_days > 0:
+        # ── Backfill mode: one Gemini call per 24-hour window, oldest first ──
+        total_hours = args.backfill_days * 24
+        chunk_hours = 24
+        windows = list(range(total_hours, 0, -chunk_hours))  # e.g. 72→48→24
+        logger.info(
+            "Backfill mode — %d day(s), %d windows, %ds sleep between calls",
+            args.backfill_days, len(windows), args.sleep_between,
+        )
 
-    result = run_narrative_generation(
-        hours=args.hours,
-        user_id=args.user_id,
-        dry_run=args.dry_run,
-    )
+        from config.config import Config
+        from app.brain.elasticsearch_manager import ElasticsearchManager
+        from app.synthesize.narrative_engine import NarrativeEngine
+        from app.synthesize.narrative_tracker import NarrativeTracker
 
-    if result:
-        logger.info("Done — %d narrative(s) generated and saved.", len(result))
-    elif not args.dry_run:
-        logger.info("Done — no narratives generated this run.")
+        def _secret(key: str) -> str:
+            return os.getenv(key, getattr(Config, key, ""))
+
+        es_manager = ElasticsearchManager(
+            _secret("ES_URL"), _secret("ES_USERNAME"),
+            _secret("ES_PASSWORD"), _secret("ES_API_KEY_ID"),
+        )
+        engine  = NarrativeEngine(_secret("GEMINI_KEY") or _secret("GOOGLE_API_KEY"))
+        tracker = NarrativeTracker(_secret("MONGO_URI"), _secret("MONGO_DB") or "kairo")
+
+        total_saved = 0
+        for i, window_hours in enumerate(windows, 1):
+            logger.info(
+                "[BACKFILL] Window %d/%d — lookback %dh", i, len(windows), window_hours
+            )
+            try:
+                result = run_narrative_generation(
+                    hours=window_hours,
+                    user_id=args.user_id,
+                    es_manager=es_manager,
+                    engine=engine,
+                    tracker=tracker,
+                    dry_run=args.dry_run,
+                )
+                total_saved += len(result)
+                logger.info(
+                    "[BACKFILL] Window %d/%d done — %d narrative(s) saved",
+                    i, len(windows), len(result),
+                )
+            except Exception as exc:
+                logger.error("[BACKFILL] Window %d/%d failed: %s", i, len(windows), exc)
+
+            if i < len(windows):
+                logger.info("[BACKFILL] Sleeping %ds before next call …", args.sleep_between)
+                time.sleep(args.sleep_between)
+
+        logger.info("Backfill complete — %d total narrative(s) saved.", total_saved)
+
+    else:
+        # ── Single-window mode (original behaviour) ──────────────────────────
+        logger.info(
+            "Starting signal transformer — hours=%d, user_id=%s, dry_run=%s",
+            args.hours, args.user_id, args.dry_run,
+        )
+
+        result = run_narrative_generation(
+            hours=args.hours,
+            user_id=args.user_id,
+            dry_run=args.dry_run,
+        )
+
+        if result:
+            logger.info("Done — %d narrative(s) generated and saved.", len(result))
+        elif not args.dry_run:
+            logger.info("Done — no narratives generated this run.")
