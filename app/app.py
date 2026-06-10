@@ -621,6 +621,73 @@ def _admin_panel() -> None:
         _admin_panel_content(_es, _engine, _tracker)
 
 
+def _run_narrative_backfill_flow(
+    _es, _engine, _tracker, user_id: str,
+    backfill_days: int, sleep_between: int, dry_run: bool = False,
+) -> None:
+    """Backfill narrative generation in weekly 168-h chunks, oldest first.
+    Each window's output is chained as prior context to the next to prevent duplicates."""
+    import time as _time
+    from app.synthesize.signal_transformer import run_narrative_generation
+
+    if _es is None or _engine is None:
+        st.info("Services not fully configured.")
+        return
+
+    chunk_hours = 168
+    total_hours = backfill_days * 24
+    windows     = list(range(total_hours, 0, -chunk_hours)) or [total_hours]
+    n           = len(windows)
+
+    status   = st.empty()
+    progress = st.progress(0, text=f"Narrative backfill — {n} weekly window(s)…")
+
+    total_saved      = 0
+    prior_narratives = None
+
+    for i, w_hours in enumerate(windows, 1):
+        weeks_ago = w_hours // 168
+        label     = f"Window {i}/{n} — ~{weeks_ago}w lookback ({w_hours}h)"
+        progress.progress(int(100 * (i - 1) / n), text=f"{label}…")
+
+        if dry_run:
+            status.info(f"[Dry run] {label}")
+            _time.sleep(0.1)
+            continue
+
+        try:
+            result = run_narrative_generation(
+                hours=w_hours,
+                user_id=user_id,
+                es_manager=_es,
+                engine=_engine,
+                tracker=_tracker,
+                dry_run=False,
+                prior_narratives=prior_narratives,
+            )
+            total_saved     += len(result)
+            prior_narratives = result if result else prior_narratives
+            logger.info("[BACKFILL-UI] Window %d/%d done — %d narratives", i, n, len(result))
+        except Exception as exc:
+            st.warning(f"Window {i}/{n} ({w_hours}h) failed: {exc}")
+            logger.exception("Backfill window %d failed", i)
+
+        if i < n and sleep_between > 0:
+            progress.progress(
+                int(100 * (i - 1) / n),
+                text=f"{label} — sleeping {sleep_between}s…",
+            )
+            _time.sleep(sleep_between)
+
+    _cached_build_data.clear()
+    progress.progress(100, text="Done.")
+    if dry_run:
+        status.info(f"Dry run complete — {n} window(s) previewed, no Gemini calls made.")
+    else:
+        status.success(f"Backfill complete — {total_saved} narrative(s) saved across {n} window(s).")
+        st.rerun()
+
+
 def _run_detection_flow(_es, _engine, _tracker, user_id: str, hours: int) -> None:
     """Shared detection logic used by both the standalone button and post-ingestion flow."""
     from app.synthesize.signal_transformer import SignalTransformer, enrich_with_acceleration
