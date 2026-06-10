@@ -47,6 +47,26 @@ class NarrativeEngine:
         )
         self.model_name = model_name
 
+    def _call_gemini_with_backoff(self, prompt: str) -> Any:
+        """Call generate_content with exponential backoff on 429 RESOURCE_EXHAUSTED."""
+        wait = GEMINI_BACKOFF_BASE
+        for attempt in range(1, GEMINI_MAX_RETRIES + 1):
+            try:
+                return self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt,
+                )
+            except genai_errors.ClientError as exc:
+                if exc.code == 429 and attempt < GEMINI_MAX_RETRIES:
+                    logger.warning(
+                        "[GEMINI] 429 rate-limited (attempt %d/%d). Sleeping %ds …",
+                        attempt, GEMINI_MAX_RETRIES, wait,
+                    )
+                    time.sleep(wait)
+                    wait = min(wait * 2, 600)  # cap at 10 min
+                else:
+                    raise
+
     # ── Legacy whale grouping (kept for backward compat) ──────────────────────
 
     def group_whale_activity(self, transactions: List[Dict[str, Any]]) -> Dict[str, Any]:
