@@ -12,19 +12,21 @@ class ElasticsearchManager:
     def __init__(self, es_url: str, username: str, password: str, api_key_id: str):
         """Initialize Elasticsearch connection."""
         self.logger = logging.getLogger(__name__)
+        self._available = False
         self.logger.info("Connecting to Elasticsearch at %s", es_url)
 
         self.es = Elasticsearch(
             es_url,
- #           basic_auth=(username, password)
-            api_key=(api_key_id)
+            api_key=(api_key_id),
+            request_timeout=10,
         )
 
         try:
             ok = self.es.ping()
+            self._available = bool(ok)
             self.logger.info("Elasticsearch ping status: %s", ok)
         except Exception as e:
-            self.logger.exception("Error pinging Elasticsearch: %s", e)
+            self.logger.warning("Elasticsearch unavailable (%s: %s) — ES features disabled.", type(e).__name__, e)
     
     def get_client(self) -> Elasticsearch:
         """Return the Elasticsearch client."""
