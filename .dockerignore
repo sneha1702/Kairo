@@ -14,7 +14,6 @@ app/outputs/
 app/prompts/
 app/ingestion/backfill_checkpoint.json
 utils/client_secret_*.json
-poetry.lock
 package-lock.json
 node_modules/
 README.md
