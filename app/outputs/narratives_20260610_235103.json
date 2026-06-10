@@ -1,0 +1,150 @@
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Money Continues to Shift Between Crypto Blockchains, But At A Slower Pace",
+    "category": "CrossChain",
+    "status": "STABLE",
+    "strength": "Medium",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.48000000000000004,
+      "strength_change": 0,
+      "confidence_change": -0.039999999999999925
+    },
+    "confidence_score": 0.65,
+    "key_evidence": [
+      "On June 9th, roughly $3.64 billion in USDT (a major stablecoin used to represent dollars in crypto) moved across various cross-chain bridges, indicating significant shifts in readily available liquidity.",
+      "The CCIP bridge, a key piece of infrastructure connecting different blockchains, facilitated about $1.16 billion in transfers on June 9th, showcasing its growing role in capital movement.",
+      "Approximately $395 million in Wrapped Bitcoin (SOLVBTC) and another $146 million via the Axelar bridge also crossed chains on June 9th, adding to the diversified flow of assets."
+    ],
+    "data_caveat": "We cannot definitively ascertain the ultimate destination or purpose of these cross-chain movements for these specific transactions; if they are heading to exchanges, it could signal selling pressure, but if moving into decentralized finance (DeFi) protocols or cold storage, it suggests accumulation or new investment opportunities, completely changing the interpretation.",
+    "historical_context": "This narrative has been ongoing, highlighted by significant daily cross-chain movements across various bridges, particularly USDT and Wrapped Bitcoin, indicating continuous liquidity shifts between different crypto networks. The activity on June 9th, though substantial, represents a continuation of a multi-day trend where large capital transfers are a regular occurrence, suggesting an ongoing process of resource allocation rather than a one-off event.",
+    "implications": "The continuous movement of such large sums suggests that sophisticated players are actively managing their exposure across different blockchain ecosystems, likely seeking better yield opportunities or preparing for specific market events. If this trend continues, we could see certain blockchains experience liquidity surges or drains, potentially affecting token prices on those networks in the coming weeks.",
+    "plain_english_summary": "Big money is still shuffling billions of dollars worth of crypto like stablecoins and Wrapped Bitcoin across different blockchains, a sign that larger investors are actively managing their funds. This consistent movement suggests they're looking for the best opportunities or preparing for shifts in the market.",
+    "top_tokens": [
+      "USDT",
+      "SOLVBTC",
+      "AXELAR"
+    ],
+    "retail_considerations": "(1) This indicates that sophisticated participants, likely large funds and institutional traders, are actively rebalancing their portfolios across different crypto networks, trying to optimize for returns or manage risk. (2) Watch for significant price movements in specific altcoins on different blockchains in the next week; a sudden inflow of liquidity often precedes price action. (3) On-chain movements are early signals that can reverse quickly \u2014 this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ],
+    "detected_at": "2026-06-10T23:51:03.587624Z",
+    "granularity": "day",
+    "source": "gemini_analysis",
+    "data_window_start": null,
+    "data_window_end": null,
+    "last_ingested_at": null,
+    "prompt_built_at": "2026-06-10T23:51:03.587624Z",
+    "evidence_timestamps": {},
+    "unified_signals": [],
+    "signal_metadata": {
+      "window_hours": 2280,
+      "generated_at": "2026-06-10T23:51:03.587787+00:00",
+      "total_records": 0,
+      "by_category": {
+        "capital_migration": 0,
+        "smart_deployment": 0,
+        "stablecoin_flow": 0
+      }
+    }
+  },
+  {
+    "narrative_id": "institutional_bitcoin",
+    "name": "Big Money Moving Wrapped Bitcoin Positions Has Cooled Off",
+    "category": "Institutional",
+    "status": "STABLE",
+    "strength": "Medium-Low",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0.0
+    },
+    "confidence_score": 0.4,
+    "key_evidence": [
+      "Very large holders moved approximately $6.45 billion worth of Wrapped Bitcoin (WBTC) on May 31st.",
+      "This was followed by significant whale transactions of $5.06 billion on May 30th, $3.04 billion on June 2nd, and $2.71 billion on June 1st.",
+      "Further large movements by these holders were observed with $851 million on June 3rd, $1.82 billion on May 29th, and $909 million on May 28th."
+    ],
+    "data_caveat": "We cannot definitively tell the exact nature of these 'very large holders' or their ultimate intent (e.g., selling on an exchange, securing in cold storage, deploying in decentralized finance), which would significantly alter the market implications.",
+    "historical_context": "This narrative emerged from a period of intense activity by very large holders moving significant amounts of Wrapped Bitcoin (WBTC) in late May and early June, with multi-billion dollar transfers on consecutive days. While the initial surge was noteworthy, the current data suggests these large-scale movements have since settled into a more consistent, albeit still substantial, pattern of position management.",
+    "implications": "The sustained, albeit less frenetic, movement of Wrapped Bitcoin by institutional players suggests an ongoing process of portfolio rebalancing or collateral management within the broader crypto ecosystem. If these large holders are consolidating positions rather than initiating new large-scale trades, it might lead to a period of reduced volatility for Bitcoin proxies in the near term.",
+    "plain_english_summary": "Large institutional investors have recently been moving around significant amounts of Wrapped Bitcoin, though the intense pace has slowed down. This indicates they're still actively managing their big holdings.",
+    "top_tokens": [
+      "WBTC"
+    ],
+    "retail_considerations": "(1) This suggests that institutional players and very wealthy individuals are continuing to manage their large Bitcoin-related positions, potentially rebalancing portfolios without making aggressive new bets. (2) Watch the overall Bitcoin price in the coming days \u2014 if these movements are for consolidation, we might see a calmer price action for WBTC and BTC itself. (3) On-chain movements are early signals that can reverse quickly \u2014 this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ],
+    "detected_at": "2026-06-10T23:51:03.587624Z",
+    "granularity": "day",
+    "source": "gemini_analysis",
+    "data_window_start": null,
+    "data_window_end": null,
+    "last_ingested_at": null,
+    "prompt_built_at": "2026-06-10T23:51:03.587624Z",
+    "evidence_timestamps": {},
+    "unified_signals": [],
+    "signal_metadata": {
+      "window_hours": 2280,
+      "generated_at": "2026-06-10T23:51:03.587787+00:00",
+      "total_records": 0,
+      "by_category": {
+        "capital_migration": 0,
+        "smart_deployment": 0,
+        "stablecoin_flow": 0
+      }
+    }
+  },
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Large Investors Holding Steady on Stablecoin Reserves",
+    "category": "Stablecoins",
+    "status": "STABLE",
+    "strength": "Medium-Low",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0.0
+    },
+    "confidence_score": 0.4,
+    "key_evidence": [
+      "Large investors moved approximately $857 million in USDC, a major stablecoin, on June 1st.",
+      "Further significant USDC transfers by these large players included $428 million on May 31st and another $428 million on June 2nd."
+    ],
+    "data_caveat": "We lack information on the specific destinations of these stablecoin movements; if they are being sent to exchanges, it could signal intent to purchase other cryptocurrencies, but if moved to cold storage or decentralized finance protocols, the implications change significantly.",
+    "historical_context": "This narrative captures a recent trend of large investors consistently moving substantial amounts of stablecoins like USDC, with key transactions in late May and early June totaling over $850 million on some days. While the exact scale of new accumulation isn't shown in today's data, the consistent large transfers suggest that significant purchasing power remains poised within these large investor wallets.",
+    "implications": "When sophisticated investors hold steady on large stablecoin reserves, it often suggests they are either waiting for a clear buying opportunity or preparing to deploy capital into specific crypto assets. Should a market dip occur, this accumulated stablecoin could quickly become buying pressure, potentially cushioning declines or fueling a bounce.",
+    "plain_english_summary": "Big investors are still holding onto and moving around significant amounts of stablecoins like USDC, suggesting they are keeping their options open. This large pile of cash could be ready to buy into the market when the right opportunity strikes.",
+    "top_tokens": [
+      "USDC"
+    ],
+    "retail_considerations": "(1) This indicates that very large investors and funds are maintaining substantial 'dry powder' in stablecoins, positioning themselves to capitalize on future market movements rather than making immediate, aggressive buys or sells. (2) Watch for any significant dips in Bitcoin or Ethereum prices in the next 72 hours; a strong bounce back could signal that this stablecoin capital was deployed to 'buy the dip.' (3) On-chain movements are early signals that can reverse quickly \u2014 this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ],
+    "detected_at": "2026-06-10T23:51:03.587624Z",
+    "granularity": "day",
+    "source": "gemini_analysis",
+    "data_window_start": null,
+    "data_window_end": null,
+    "last_ingested_at": null,
+    "prompt_built_at": "2026-06-10T23:51:03.587624Z",
+    "evidence_timestamps": {},
+    "unified_signals": [],
+    "signal_metadata": {
+      "window_hours": 2280,
+      "generated_at": "2026-06-10T23:51:03.587787+00:00",
+      "total_records": 0,
+      "by_category": {
+        "capital_migration": 0,
+        "smart_deployment": 0,
+        "stablecoin_flow": 0
+      }
+    }
+  }
+]

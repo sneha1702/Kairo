@@ -957,6 +957,66 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
 
     st.divider()
 
+    # ── 2b. Narrative Backfill ─────────────────────────────────────────────────
+    st.subheader("Narrative Backfill")
+    st.caption(
+        "Generates narratives in **weekly chunks** going back up to 6 months. "
+        "Each week's output is automatically passed to the next as context — "
+        "preventing Gemini from recreating the same narratives across windows."
+    )
+
+    _today_bf      = _date.today()
+    _bf_min_date   = _today_bf - _td(days=180)
+    _bf_presets    = {"2 weeks": 14, "1 month": 30, "3 months": 90, "6 months": 180}
+
+    _bf_preset_col, _bf_custom_col = st.columns([2, 3])
+    with _bf_preset_col:
+        _bf_preset = st.selectbox(
+            "Quick preset",
+            options=list(_bf_presets.keys()),
+            index=1,
+            key="bf_preset",
+        )
+    with _bf_custom_col:
+        _bf_start = st.date_input(
+            "Or custom start date (UTC)",
+            value=_today_bf - _td(days=_bf_presets[_bf_preset]),
+            min_value=_bf_min_date,
+            max_value=_today_bf - _td(days=1),
+            key="bf_start_date",
+            help="Earliest: 6 months back. Narratives are generated from this date to today.",
+        )
+
+    _bf_days  = (_today_bf - _bf_start).days if _bf_start else 30
+    _bf_days  = max(1, min(_bf_days, 180))   # clamp to 6-month limit
+    _bf_weeks = (_bf_days + 6) // 7
+    st.caption(f"📦 {_bf_days} days → **{_bf_weeks} weekly Gemini call(s)**  ·  ~{_bf_weeks * 15}s minimum run time")
+
+    _bf_col1, _bf_col2 = st.columns(2)
+    with _bf_col1:
+        _bf_sleep = st.number_input(
+            "Sleep between calls (s)",
+            min_value=5, max_value=120, value=15, step=5,
+            key="bf_sleep_between",
+            help="Pause between Gemini calls. Default 15s keeps you under the 10 RPM free-tier limit.",
+        )
+    with _bf_col2:
+        _bf_dry_run = st.checkbox(
+            "Dry run (preview windows, no Gemini calls)",
+            value=False,
+            key="bf_dry_run",
+        )
+
+    if st.button("📅 Run Narrative Backfill", use_container_width=True, key="btn_narrative_backfill"):
+        _run_narrative_backfill_flow(
+            _es, _engine, _tracker, _user_id,
+            backfill_days=_bf_days,
+            sleep_between=int(_bf_sleep),
+            dry_run=_bf_dry_run,
+        )
+
+    st.divider()
+
     # ── 3. Purge Narratives ───────────────────────────────────────────────────
     st.subheader("Purge Narratives")
     st.caption(f"Permanently delete all narratives for user **{_user_id}** from MongoDB.")
