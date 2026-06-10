@@ -6,7 +6,9 @@ Uses Gemini to infer narratives from Dune Analytics data (8 signal types) plus w
 import json
 import logging
 import os
+import time
 from google import genai
+from google.genai import errors as genai_errors
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -14,6 +16,11 @@ import pandas as pd
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
+
+# Gemini free-tier: ~10 RPM on Vertex AI; wait at least 6 s between calls by default.
+# On 429, back off in steps of GEMINI_BACKOFF_BASE seconds (doubles each retry).
+GEMINI_BACKOFF_BASE = 60   # seconds to wait on first 429
+GEMINI_MAX_RETRIES  = 5
 
 _PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts"
 
