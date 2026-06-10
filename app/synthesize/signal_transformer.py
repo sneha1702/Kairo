@@ -568,12 +568,16 @@ if __name__ == "__main__":
     logging.getLogger("pymongo.topology").setLevel(logging.WARNING)
 
     if args.backfill_days > 0:
-        # ── Backfill mode: one Gemini call per 24-hour window, oldest first ──
+        # ── Backfill mode: one Gemini call per 7-day (168h) window ───────────
+        # Windows are expressed as "hours of lookback from now", oldest first.
+        # e.g. 21 days → [504, 336, 168]  (3 weekly summaries)
+        chunk_hours = 168  # 1 week per Gemini call
         total_hours = args.backfill_days * 24
-        chunk_hours = 24
-        windows = list(range(total_hours, 0, -chunk_hours))  # e.g. 72→48→24
+        windows = list(range(total_hours, 0, -chunk_hours))
+        if not windows:
+            windows = [total_hours]  # less than a week: one call
         logger.info(
-            "Backfill mode — %d day(s), %d windows, %ds sleep between calls",
+            "Backfill mode — %d day(s), %d weekly window(s), %ds sleep between calls",
             args.backfill_days, len(windows), args.sleep_between,
         )
 
@@ -592,10 +596,13 @@ if __name__ == "__main__":
         engine  = NarrativeEngine(_secret("GEMINI_KEY") or _secret("GOOGLE_API_KEY"))
         tracker = NarrativeTracker(_secret("MONGO_URI"), _secret("MONGO_DB") or "kairo")
 
-        total_saved = 0
+        total_saved     = 0
+        prior_narratives: Optional[List[Dict[str, Any]]] = None  # chained between windows
+
         for i, window_hours in enumerate(windows, 1):
             logger.info(
-                "[BACKFILL] Window %d/%d — lookback %dh", i, len(windows), window_hours
+                "[BACKFILL] Window %d/%d — lookback %dh (~%d days)",
+                i, len(windows), window_hours, window_hours // 24,
             )
             try:
                 result = run_narrative_generation(
@@ -605,8 +612,12 @@ if __name__ == "__main__":
                     engine=engine,
                     tracker=tracker,
                     dry_run=args.dry_run,
+                    prior_narratives=prior_narratives,
                 )
                 total_saved += len(result)
+                # Pass this window's output as history to the next window so
+                # Gemini won't recreate the same narratives.
+                prior_narratives = result if result else prior_narratives
                 logger.info(
                     "[BACKFILL] Window %d/%d done — %d narrative(s) saved",
                     i, len(windows), len(result),
