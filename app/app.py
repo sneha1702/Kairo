@@ -804,16 +804,23 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
 
     # ── 1. Fetch On-Chain Data ─────────────────────────────────────────────────
     st.subheader("Fetch On-Chain Data")
+    st.caption("Ingest historical on-chain data from Dune into Elasticsearch. Up to 6 months back.")
 
-    _today = _date.today()
+    _today         = _date.today()
+    _max_backfill  = _today - _td(days=180)   # 6-month hard cap
     _fcol1, _fcol2 = st.columns(2)
     with _fcol1:
         _start_date = st.date_input(
-            "From (UTC)", value=_today - _td(days=7), max_value=_today, key="fetch_start_date"
+            "From (UTC)",
+            value=_today - _td(days=30),
+            min_value=_max_backfill,
+            max_value=_today,
+            key="fetch_start_date",
+            help="Earliest supported: 6 months back.",
         )
     with _fcol2:
         _end_date = st.date_input(
-            "To (UTC)", value=_today, max_value=_today, key="fetch_end_date"
+            "To (UTC)", value=_today, min_value=_max_backfill, max_value=_today, key="fetch_end_date"
         )
 
     _fetch_valid = bool(_start_date and _end_date and _end_date > _start_date)
