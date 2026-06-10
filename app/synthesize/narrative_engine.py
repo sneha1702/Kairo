@@ -788,10 +788,7 @@ a technically accurate one they cannot follow.
             logger.warning("[GEMINI] Could not save prompt: %s", exc)
 
         logger.info("[GEMINI] Sending request to %s", self.model_name)
-        response = self.client.models.generate_content(
-            model=self.model_name,
-            contents=prompt,
-        )
+        response = self._call_gemini_with_backoff(prompt)
         raw_response = getattr(response, "text", "") or ""
         logger.info("[GEMINI] Response received — %d chars", len(raw_response))
 
