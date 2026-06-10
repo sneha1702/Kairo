@@ -51,7 +51,7 @@ function JourneyStep({ ep, last }) {
             }}>{ep.date}</span>
           ) : (
             <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)" }}>
-              Day {ep.day} · {ep.date}
+              {ep.granularity === 'week' ? 'Week' : 'Day'} {ep.day} · {ep.date}
             </span>
           )}
           <ForceTag id={ep.force} size="sm" />
