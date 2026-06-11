@@ -1207,9 +1207,9 @@ tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin"])
 with tab_admin:
     _admin_panel()
 
-# ── Kairo tab ────────────────────────────────────────────────────────────────
+# ── Kairo tab — iframe only ───────────────────────────────────────────────────
 with tab_kairo:
-    st.markdown(
+    REMOVE_PLACEHOLDER = True
         """
         <style>
         /* ── Nav ─────────────────────────────────────────────── */
