@@ -28,29 +28,29 @@ Step 2: Store secrets in Secret Manager
 Do not bake credentials into the image. Store each secret:
 
 # Elasticsearch
-echo -n "https://my-elasticsearch-project-d9aecb.es.europe-west1.gcp.elastic.cloud:443" \
+echo -n "<YOUR_ES_URL>" \
   | gcloud secrets create ES_URL --data-file=-
 
-echo -n "elastic" \
+echo -n "<YOUR_ES_USERNAME>" \
   | gcloud secrets create ES_USERNAME --data-file=-
 
-echo -n "dNZBYMpC*u\$!r7A" \
+echo -n "<YOUR_ES_PASSWORD>" \
   | gcloud secrets create ES_PASSWORD --data-file=-
 
 # Gemini
-echo -n "AIzaSyDf8uUKnKuGmrlYQeZRXQhxKw2uZxVvCpY" \
+echo -n "<YOUR_GEMINI_API_KEY>" \
   | gcloud secrets create GEMINI_KEY --data-file=-
 
 # MongoDB
-echo -n "mongodb+srv://kairoDBAdmin:KvghCaQGqqyK2k7U@kairocluster.wwrd9ag.mongodb.net/" \
+echo -n "<YOUR_MONGO_URI>" \
   | gcloud secrets create MONGO_URI --data-file=-
 
 # Dune
-echo -n "dOJsDRvu4h76ycHpE4YXhoABnWlHTDsQ" \
+echo -n "<YOUR_DUNE_API_KEY>" \
   | gcloud secrets create DUNE_API_KEY --data-file=-
 
 # CoinMarketCap
-echo -n "fabf5af4467e47278a63dbe6b7e212f3" \
+echo -n "<YOUR_CMC_API_KEY>" \
   | gcloud secrets create CMC_API_KEY --data-file=-
 
 ---
