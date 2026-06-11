@@ -76,7 +76,7 @@ class Config:
     INGESTION_PROVIDER: str = os.getenv("INGESTION_PROVIDER", "defillama")
 
     # Dune pipeline settings
-    QUERY_DIR: str = os.getenv("QUERY_DIR", "app/ingestion/dune_query")
+    QUERY_DIR: str = os.getenv("QUERY_DIR", str(_CONFIG_DIR.parent / "app" / "ingestion" / "dune_query"))
     DUNE_API_KEY: str = os.getenv("DUNE_API_KEY", "")
 
     # DefiLlama pipeline settings (no API key required — public free API)
