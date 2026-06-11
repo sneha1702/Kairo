@@ -1,0 +1,873 @@
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Movement Surges, Signalling Market Positioning",
+    "category": "CrossChain",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": {
+      "trend": "strengthening",
+      "momentum_score": 0.6699999999999999,
+      "strength_change": 2,
+      "confidence_change": 0.33999999999999997
+    },
+    "confidence_score": 0.74,
+    "key_evidence": [
+      "On June 11th, a massive $7.49 billion moved across various blockchains via the LayerZero V2 bridge, indicating a significant increase in capital shifting between ecosystems.",
+      "This widespread movement included $3.64 billion in USDT (a major stablecoin used to represent dollars in crypto) and another $2.08 billion via the Portal bridge, showing diversified assets and pathways for capital rotation.",
+      "Key infrastructure like the CCIP bridge also facilitated $1.16 billion in transfers, while Wrapped Bitcoin (SOLVBTC) saw $407 million and the Axelar bridge handled $143 million in movements.",
+      "Overall activity across these cross-chain bridges is running 315% faster than the 30-day daily average, suggesting a rapid acceleration in money flowing between different crypto networks."
+    ],
+    "data_caveat": "While we see massive amounts of capital moving across bridges, the specific intent of these movements (e.g., deploying into new DeFi protocols, liquidating positions, or entering new ecosystems for speculative purposes) is not fully discernible. Understanding the ultimate use case on the destination chain would significantly refine this analysis.",
+    "historical_context": "This narrative of significant capital migration has been consistently observed, with prior movements including $3.64 billion in USDT on June 9th. The current acceleration of 315% above the 30-day average, combined with the sheer volume of over $15 billion across multiple bridges on a single day, suggests this is not a one-off event but rather a sustained and intensifying trend of market participants actively repositioning funds. This indicates a heightened level of strategic activity rather than speculative noise.",
+    "implications": "The dramatic surge in cross-chain bridge activity, especially across multiple protocols and including major stablecoins and wrapped assets, indicates that sophisticated investors are actively rebalancing their portfolios and looking for new opportunities across different blockchain ecosystems. If this trend continues, we could see significant liquidity shifts impacting asset prices in specific blockchain environments (e.g., increased activity on Solana if SOLVBTC is moving there, or on various Layer 2 solutions if stablecoins are bridging over). This repositioning could manifest as increased trading volume or new protocol deployments within the next 72 hours to a week.",
+    "plain_english_summary": "Big money is furiously moving assets like stablecoins and Wrapped Bitcoin across different blockchain networks, at a pace much faster than usual. This suggests that experienced players are getting ready to make new investments or rebalance their crypto holdings, which could lead to shifts in market focus and asset prices soon.",
+    "top_tokens": [
+      "USDT",
+      "SOLVBTC",
+      "AXELAR",
+      "LAYERZERO V2",
+      "PORTAL",
+      "CCIP"
+    ],
+    "retail_considerations": "(1) This widespread and accelerated cross-chain movement suggests that institutional and sophisticated crypto investors are strategically allocating funds across various blockchain ecosystems. They are likely preparing for new opportunities or hedging existing positions by moving liquidity to where they expect the next significant developments or returns to emerge.\n(2) Watch for significant price movements or increased trading volume in assets associated with specific blockchain ecosystems (e.g., Solana, specific Layer 2 networks) in the next 24-72 hours. If large stablecoin inflows into a particular chain precede a price rally for its native token, it could confirm this capital is being deployed to buy.\n(3) On-chain movements are early signals that can reverse quickly and their ultimate purpose isn't always immediately clear \u2014 this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ],
+    "detected_at": "2026-06-11T20:28:56.406548Z",
+    "granularity": "day",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-06-11",
+    "data_window_end": "2026-06-11",
+    "last_ingested_at": "2026-06-11T20:27:57.418815+00:00",
+    "prompt_built_at": "2026-06-11T20:28:56.406548Z",
+    "evidence_timestamps": {},
+    "unified_signals": [
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "CCIP",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 1164763859,
+        "net_flow_usd": 0,
+        "bridge_usd": 1164763859,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "LIGHTER BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 500462878,
+        "net_flow_usd": 0,
+        "bridge_usd": 500462878,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "FREE PROTOCOL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 268851319,
+        "net_flow_usd": 0,
+        "bridge_usd": 268851319,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "EDGEX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 107510208,
+        "net_flow_usd": 0,
+        "bridge_usd": 107510208,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "SODEX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 54483796,
+        "net_flow_usd": 0,
+        "bridge_usd": 54483796,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "LAYERZERO V2",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 7494951104,
+        "net_flow_usd": 0,
+        "bridge_usd": 7494951104,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "PORTAL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 2083911587,
+        "net_flow_usd": 0,
+        "bridge_usd": 2083911587,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "UNIT",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 423478085,
+        "net_flow_usd": 0,
+        "bridge_usd": 423478085,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "SOLVBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 407781277,
+        "net_flow_usd": 0,
+        "bridge_usd": 407781277,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "USDT0",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 3640458187,
+        "net_flow_usd": 0,
+        "bridge_usd": 3640458187,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "MERLINS SEAL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 379766605,
+        "net_flow_usd": 0,
+        "bridge_usd": 379766605,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "AXELAR",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 143023096,
+        "net_flow_usd": 0,
+        "bridge_usd": 143023096,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "APX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 75421301,
+        "net_flow_usd": 0,
+        "bridge_usd": 75421301,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "ASTER BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 525221823,
+        "net_flow_usd": 0,
+        "bridge_usd": 525221823,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "GRVT BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 50597610,
+        "net_flow_usd": 0,
+        "bridge_usd": 50597610,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      }
+    ],
+    "signal_metadata": {
+      "window_hours": 48,
+      "generated_at": "2026-06-11T20:28:56.409996+00:00",
+      "total_records": 15,
+      "by_category": {
+        "capital_migration": 15,
+        "smart_deployment": 0,
+        "stablecoin_flow": 0
+      }
+    }
+  },
+  {
+    "narrative_id": "institutional_bitcoin",
+    "name": "Big Money's Wrapped Bitcoin Movements Remain Quiet",
+    "category": "Institutional",
+    "status": "STABLE",
+    "confidence_score": 0.4,
+    "strength": "Low",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0.0
+    },
+    "key_evidence": [
+      "Very large holders moved approximately $6.45 billion worth of Wrapped Bitcoin (WBTC) on May 31st.",
+      "This was followed by significant whale transactions of $5.06 billion on May 30th, $3.04 billion on June 2nd, and $2.71 billion on June 1st.",
+      "Further large movements by these holders were observed with $851 million on June 3rd, $1.82 billion on May 29th, and $909 million on May 28th."
+    ],
+    "data_caveat": "We cannot see the destination of these funds \u2014 if they are heading to an exchange it suggests selling pressure; if to cold storage, accumulation. That distinction would completely change what this means.",
+    "historical_context": "This narrative has been tracked since early May, noting a pattern of large, intermittent Wrapped Bitcoin movements. The current period shows no new evidence of these specific 'whale' movements, suggesting a pause in this particular activity after a period of higher flow around late May and early June. This could indicate a temporary lull in strategic repositioning by the largest Bitcoin holders.",
+    "implications": "When very large holders move Wrapped Bitcoin, it often indicates strategic positioning ahead of expected market shifts, either to prepare for selling or to accumulate more. The current quiet period suggests these influential players are in a holding pattern. If this trend continues, we may see a period of consolidation for Bitcoin's price, as major players aren't actively pushing large directional bets right now.",
+    "plain_english_summary": "Big wallets, often associated with institutional money, aren't currently making large moves with Wrapped Bitcoin. This quiet period might suggest they are waiting for clearer market signals before making their next big play.",
+    "top_tokens": [
+      "WBTC"
+    ],
+    "retail_considerations": "(1) The lack of new, large-scale Wrapped Bitcoin movements by institutional-sized investors suggests they might be in a 'wait and see' mode, holding their current positions rather than actively trading.\n(2) Watch for any sudden spikes in Wrapped Bitcoin (WBTC) transfers exceeding $1 billion in the next week. Such a move would signal that these big players are re-engaging with the market.\n(3) On-chain movements are early signals that can reverse quickly \u2014 this is not financial advice.",
+    "signal_sources": [],
+    "detected_at": "2026-06-11T20:28:56.406548Z",
+    "granularity": "day",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-06-11",
+    "data_window_end": "2026-06-11",
+    "last_ingested_at": "2026-06-11T20:27:57.418815+00:00",
+    "prompt_built_at": "2026-06-11T20:28:56.406548Z",
+    "evidence_timestamps": {},
+    "unified_signals": [
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "CCIP",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 1164763859,
+        "net_flow_usd": 0,
+        "bridge_usd": 1164763859,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "LIGHTER BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 500462878,
+        "net_flow_usd": 0,
+        "bridge_usd": 500462878,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "FREE PROTOCOL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 268851319,
+        "net_flow_usd": 0,
+        "bridge_usd": 268851319,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "EDGEX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 107510208,
+        "net_flow_usd": 0,
+        "bridge_usd": 107510208,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "SODEX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 54483796,
+        "net_flow_usd": 0,
+        "bridge_usd": 54483796,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "LAYERZERO V2",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 7494951104,
+        "net_flow_usd": 0,
+        "bridge_usd": 7494951104,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "PORTAL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 2083911587,
+        "net_flow_usd": 0,
+        "bridge_usd": 2083911587,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "UNIT",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 423478085,
+        "net_flow_usd": 0,
+        "bridge_usd": 423478085,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "SOLVBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 407781277,
+        "net_flow_usd": 0,
+        "bridge_usd": 407781277,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "USDT0",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 3640458187,
+        "net_flow_usd": 0,
+        "bridge_usd": 3640458187,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "MERLINS SEAL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 379766605,
+        "net_flow_usd": 0,
+        "bridge_usd": 379766605,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "AXELAR",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 143023096,
+        "net_flow_usd": 0,
+        "bridge_usd": 143023096,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "APX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 75421301,
+        "net_flow_usd": 0,
+        "bridge_usd": 75421301,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "ASTER BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 525221823,
+        "net_flow_usd": 0,
+        "bridge_usd": 525221823,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "GRVT BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 50597610,
+        "net_flow_usd": 0,
+        "bridge_usd": 50597610,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      }
+    ],
+    "signal_metadata": {
+      "window_hours": 48,
+      "generated_at": "2026-06-11T20:28:56.409996+00:00",
+      "total_records": 15,
+      "by_category": {
+        "capital_migration": 15,
+        "smart_deployment": 0,
+        "stablecoin_flow": 0
+      }
+    }
+  },
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Large Investors Holding Steady on Stablecoin Reserves",
+    "category": "Stablecoins",
+    "status": "STABLE",
+    "confidence_score": 0.4,
+    "strength": "Low",
+    "momentum": {
+      "trend": "stable",
+      "momentum_score": 0.5,
+      "strength_change": 0,
+      "confidence_change": 0.0
+    },
+    "key_evidence": [
+      "Large investors moved approximately $857 million in USDC, a major stablecoin, on June 1st.",
+      "Further significant USDC transfers by these large players included $428 million on May 31st and another $428 million on June 2nd."
+    ],
+    "data_caveat": "We cannot definitively know if these stablecoin movements represent fresh capital entering the crypto ecosystem or simply reshuffling of existing funds. This distinction is crucial for assessing potential market buying power.",
+    "historical_context": "This narrative, first observed in early May, typically highlights when significant amounts of USDC are being accumulated by large wallets. The absence of new data points in the most recent observation window suggests that this particular pattern of large-scale USDC accumulation has paused, following a period of moderate activity around early June. This could indicate that previous accumulation phases have concluded, or new capital is being deployed through other stablecoins.",
+    "implications": "When large investors accumulate stablecoins like USDC, it often signals an intent to deploy that capital into other cryptocurrencies, potentially driving prices up. The current quiet period suggests that this immediate buying pressure from USDC accumulation has temporarily subsided. If this trend continues, we might see less direct upward price momentum from new capital inflows, as these large players are not actively building their war chests with USDC at this moment.",
+    "plain_english_summary": "Large investors are currently not making big moves to gather more USDC, a popular stablecoin, indicating a pause in their readiness to buy up other cryptocurrencies. This suggests they might be waiting for clearer market direction.",
+    "top_tokens": [
+      "USDC"
+    ],
+    "retail_considerations": "(1) The current stability in large USDC movements suggests that institutional and sophisticated traders are not actively increasing their cash-like positions in this particular stablecoin, which might mean less immediate buying pressure for the broader market from these players.\n(2) Watch for any renewed significant transfers or 'minting' (creation) of USDC exceeding $500 million in a single day over the next 48-72 hours. This would signal a potential return of fresh buying power.\n(3) On-chain movements are early signals that can reverse quickly \u2014 this is not financial advice.",
+    "signal_sources": [],
+    "detected_at": "2026-06-11T20:28:56.406548Z",
+    "granularity": "day",
+    "source": "gemini_analysis",
+    "data_window_start": "2026-06-11",
+    "data_window_end": "2026-06-11",
+    "last_ingested_at": "2026-06-11T20:27:57.418815+00:00",
+    "prompt_built_at": "2026-06-11T20:28:56.406548Z",
+    "evidence_timestamps": {},
+    "unified_signals": [
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "CCIP",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 1164763859,
+        "net_flow_usd": 0,
+        "bridge_usd": 1164763859,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "LIGHTER BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 500462878,
+        "net_flow_usd": 0,
+        "bridge_usd": 500462878,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "FREE PROTOCOL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 268851319,
+        "net_flow_usd": 0,
+        "bridge_usd": 268851319,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "EDGEX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 107510208,
+        "net_flow_usd": 0,
+        "bridge_usd": 107510208,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "SODEX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 54483796,
+        "net_flow_usd": 0,
+        "bridge_usd": 54483796,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "LAYERZERO V2",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 7494951104,
+        "net_flow_usd": 0,
+        "bridge_usd": 7494951104,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "PORTAL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 2083911587,
+        "net_flow_usd": 0,
+        "bridge_usd": 2083911587,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "UNIT",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 423478085,
+        "net_flow_usd": 0,
+        "bridge_usd": 423478085,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "SOLVBTC",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 407781277,
+        "net_flow_usd": 0,
+        "bridge_usd": 407781277,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "USDT0",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 3640458187,
+        "net_flow_usd": 0,
+        "bridge_usd": 3640458187,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "MERLINS SEAL",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 379766605,
+        "net_flow_usd": 0,
+        "bridge_usd": 379766605,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "AXELAR",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 143023096,
+        "net_flow_usd": 0,
+        "bridge_usd": 143023096,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "APX BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 75421301,
+        "net_flow_usd": 0,
+        "bridge_usd": 75421301,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "ASTER BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 525221823,
+        "net_flow_usd": 0,
+        "bridge_usd": 525221823,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      },
+      {
+        "time_bucket": "2026-06-11",
+        "category": "capital_migration",
+        "symbol": "GRVT BRIDGE",
+        "from_chain": "Unknown",
+        "to_chain": "Unknown",
+        "signals": [
+          "bridge_activity"
+        ],
+        "signal_count": 1,
+        "total_usd": 50597610,
+        "net_flow_usd": 0,
+        "bridge_usd": 50597610,
+        "whale_concentration_pct": 0.0,
+        "acceleration_7d_vs_30d_pct": 315
+      }
+    ],
+    "signal_metadata": {
+      "window_hours": 48,
+      "generated_at": "2026-06-11T20:28:56.409996+00:00",
+      "total_records": 15,
+      "by_category": {
+        "capital_migration": 15,
+        "smart_deployment": 0,
+        "stablecoin_flow": 0
+      }
+    }
+  }
+]

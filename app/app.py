@@ -913,7 +913,7 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
             _prog.progress(100, text="Done.")
         else:
             # Single direct query
-            _prog = st.progress(0, text="Running Dune pipeline…")
+            _prog = st.progress(0, text=f"Running {_Cfg.INGESTION_PROVIDER} pipeline…")
             _stat = st.empty()
             _end_str = _end_dt.strftime("%Y-%m-%d %H:%M:%S")
             try:
