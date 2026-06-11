@@ -258,47 +258,58 @@ st.markdown(
 
 @st.cache_resource
 def init_services():
-    """Initialise ES, Gemini, and MongoDB.  Returns (es_manager, narrative_engine, tracker)."""
-    try:
-        from config.config import Config
+    """Initialise ES, Gemini, and MongoDB.  Returns (es_manager, narrative_engine, tracker).
+    Each service is initialised independently — one failure does not block the others."""
+    from config.config import Config
 
-        def _secret(key: str, default: str = "") -> str:
-            try:
-                return st.secrets.get(key, os.getenv(key, getattr(Config, key, default) or default))
-            except Exception:
-                return os.getenv(key, getattr(Config, key, default) or default)
+    def _secret(key: str, default: str = "") -> str:
+        try:
+            return st.secrets.get(key, os.getenv(key, getattr(Config, key, default) or default))
+        except Exception:
+            return os.getenv(key, getattr(Config, key, default) or default)
 
-        demo_mode = os.getenv("DEMO_MODE", "false").lower() == "true"
+    demo_mode = os.getenv("DEMO_MODE", "false").lower() == "true"
+    gemini_key = _secret("GEMINI_KEY")
+    es_url     = _secret("ES_URL")
 
-        gemini_key = _secret("GEMINI_KEY")
-        es_url      = _secret("ES_URL")
+    if demo_mode:
+        narrative_engine = NarrativeEngine(gemini_key) if gemini_key else None
+        return None, narrative_engine, None
 
-        if demo_mode:
-            es_manager = None
-            narrative_engine = NarrativeEngine(gemini_key) if gemini_key else None
-            tracker = None
-            return es_manager, narrative_engine, tracker
+    es_username   = _secret("ES_USERNAME")
+    es_password   = _secret("ES_PASSWORD")
+    es_api_key_id = _secret("ES_API_KEY_ID")
+    mongo_uri     = _secret("MONGO_URI")
+    mongo_db      = _secret("MONGO_DB") or "kairo"
 
-        if not es_url:
-            raise ValueError("ES_URL not configured")
-        if not gemini_key:
-            raise ValueError("GEMINI_KEY not configured")
+    es_manager = None
+    if es_url:
+        try:
+            es_manager = ElasticsearchManager(es_url, es_username, es_password, es_api_key_id)
+        except Exception as exc:
+            logger.warning("ElasticsearchManager init failed: %s", exc)
+    else:
+        logger.warning("ES_URL not configured — Elasticsearch disabled.")
 
-        es_username    = _secret("ES_USERNAME")
-        es_password    = _secret("ES_PASSWORD")
-        es_api_key_id  = _secret("ES_API_KEY_ID")
-        mongo_uri      = _secret("MONGO_URI")
-        mongo_db       = _secret("MONGO_DB") or "kairo"
+    narrative_engine = None
+    if gemini_key:
+        try:
+            narrative_engine = NarrativeEngine(gemini_key)
+        except Exception as exc:
+            logger.warning("NarrativeEngine init failed: %s", exc)
+    else:
+        logger.warning("GEMINI_KEY not configured — NarrativeEngine disabled.")
 
-        es_manager       = ElasticsearchManager(es_url, es_username, es_password, es_api_key_id)
-        narrative_engine = NarrativeEngine(gemini_key)
-        tracker          = NarrativeTracker(mongo_uri, mongo_db)
+    tracker = None
+    if mongo_uri:
+        try:
+            tracker = NarrativeTracker(mongo_uri, mongo_db)
+        except Exception as exc:
+            logger.warning("NarrativeTracker init failed: %s", exc)
+    else:
+        logger.warning("MONGO_URI not configured — NarrativeTracker disabled.")
 
-        return es_manager, narrative_engine, tracker
-
-    except Exception as exc:
-        logger.warning("init_services failed: %s", exc)
-        return None, None, None
+    return es_manager, narrative_engine, tracker
 
 
 # ---------------------------------------------------------------------------
