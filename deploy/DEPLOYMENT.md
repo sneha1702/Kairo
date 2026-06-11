@@ -145,3 +145,64 @@ gcloud run deploy kairo-app \
 crane copy --platform linux/amd64 pulls only the amd64 manifest entry out of the OCI image index and pushes it as a plain single-platform manifest — exactly what Cloud Run requires. Note the tag is :cloudrun not :latest on the deploy step.
 
 If crane says the source image has no amd64 variant (meaning the original build was arm64-only), let me know and we'll do a fresh build directly in Cloud Shell with DOCKER_BUILDKIT=0 docker build.
+
+## IP for MongoDB Atlas
+Option A: Static IP via VPC + Cloud NAT (recommended)
+
+This routes all Cloud Run outbound traffic through a fixed IP you control.
+
+# 1. Create a VPC network
+gcloud compute networks create kairo-vpc \
+  --subnet-mode=auto \
+  --project=kairoagent-497417
+
+# 2. Create a Serverless VPC Access connector
+gcloud compute networks vpc-access connectors create kairo-connector \
+  --region=us-central1 \
+  --network=kairo-vpc \
+  --range=10.8.0.0/28 \
+  --project=kairoagent-497417
+
+# 3. Reserve a static external IP
+gcloud compute addresses create kairo-nat-ip \
+  --region=us-central1 \
+  --project=kairoagent-497417
+
+# 4. Create a Cloud Router
+gcloud compute routers create kairo-router \
+  --network=kairo-vpc \
+  --region=us-central1 \
+  --project=kairoagent-497417
+
+# 5. Create a Cloud NAT using that static IP
+gcloud compute routers nats create kairo-nat \
+  --router=kairo-router \
+  --region=us-central1 \
+  --nat-external-ip-pool=kairo-nat-ip \
+  --nat-custom-subnet-ip-ranges=ALL_SUBNETWORKS_ALL_IP_RANGES \
+  --project=kairoagent-497417
+
+# 6. Get your static IP (add this to MongoDB Atlas)
+gcloud compute addresses describe kairo-nat-ip \
+  --region=us-central1 \
+  --project=kairoagent-497417 \
+  --format="value(address)"
+
+# 7. Redeploy Cloud Run to route ALL traffic through the VPC
+gcloud run services update kairo-app \
+  --vpc-connector=kairo-connector \
+  --vpc-egress=all-traffic \
+  --region=us-central1 \
+  --project=kairoagent-497417
+
+After step 6, take that IP and add it to MongoDB Atlas → Network Access → Add IP.
+
+---
+Option B: Allow 0.0.0.0/0 (quick, fine for non-sensitive data)
+
+In MongoDB Atlas → Network Access → Add IP Address → type 0.0.0.0/0 → confirm.
+
+No infrastructure changes needed. Atlas still requires valid credentials — 0.0.0.0/0 just means any IP can attempt a connection.
+
+---
+Recommendation: If this is a personal/early-stage project, Option B takes 30 seconds and unblocks you now. Option A is the production-grade path and costs ~$0.01/hr for the NAT IP.
