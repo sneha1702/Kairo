@@ -22,6 +22,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Optional
 
+import certifi
 import pymongo
 import requests
 from bs4 import BeautifulSoup
