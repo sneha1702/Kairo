@@ -35,7 +35,7 @@ if str(ROOT_DIR) not in sys.path:
 
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(override=True)
 except ImportError:
     pass
 
