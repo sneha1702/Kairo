@@ -88,10 +88,11 @@ gcloud projects add-iam-policy-binding kairoagent-497417 \
   --role="roles/secretmanager.secretAccessor" 
 ---
 Step 5: Deploy to Cloud Run
+gcloud builds submit --config=cloudbuild.yaml --project=kairoagent-497417 .
 
-gcloud run deploy kairo-app \
+gcloud run deploy kairo-app \                                              
   --image=us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:cloudrun \
-  --platform=managed \
+  --platform=managed \                                                                         
   --region=us-central1 \
   --port=8501 \
   --memory=2Gi --cpu=2 \

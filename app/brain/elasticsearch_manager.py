@@ -75,6 +75,9 @@ class ElasticsearchManager:
         Oldest bucket first so Gemini can read left-to-right acceleration.
         E.g. num_buckets=3, hours_per_bucket=24 → T-72h..T-48h, T-48h..T-24h, T-24h..now
         """
+        if not self._available:
+            self.logger.warning("[ES] Skipping get_signal_trend — Elasticsearch not available.")
+            return []
         now = datetime.now()
         buckets: List[Dict[str, Any]] = []
 

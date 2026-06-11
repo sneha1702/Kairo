@@ -1,0 +1,74 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Movement Remains Consistent But Quiet",
+    "category": "CrossChain",
+    "status": "STABLE",
+    "strength": "Low",
+    "momentum": "Stable",
+    "confidence_score": 0.40,
+    "key_evidence": [
+      "On June 9th, roughly $3.64 billion in USDT (a major stablecoin used to represent dollars in crypto) moved across various cross-chain bridges, indicating significant shifts in readily available liquidity.",
+      "The CCIP bridge, a key piece of infrastructure connecting different blockchains, facilitated about $1.16 billion in transfers on June 9th, showcasing its growing role in capital movement.",
+      "Approximately $395 million in Wrapped Bitcoin (SOLVBTC) and another $146 million via the Axelar bridge also crossed chains on June 9th, adding to the diversified flow of assets."
+    ],
+    "data_caveat": "Without fresh capital movement data, it's difficult to confirm if the observed trends of liquidity rotation are continuing or have paused. The direction of these large movements, especially whether funds are flowing into or out of exchanges, remains opaque.",
+    "historical_context": "This narrative has been tracked as 'consistent but quiet' over the past few days. The previous activity, notably on June 9th, showed significant, albeit diversified, cross-chain transfers totaling billions. The lack of new data today suggests a temporary lull rather than a reversal, maintaining its 'stable' momentum for now.",
+    "implications": "The continued presence of large cross-chain movements, even when quiet, suggests sophisticated players are regularly re-balancing their portfolios across different blockchain ecosystems. If these quiet movements resume at scale, it could signal strategic positioning ahead of anticipated network developments or changes in market sentiment on specific chains, potentially leading to increased volatility or price action on destination chains in the coming days.",
+    "plain_english_summary": "Big money continues to move funds across different blockchain networks, but today's data doesn't show new activity. This steady rotation indicates experienced investors are constantly adjusting where their money is working in crypto.",
+    "top_tokens": [
+      "USDT",
+      "SOLVBTC",
+      "AXELAR"
+    ],
+    "retail_considerations": "(1) This indicates institutional or very large individual investors are actively managing their exposure across various blockchain platforms, preparing for potential opportunities or risks. (2) Watch for renewed large cross-chain transfers in the next 24-48 hours, particularly involving stablecoins like USDT, as this would signal a re-ignition of capital rotation and potential opportunities in the destination chains. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": []
+  },
+  {
+    "narrative_id": "institutional_bitcoin",
+    "name": "Big Money's Wrapped Bitcoin Movements Remain Quiet",
+    "category": "Institutional",
+    "status": "STABLE",
+    "strength": "Low",
+    "momentum": "Stable",
+    "confidence_score": 0.40,
+    "key_evidence": [
+      "Very large holders moved approximately $6.45 billion worth of Wrapped Bitcoin (WBTC) on May 31st.",
+      "This was followed by significant whale transactions of $5.06 billion on May 30th, $3.04 billion on June 2nd, and $2.71 billion on June 1st.",
+      "Further large movements by these holders were observed with $851 million on June 3rd, $1.82 billion on May 29th, and $909 million on May 28th."
+    ],
+    "data_caveat": "The current confidence score is at the lower bound given the absence of new data points today. It's difficult to discern if the previous large movements into Wrapped Bitcoin have ceased, are merely paused, or have subtly shifted direction without fresh transaction information.",
+    "historical_context": "This narrative has centered on significant, albeit sporadic, movements of Wrapped Bitcoin by large holders, particularly in late May and early June, totaling billions. The quiet day today suggests a temporary pause in these specific movements, but does not indicate a reversal of the underlying trend of institutional interest in Bitcoin proxies.",
+    "implications": "The prior large-scale movements of Wrapped Bitcoin by sophisticated investors often precede shifts in market sentiment or changes in how these institutions intend to use their Bitcoin exposure. A sustained pause could imply a 'wait and see' approach from these players, while a resumption of activity could foreshadow their next strategic move, either toward accumulation or distribution, influencing Bitcoin's price trajectory.",
+    "plain_english_summary": "Big investors have been moving large amounts of Wrapped Bitcoin around recently, but things are quiet today. This pause doesn't mean their interest is gone, but rather they might be waiting for the next market move.",
+    "top_tokens": [
+      "WBTC"
+    ],
+    "retail_considerations": "(1) This suggests that institutional players who utilize Wrapped Bitcoin as a proxy for direct Bitcoin exposure are currently in a holding pattern after recent significant re-positioning. (2) Monitor for any renewed large transfers of WBTC (over $100M) in the next 2-3 days, as this would signal these big players are re-engaging, potentially indicating their next directional trade for Bitcoin. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": []
+  },
+  {
+    "narrative_id": "stablecoin_accumulation",
+    "name": "Large Investors Holding Steady on Stablecoin Reserves",
+    "category": "Stablecoins",
+    "status": "STABLE",
+    "strength": "Low",
+    "momentum": "Stable",
+    "confidence_score": 0.40,
+    "key_evidence": [
+      "Large investors moved approximately $857 million in USDC, a major stablecoin, on June 1st.",
+      "Further significant USDC transfers by these large players included $428 million on May 31st and another $428 million on June 2nd."
+    ],
+    "data_caveat": "Without fresh data on stablecoin movements, it's impossible to confirm if large investors are continuing to accumulate or have begun deploying their reserves. The lack of new signals means we can only infer continued 'holding steady' from previous observations.",
+    "historical_context": "This narrative highlights consistent, significant movements of USDC by large investors in early June, suggesting they were building or maintaining substantial cash reserves within the crypto ecosystem. The current quiet period indicates these players are likely still holding those positions, rather than actively deploying or reducing them today.",
+    "implications": "The continued 'holding steady' of stablecoin reserves by sophisticated investors often points to a strategic readiness. They could be waiting for a clear buying opportunity or preparing to deploy capital quickly if market conditions shift favorably. A sudden increase in stablecoin spending from these wallets would be a strong indicator of renewed market interest or an impending large directional trade, potentially impacting asset prices across the board.",
+    "plain_english_summary": "Big investors have built up significant dollar reserves in crypto (USDC) and seem to be holding them steady, even with no new activity today. This suggests they're ready to act but are currently waiting for the right moment.",
+    "top_tokens": [
+      "USDC"
+    ],
+    "retail_considerations": "(1) This implies that sophisticated market participants have significant 'dry powder' (stablecoin reserves) at their disposal, indicating a cautious but prepared stance. (2) Look for sudden, large outflows of USDC from these major holders into trading platforms or specific assets within the next 48-72 hours, as this would signal active deployment of capital and potentially new market trends. (3) On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": []
+  }
+]
+```
