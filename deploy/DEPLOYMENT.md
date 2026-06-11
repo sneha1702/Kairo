@@ -146,6 +146,9 @@ crane copy --platform linux/amd64 pulls only the amd64 manifest entry out of the
 
 If crane says the source image has no amd64 variant (meaning the original build was arm64-only), let me know and we'll do a fresh build directly in Cloud Shell with DOCKER_BUILDKIT=0 docker build.
 
+redeploy
+! gcloud run deploy kairo-app --image=us-central1-docker.pkg.dev/kairoagent-497417/kairo/kairo-app:cloudrun --region=us-central1 --project=kairoagent-497417
+
 ## IP for MongoDB Atlas
 Option A: Static IP via VPC + Cloud NAT (recommended)
 

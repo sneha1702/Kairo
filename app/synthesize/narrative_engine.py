@@ -28,7 +28,7 @@ _PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts"
 # ── .env loading (optional) ────────────────────────────────────────────────────
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(override=True)
 except ImportError:
     pass
 
