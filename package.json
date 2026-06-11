@@ -1,6 +1,7 @@
 {
   "name": "kairo-jsx-compile",
   "private": true,
+  "license": "MIT",
   "description": "Server-side JSX compilation for the Kairo Streamlit component.",
   "dependencies": {
     "@babel/core": "^7.25.0",
