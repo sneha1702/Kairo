@@ -269,7 +269,7 @@ def _cli_main() -> None:
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(override=True)
     from config.config import Config
 
     dry_run = "--dry" in sys.argv
