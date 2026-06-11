@@ -611,7 +611,11 @@ class _KairoEncoder(json.JSONEncoder):
 # ---------------------------------------------------------------------------
 
 from config.config import Config as _Cfg
-from app.ingestion.dune_pipeline import build_pipeline as _build_pipeline
+
+if _Cfg.INGESTION_PROVIDER == "dune":
+    from app.ingestion.dune_pipeline import build_pipeline as _build_pipeline
+else:
+    from app.ingestion.defillama_pipeline import build_defillama_pipeline as _build_pipeline
 
 es_manager, narrative_engine, tracker = init_services()
 
