@@ -1207,8 +1207,100 @@ tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin"])
 with tab_admin:
     _admin_panel()
 
-# ── Kairo tab — iframe only ───────────────────────────────────────────────────
+# ── Kairo tab ────────────────────────────────────────────────────────────────
 with tab_kairo:
+    st.markdown(
+        """
+        <style>
+        .kairo-hero {
+          padding: 52px 48px 44px;
+          background: var(--surface);
+          border-bottom: 1px solid var(--hairline);
+        }
+        .kairo-hero-eyebrow {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--accent);
+          margin-bottom: 16px;
+        }
+        .kairo-hero-headline {
+          font-family: var(--font-sans);
+          font-size: clamp(28px, 3.5vw, 42px);
+          font-weight: 800;
+          color: var(--ink);
+          letter-spacing: -0.025em;
+          line-height: 1.1;
+          margin-bottom: 18px;
+          text-wrap: balance;
+        }
+        .kairo-hero-headline em {
+          font-style: normal;
+          color: var(--accent);
+        }
+        .kairo-hero-sub {
+          font-size: 16px;
+          line-height: 1.65;
+          color: var(--ink-2);
+          max-width: 680px;
+          margin-bottom: 28px;
+        }
+        .kairo-hero-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .kairo-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          background: var(--accent-soft);
+          color: var(--accent-ink);
+          font-size: 13px;
+          font-weight: 600;
+          padding: 7px 14px;
+          border-radius: 99px;
+          letter-spacing: -0.01em;
+          white-space: nowrap;
+        }
+        .kairo-pill svg { flex-shrink: 0; }
+        </style>
+        <div class="kairo-hero">
+          <div class="kairo-hero-eyebrow">Crypto Intelligence &mdash; Democratised</div>
+          <div class="kairo-hero-headline">
+            The market signals insiders act on.<br><em>Now in plain English.</em>
+          </div>
+          <p class="kairo-hero-sub">
+            Kairo tracks real-time on-chain flows, whale movements, and cross-chain narratives —
+            then translates them into clear, jargon-free insights.
+            The kind of intelligence that used to require a Bloomberg terminal and a research desk,
+            delivered to anyone curious enough to ask.
+          </p>
+          <div class="kairo-hero-pills">
+            <span class="kairo-pill">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Real-time on-chain data
+            </span>
+            <span class="kairo-pill">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Whale &amp; smart-money signals
+            </span>
+            <span class="kairo-pill">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.8 3.6L14 6.3l-3 2.9.7 4.1L8 11.2l-3.7 2 .7-4.1L2 6.3l4.2-.7L8 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              HNI-grade narrative detection
+            </span>
+            <span class="kairo-pill">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>
+              No finance degree required
+            </span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     user_id        = st.session_state.get("admin_user_id", "default")
     hours_lookback = int(st.session_state.get("detect_hours_input", _Cfg.DUNE_QUERY_WINDOW_HOURS))
 
