@@ -298,3 +298,6 @@ app/_kairo_build/
 # Google Gemini
 /utils/*.json
 dev_feature_checklist.txt
+
+# Deployment guide — keep local only (contains infrastructure details)
+deploy/DEPLOYMENT.md
