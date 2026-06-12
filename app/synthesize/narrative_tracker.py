@@ -62,7 +62,7 @@ class NarrativeTracker:
         logger.info("[MONGO] Connecting to MongoDB, db=%s", db_name)
         self.client = MongoClient(
             mongo_uri,
-            tlsCAFile=certifi.where(),
+            ssl_context=_mongo_ssl_ctx(),
             serverSelectionTimeoutMS=8000,
             connectTimeoutMS=8000,
             socketTimeoutMS=20000,
