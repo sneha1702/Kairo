@@ -253,7 +253,7 @@ class CryptoMarketsUpdater:
     def load_from_mongo(mongo_uri: str, mongo_db: str = "kairo") -> Optional[dict]:
         """Return the stored top20 config document, or None if absent."""
         try:
-            client = pymongo.MongoClient(mongo_uri, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=5000)
+            client = pymongo.MongoClient(mongo_uri, ssl_context=_mongo_ssl_ctx(), serverSelectionTimeoutMS=5000)
             doc = client[mongo_db][COLLECTION].find_one({"_id": DOC_ID})
             client.close()
             return doc
