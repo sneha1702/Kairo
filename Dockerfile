@@ -17,6 +17,10 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-root --no-interaction --no-ansi
 
+# Patch pymongo to cap TLS at 1.2 — Atlas M0 rejects TLS 1.3 from Cloud Run.
+COPY patch_pymongo_ssl.py /tmp/patch_pymongo_ssl.py
+RUN python3 /tmp/patch_pymongo_ssl.py
+
 COPY app/ ./app/
 COPY config/ ./config/
 COPY streamlit_app.py .
