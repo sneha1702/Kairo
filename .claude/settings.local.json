@@ -44,7 +44,8 @@
       "Bash(gcloud compute networks vpc-access connectors describe *)",
       "Bash(gcloud logging read resource.type=cloud_run_revision AND resource.labels.service_name=kairo-app AND \\(textPayload:elasticsearch OR textPayload:elastic OR textPayload:ES OR textPayload:401\\) *)",
       "Bash(gcloud compute routers nats describe kairo-nat *)",
-      "Bash(gcloud compute *)"
+      "Bash(gcloud compute *)",
+      "Bash(docker run *)"
     ]
   }
 }
