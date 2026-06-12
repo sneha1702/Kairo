@@ -462,7 +462,7 @@ class MarketAnalyzer:
         Analyze all (or a subset of) top-20 projects.
         progress_cb(current: int, total: int, project_name: str)
         """
-        mc  = pymongo.MongoClient(self.mongo_uri, serverSelectionTimeoutMS=8000)
+        mc  = pymongo.MongoClient(self.mongo_uri, ssl_context=_mongo_ssl_ctx(), serverSelectionTimeoutMS=8000)
         doc = mc[self.mongo_db][_COLLECTION_CMC].find_one({"_id": _DOC_ID})
         mc.close()
 
