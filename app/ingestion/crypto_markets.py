@@ -225,7 +225,7 @@ class CryptoMarketsUpdater:
         return projects
 
     def save_to_mongo(self, projects: list[dict]) -> None:
-        client = pymongo.MongoClient(self.mongo_uri, tlsCAFile=certifi.where())
+        client = pymongo.MongoClient(self.mongo_uri, ssl_context=_mongo_ssl_ctx())
         db = client[self.mongo_db]
         db[COLLECTION].update_one(
             {"_id": DOC_ID},
