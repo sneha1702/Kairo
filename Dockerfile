@@ -9,9 +9,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install --no-cache-dir poetry
 
-# Limit TLS to 1.2 — OpenSSL 3.x sends TLS 1.3 extensions that MongoDB Atlas M0 rejects.
-RUN sed -i '/\[system_default_sect\]/a MaxProtocol = TLSv1.2' /etc/ssl/openssl.cnf
-
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry config virtualenvs.create false \
