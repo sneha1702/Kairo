@@ -13,16 +13,23 @@ load_dotenv(override=True)
 
 
 def _patch_pymongo_tls() -> None:
-    # OpenSSL 3.x sends a record_size_limit extension in TLS 1.3 ClientHello that
-    # MongoDB Atlas rejects with TLSV1_ALERT_INTERNAL_ERROR. Force TLS 1.2 only
-    # for all pymongo SSL contexts to avoid this.
-    #
-    # pymongo does `from pymongo.ssl_support import get_ssl_context` in each
-    # consumer module, so we must patch every import site, not just the source.
+    # Atlas M0 rejects TLS 1.3 ClientHellos from Cloud Run with
+    # TLSV1_ALERT_INTERNAL_ERROR. Wrap get_ssl_context in every pymongo import
+    # site to cap the SSLContext at TLS 1.2 via the modern maximum_version API
+    # (Python 3.7+), falling back to OP_NO_TLSv1_3 for older runtimes.
     import ssl as _ssl
-    _no_tls13 = getattr(_ssl, "OP_NO_TLSv1_3", 0)
-    if not _no_tls13:
-        return
+
+    def _cap_tls12(ctx):
+        if hasattr(_ssl, "TLSVersion") and hasattr(ctx, "maximum_version"):
+            try:
+                ctx.maximum_version = _ssl.TLSVersion.TLSv1_2
+                return
+            except Exception:
+                pass
+        no13 = getattr(_ssl, "OP_NO_TLSv1_3", 0)
+        if no13 and hasattr(ctx, "options"):
+            ctx.options |= no13
+
     try:
         import pymongo.ssl_support as _ssl_support
         import pymongo.client_options as _client_options
@@ -31,14 +38,12 @@ def _patch_pymongo_tls() -> None:
 
         def _patched(*args, **kwargs):
             ctx = _orig(*args, **kwargs)
-            if hasattr(ctx, "options"):
-                ctx.options |= _no_tls13
+            _cap_tls12(ctx)
             return ctx
 
         _ssl_support.get_ssl_context = _patched
         _client_options.get_ssl_context = _patched
 
-        # patch encryption modules if present
         for _mod_name in ("pymongo.synchronous.encryption", "pymongo.asynchronous.encryption"):
             try:
                 import importlib as _il
