@@ -30,11 +30,20 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Optional
 
+import ssl
+
+import certifi
 import pymongo
 import requests
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
+
+
+def _mongo_ssl_ctx() -> ssl.SSLContext:
+    ctx = ssl.create_default_context(cafile=certifi.where())
+    ctx.options |= getattr(ssl, "OP_NO_TLSv1_3", 0)
+    return ctx
 
 _COLLECTION_CMC      = "crypto_markets_config"
 _COLLECTION_ANALYSIS = "crypto_market_analysis"
