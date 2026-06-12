@@ -16,17 +16,36 @@ def _patch_pymongo_tls() -> None:
     # OpenSSL 3.x sends a record_size_limit extension in TLS 1.3 ClientHello that
     # MongoDB Atlas rejects with TLSV1_ALERT_INTERNAL_ERROR. Force TLS 1.2 only
     # for all pymongo SSL contexts to avoid this.
+    #
+    # pymongo does `from pymongo.ssl_support import get_ssl_context` in each
+    # consumer module, so we must patch every import site, not just the source.
     import ssl as _ssl
+    _no_tls13 = getattr(_ssl, "OP_NO_TLSv1_3", 0)
+    if not _no_tls13:
+        return
     try:
-        import pymongo.ssl_support as _pymongo_ssl
-        _orig = _pymongo_ssl.get_ssl_context
-        _no_tls13 = getattr(_ssl, "OP_NO_TLSv1_3", 0)
+        import pymongo.ssl_support as _ssl_support
+        import pymongo.client_options as _client_options
+
+        _orig = _ssl_support.get_ssl_context
+
         def _patched(*args, **kwargs):
             ctx = _orig(*args, **kwargs)
-            if _no_tls13 and hasattr(ctx, "options"):
+            if hasattr(ctx, "options"):
                 ctx.options |= _no_tls13
             return ctx
-        _pymongo_ssl.get_ssl_context = _patched
+
+        _ssl_support.get_ssl_context = _patched
+        _client_options.get_ssl_context = _patched
+
+        # patch encryption modules if present
+        for _mod_name in ("pymongo.synchronous.encryption", "pymongo.asynchronous.encryption"):
+            try:
+                import importlib as _il
+                _mod = _il.import_module(_mod_name)
+                _mod.get_ssl_context = _patched
+            except Exception:
+                pass
     except Exception:
         pass
 

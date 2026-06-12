@@ -38,7 +38,13 @@
       "Bash(npx --version)",
       "Bash(grep -rn \"component_url\\\\|component/.*?\\\\$\\\\|/component\" /Users/snehaparihar/KairoAgent/.venv/lib/python3.14/site-packages/streamlit/components/v1/component_registry.py)",
       "Bash(npm install *)",
-      "Bash(node app/frontend/_compile_jsx.js app/frontend/components.jsx)"
+      "Bash(node app/frontend/_compile_jsx.js app/frontend/components.jsx)",
+      "Bash(gcloud secrets *)",
+      "Bash(xxd)",
+      "Bash(gcloud compute networks vpc-access connectors describe *)",
+      "Bash(gcloud logging read resource.type=cloud_run_revision AND resource.labels.service_name=kairo-app AND \\(textPayload:elasticsearch OR textPayload:elastic OR textPayload:ES OR textPayload:401\\) *)",
+      "Bash(gcloud compute routers nats describe kairo-nat *)",
+      "Bash(gcloud compute *)"
     ]
   }
 }
