@@ -16,11 +16,21 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
+import ssl
+
 import certifi
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import CollectionInvalid, OperationFailure
 
 logger = logging.getLogger(__name__)
+
+
+def _mongo_ssl_ctx() -> ssl.SSLContext:
+    # Atlas M0 rejects TLS 1.3 ClientHellos from certain cloud environments;
+    # passing ssl_context directly bypasses pymongo's internal context creation.
+    ctx = ssl.create_default_context(cafile=certifi.where())
+    ctx.options |= getattr(ssl, "OP_NO_TLSv1_3", 0)
+    return ctx
 
 _OUTPUT_DIR = Path(__file__).resolve().parents[1] / "outputs"
 
