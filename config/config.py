@@ -42,13 +42,18 @@ def _patch_pymongo_tls() -> None:
             return ctx
 
         _ssl_support.get_ssl_context = _patched
-        _client_options.get_ssl_context = _patched
+        try:
+            # set attribute only if present at runtime to satisfy static checkers
+            if getattr(_client_options, "get_ssl_context", None) is not None:
+                setattr(_client_options, "get_ssl_context", _patched)
+        except Exception:
+            pass
 
         for _mod_name in ("pymongo.synchronous.encryption", "pymongo.asynchronous.encryption"):
             try:
                 import importlib as _il
                 _mod = _il.import_module(_mod_name)
-                _mod.get_ssl_context = _patched
+                setattr(_mod, "get_ssl_context", _patched)
             except Exception:
                 pass
     except Exception:
