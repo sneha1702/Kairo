@@ -11,6 +11,28 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv(override=True)
 
+
+def _patch_pymongo_tls() -> None:
+    # OpenSSL 3.x sends a record_size_limit extension in TLS 1.3 ClientHello that
+    # MongoDB Atlas rejects with TLSV1_ALERT_INTERNAL_ERROR. Force TLS 1.2 only
+    # for all pymongo SSL contexts to avoid this.
+    import ssl as _ssl
+    try:
+        import pymongo.ssl_support as _pymongo_ssl
+        _orig = _pymongo_ssl.get_ssl_context
+        _no_tls13 = getattr(_ssl, "OP_NO_TLSv1_3", 0)
+        def _patched(*args, **kwargs):
+            ctx = _orig(*args, **kwargs)
+            if _no_tls13 and hasattr(ctx, "options"):
+                ctx.options |= _no_tls13
+            return ctx
+        _pymongo_ssl.get_ssl_context = _patched
+    except Exception:
+        pass
+
+
+_patch_pymongo_tls()
+
 _CONFIG_DIR = Path(__file__).parent
 
 
