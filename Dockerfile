@@ -9,6 +9,19 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install --no-cache-dir poetry
 
+# Limit TLS to 1.2 to fix OpenSSL 3.x TLSV1_ALERT_INTERNAL_ERROR with MongoDB Atlas.
+# Debian Bookworm's OpenSSL 3.x sends TLS 1.3 extensions that Atlas M0 rejects.
+RUN python3 -c "
+import pathlib
+p = pathlib.Path('/etc/ssl/openssl.cnf')
+c = p.read_text()
+if '[system_default_sect]' in c:
+    c = c.replace('[system_default_sect]', '[system_default_sect]\nMaxProtocol = TLSv1.2', 1)
+else:
+    c += '\n[system_default_sect]\nMaxProtocol = TLSv1.2\n'
+p.write_text(c)
+"
+
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry config virtualenvs.create false \
