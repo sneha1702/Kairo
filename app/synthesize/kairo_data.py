@@ -1143,49 +1143,113 @@ def _empty_tracker() -> dict:
     }
 
 
+def _is_archived(n: dict) -> bool:
+    """True if a narrative should be retired to the History tab."""
+    status = (n.get("status") or "").upper()
+    trend  = (n.get("momentum") or {}).get("trend", "")
+    conf   = _safe_float(n.get("confidence_score"), 0.5)
+    day    = _days_since(n.get("detected_at"))
+    return (
+        status in ("STABLE", "REVERSING") or
+        (conf < 0.35 and day > 14) or
+        (trend in ("weakening", "breaking") and day > 14)
+    )
+
+
+def _build_narrative_tile(n: dict) -> dict:
+    """Build the common tile shape shared between active and archived narrative lists."""
+    name   = n.get("name", "Unknown")
+    conf   = _safe_float(n.get("confidence_score"), 0.5)
+    trend  = (n.get("momentum") or {}).get("trend", "stable")
+    status = _MOMENTUM_TREND_TO_STATUS.get(trend, "established")
+    sources = n.get("signal_sources") or []
+    force  = _signal_source_to_force(sources) or "narrative"
+    assets = (n.get("top_tokens") or [])[:3]
+    day    = _days_since(n.get("detected_at"))
+    nid    = name.lower().replace(" ", "-").replace("'", "").replace("(", "").replace(")", "")
+    phase  = _derive_narrative_phase(n, day, conf)
+    smart_intent = _derive_smart_money_intent(n)
+    plain  = (n.get("plain_english_summary") or n.get("implications") or "").strip()
+    first_dot = plain.find(". ")
+    summary_line = (plain[:first_dot + 1] if first_dot != -1 else plain)[:160]
+    is_hist = day > 14
+    return {
+        "id":               nid,
+        "title":            name,
+        "status":           status,
+        "strength":         round(conf * 10, 1),
+        "day":              day // 7 if is_hist else day,
+        "actual_days":      day,
+        "granularity":      "week" if is_hist else "day",
+        "assets":           assets,
+        "force":            force,
+        "phase":            phase,
+        "summary_line":     summary_line,
+        "smart_money_intent": smart_intent,
+    }
+
+
 def _build_narratives(all_narratives: list[dict]) -> list[dict]:
     if not all_narratives:
         return []  # no fake data — show empty state
 
     result = []
-    for n in all_narratives[:8]:
+    for n in all_narratives[:12]:
         try:
-            name = n.get("name", "Unknown")
-            conf = _safe_float(n.get("confidence_score"), 0.5)
-            trend = (n.get("momentum") or {}).get("trend", "stable")
-            status = _MOMENTUM_TREND_TO_STATUS.get(trend, "established")
-            sources = n.get("signal_sources") or []
-            force = _signal_source_to_force(sources) or "narrative"
-            assets = (n.get("top_tokens") or [])[:3]
-            day = _days_since(n.get("detected_at"))
-            nid = name.lower().replace(" ", "-").replace("'", "").replace("(", "").replace(")", "")
-            phase = _derive_narrative_phase(n, day, conf)
-            smart_intent = _derive_smart_money_intent(n)
-            plain = (n.get("plain_english_summary") or n.get("implications") or "").strip()
-            first_dot = plain.find(". ")
-            summary_line = (plain[:first_dot + 1] if first_dot != -1 else plain)[:160]
-            is_hist = day > 14
-            display_day = day // 7 if is_hist else day
-
-            result.append({
-                "id":               nid,
-                "title":            name,
-                "status":           status,
-                "strength":         round(conf * 10, 1),
-                "day":              display_day,
-                "actual_days":      day,
-                "granularity":      "week" if is_hist else "day",
-                "assets":           assets,
-                "force":            force,
-                "phase":            phase,
-                "summary_line":     summary_line,
-                "smart_money_intent": smart_intent,
-            })
+            if _is_archived(n):
+                continue  # goes to archived_narratives instead
+            result.append(_build_narrative_tile(n))
         except Exception as exc:
             logger.warning("_build_narratives item error: %s", exc)
             continue
 
     return result
+
+
+def _build_archived_narratives(all_narratives: list[dict]) -> list[dict]:
+    """Narratives retired to History: died, reversed, or low-strength for 2+ weeks."""
+    if not all_narratives:
+        return []
+
+    result = []
+    for n in all_narratives:
+        try:
+            if not _is_archived(n):
+                continue
+
+            tile = _build_narrative_tile(n)
+
+            # When it moved to history
+            archived_dt = n.get("updated_at")
+            if isinstance(archived_dt, datetime):
+                archived_at_str = archived_dt.strftime("%b %d, %Y")
+            else:
+                archived_at_str = None
+
+            # Why it was archived
+            raw_status = (n.get("status") or "").upper()
+            trend      = (n.get("momentum") or {}).get("trend", "")
+            conf       = _safe_float(n.get("confidence_score"), 0.5)
+            if raw_status == "REVERSING":
+                reason = "Narrative reversed"
+            elif raw_status == "STABLE":
+                reason = "Signal weakened"
+            elif conf < 0.35:
+                reason = "Strength declined"
+            elif trend in ("weakening", "breaking"):
+                reason = "Momentum faded"
+            else:
+                reason = "Moved to history"
+
+            tile["archived_at"]     = archived_at_str
+            tile["archived_reason"] = reason
+            result.append(tile)
+        except Exception as exc:
+            logger.warning("_build_archived_narratives item error: %s", exc)
+            continue
+
+    # Newest archived first
+    return sorted(result, key=lambda x: x.get("archived_at") or "", reverse=True)
 
 
 def _build_history(all_narratives: list[dict]) -> dict:
