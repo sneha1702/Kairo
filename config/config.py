@@ -64,6 +64,18 @@ _patch_pymongo_tls()
 
 _CONFIG_DIR = Path(__file__).parent
 
+# Path to the MongoDB-specific CA bundle baked into the Docker image.
+# Falls back to certifi when running locally (where the bundle won't exist).
+_MONGO_CA_BUNDLE = Path("/app/mongodb_ca.pem")
+
+
+def mongo_tls_ca_file() -> str:
+    """Return the CA file path to use for all MongoClient connections."""
+    if _MONGO_CA_BUNDLE.exists():
+        return str(_MONGO_CA_BUNDLE)
+    import certifi
+    return certifi.where()
+
 
 def _load_dune_params() -> dict:
     """Load runtime-overridable Dune params from dune_params.json."""
