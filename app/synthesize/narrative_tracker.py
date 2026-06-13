@@ -18,6 +18,7 @@ from typing import List, Dict, Any, Optional
 
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import CollectionInvalid, OperationFailure
+from pymongo.server_api import ServerApi
 
 logger = logging.getLogger(__name__)
 
