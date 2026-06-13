@@ -53,7 +53,11 @@
       "Bash(awk 'NR==1{start=$0} /22:27|22:28|22:29|22:30/{print}')",
       "Bash(poetry lock *)",
       "Bash(pip3 show *)",
-      "Bash(pip3 install *)"
+      "Bash(pip3 install *)",
+      "Bash(gcloud logging *)",
+      "WebFetch(domain:docs.cloud.google.com)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -v \"^$\\\\|^\t2\")"
     ]
   }
 }
