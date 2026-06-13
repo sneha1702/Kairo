@@ -552,7 +552,7 @@ def _build_events(dune_context: dict, has_narrative: bool = True) -> list[dict]:
                     "title": f"Smart money wallet ({wallet}) bought {_fmt_usd(usd).lstrip('+')} in {symbol}",
                     "impact": signal or "Top-tier wallets adding exposure — typically precedes broader market participation.",
                     "assets": [symbol] if symbol else [],
-                    "when": "recently",
+                    "when": _time_ago(best.get("ingested_at")),
                 })
         except Exception as exc:
             logger.warning("_build_events smart_money error: %s", exc)

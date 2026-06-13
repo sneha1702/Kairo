@@ -580,6 +580,11 @@ python -m compileall .
 2. Compile specific script
 python3 -m py_compile scripts/purge.py
 
+ # activate python env
+ python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
 3. Run Purge
   poetry run python3 app/scripts/purge.py --all             # purge both ES and MongoDB
   poetry run python3 app/scripts/purge.py --elastic         # purge ES indices only
