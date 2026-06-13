@@ -130,6 +130,40 @@ class UserManager:
         )
         return True
 
+    def create_session_token(self, username: str, days: int = 30) -> str:
+        """Create a persistent 'remember me' token stored in MongoDB."""
+        token = secrets.token_urlsafe(32)
+        self._sessions_col.insert_one({
+            "token": token,
+            "username": username.strip().lower(),
+            "expires_at": datetime.now(timezone.utc) + timedelta(days=days),
+            "created_at": datetime.now(timezone.utc),
+        })
+        return token
+
+    def validate_session_token(self, token: str) -> Optional[str]:
+        """Return username if token is valid and not expired, else None."""
+        doc = self._sessions_col.find_one({"token": token})
+        if not doc:
+            return None
+        expires = doc["expires_at"]
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        if expires < datetime.now(timezone.utc):
+            self._sessions_col.delete_one({"token": token})
+            return None
+        return doc["username"]
+
+    def invalidate_session_token(self, token: str) -> None:
+        self._sessions_col.delete_one({"token": token})
+
+    def delete_user(self, username: str) -> bool:
+        """Permanently delete a user account and all their session tokens."""
+        uname = username.strip().lower()
+        self._sessions_col.delete_many({"username": uname})
+        result = self._col.delete_one({"username": uname})
+        return result.deleted_count > 0
+
     def has_any_admin(self) -> bool:
         return self._col.count_documents({"role": "admin"}) > 0
 
