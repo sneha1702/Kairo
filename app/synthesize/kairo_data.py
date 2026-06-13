@@ -532,7 +532,7 @@ def _build_events(dune_context: dict, has_narrative: bool = True) -> list[dict]:
                 "title": f"{_fmt_usd(usd).lstrip('+')} bridged via {bridge} — {direction}",
                 "impact": signal or "Capital rotating between chains — a signal of shifting ecosystem allocation.",
                 "assets": [],
-                "when": "recently",
+                "when": _time_ago(best.get("ingested_at") or best.get("time_bucket")),
             })
     except Exception as exc:
         logger.warning("_build_events bridge error: %s", exc)
