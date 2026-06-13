@@ -725,4 +725,4 @@ function NarrativeTracker({ treatment, activeId, onSelect }) {
   );
 }
 
-Object.assign(window, { NarrativeTracker });
+Object.assign(window, { NarrativeTracker, PhaseChip, SmartIntentBadge });
