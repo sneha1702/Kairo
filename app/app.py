@@ -617,9 +617,6 @@ if _Cfg.INGESTION_PROVIDER == "dune":
 else:
     from app.ingestion.defillama_pipeline import build_defillama_pipeline as _build_pipeline
 
-es_manager, narrative_engine, tracker = init_services()
-
-
 # ---------------------------------------------------------------------------
 # Fragment: entire admin panel.
 # Wrapping everything in ONE fragment means no interaction inside the admin
