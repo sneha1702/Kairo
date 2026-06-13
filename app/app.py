@@ -1365,6 +1365,14 @@ def run() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+    # ── Auth gate ─────────────────────────────────────────────────────────────
+    mgr = _get_user_manager()
+    current_user = st.session_state.get("_kairo_user")
+    if not current_user:
+        _render_login_page(mgr)  # calls st.stop() — nothing below runs
+    is_admin = current_user.get("role") == "admin"
+
     # ── User header + logout ──────────────────────────────────────────────────
     _render_user_header(current_user)
     logout_col, _ = st.columns([1, 8])
