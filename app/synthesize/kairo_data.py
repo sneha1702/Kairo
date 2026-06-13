@@ -513,7 +513,7 @@ def _build_events(dune_context: dict, has_narrative: bool = True) -> list[dict]:
                     "Whale-scale on-chain movement suggests deliberate positioning."
                 ),
                 "assets": [symbol] if symbol else [],
-                "when": "recently",
+                "when": _time_ago(best.get("ingested_at") or best.get("block_time")),
             })
     except Exception as exc:
         logger.warning("_build_events whale error: %s", exc)
