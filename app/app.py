@@ -304,6 +304,34 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     }
     @media (max-width: 520px) {
       .kairo-navitems button span:last-child { }
+    }
+
+    /* ── Loading screen (replaced by React once mounted) ── */
+    .kairo-loading {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 18px;
+      background: var(--paper);
+      font-family: var(--font-sans);
+    }
+    .kairo-loading-logo {
+      display: flex; align-items: center; gap: 11px; margin-bottom: 4px;
+    }
+    .kairo-loading-dot {
+      width: 30px; height: 30px; border-radius: 9px;
+      background: var(--ink); display: grid; place-items: center;
+    }
+    .kairo-loading-dot-inner {
+      width: 13px; height: 13px; border-radius: 99px;
+      background: var(--accent);
+      animation: kairo-pulse 1.5s ease-in-out infinite;
+    }
+    .kairo-loading-text {
+      font-size: 14.5px; color: var(--ink-3); letter-spacing: 0.01em;
+    }
+    @keyframes kairo-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.78); }
     }"""
 
     # ── JSX files (read at call-time so they're always current) ─────────────
