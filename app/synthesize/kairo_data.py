@@ -289,8 +289,9 @@ def build_kairo_data(
             "statuses": STATUSES,
             "tracker": tracker_data,
             "trackers": trackers,
-            "narratives": narratives,
-            "history": history,
+            "narratives":          narratives,
+            "archived_narratives": archived_narratives,
+            "history":             history,
             "markets": markets,
         }
 
