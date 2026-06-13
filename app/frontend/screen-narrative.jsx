@@ -134,12 +134,11 @@ function NarrativeRail({ onDrill }) {
 
   return (
     <div>
-      <CardLabel icon="narr">
-        Live narratives Kairo is tracking
-        <span style={{ marginLeft: 8, color: "var(--ink-4)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
-          {K.narratives.length}
+      <CardLabel icon="narr" right={
+        <span style={{ color: "var(--ink-4)", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600 }}>
+          {K.narratives.length} active
         </span>
-      </CardLabel>
+      }>Live narratives Kairo is tracking</CardLabel>
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap)" }}>
         {K.narratives.map(n => (
           <div key={n.id} className="card" style={{ padding: "22px 26px" }}>
