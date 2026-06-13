@@ -99,7 +99,7 @@ function Sidebar({ view, setView }) {
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [view, setView] = useState(() => {
-    return localStorage.getItem("kairo-view") || "today";
+    return window.KAIRO?.config?.initial_view || "today";
   });
   const [activeNarr, setActiveNarr] = useState(() => {
     const first = window.KAIRO && window.KAIRO.narratives && window.KAIRO.narratives[0];
