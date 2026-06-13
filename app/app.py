@@ -1365,8 +1365,23 @@ def run() -> None:
     )
 
     # Handle actions triggered by the React iframe via query params
+    def _preserve_session_token():
+        """Clear action params but keep auto_session so remember-me persists in URL."""
+        _tok = st.query_params.get("auto_session", "")
+        st.query_params.clear()
+        if _tok:
+            st.query_params["auto_session"] = _tok
+
     _qp = st.query_params.get("kairo_action", "")
     if _qp == "logout":
+        _tok = st.session_state.pop("_kairo_session_token", None)
+        if _tok:
+            try:
+                _mgr_l = _get_user_manager()
+                if _mgr_l:
+                    _mgr_l.invalidate_session_token(_tok)
+            except Exception:
+                pass
         st.session_state.pop("_kairo_user", None)
         st.query_params.clear()
         st.rerun()
@@ -1385,6 +1400,44 @@ def run() -> None:
                         st.session_state["_kairo_user"] = _refreshed
             except Exception as _exc:
                 logger.warning("save-profile failed: %s", _exc)
+        st.session_state["_kairo_init_view"] = "profile"
+        st.session_state["_kairo_toast"] = "Profile saved!"
+        _preserve_session_token()
+        st.rerun()
+    elif _qp == "change-password":
+        _pw_raw = st.query_params.get("pw_data", "")
+        if _pw_raw and st.session_state.get("_kairo_user"):
+            try:
+                import json as _json
+                _pw_data = _json.loads(_pw_raw)
+                _mgr_pw = _get_user_manager()
+                if _mgr_pw:
+                    _uname = st.session_state["_kairo_user"]["username"]
+                    _ok = _mgr_pw.change_password(
+                        _uname, _pw_data.get("old", ""), _pw_data.get("new", "")
+                    )
+                    st.session_state["_kairo_pw_result"] = "ok" if _ok else "wrong_password"
+            except Exception as _exc:
+                logger.warning("change-password failed: %s", _exc)
+                st.session_state["_kairo_pw_result"] = "error"
+        st.session_state["_kairo_init_view"] = "profile"
+        _preserve_session_token()
+        st.rerun()
+    elif _qp == "delete-account":
+        _confirm = st.query_params.get("confirm_user", "")
+        if st.session_state.get("_kairo_user"):
+            _uname = st.session_state["_kairo_user"]["username"]
+            if _confirm == _uname:
+                _mgr_del = _get_user_manager()
+                if _mgr_del:
+                    _mgr_del.delete_user(_uname)
+                _tok = st.session_state.pop("_kairo_session_token", None)
+                if _tok and _mgr_del:
+                    try:
+                        _mgr_del.invalidate_session_token(_tok)
+                    except Exception:
+                        pass
+                st.session_state.pop("_kairo_user", None)
         st.query_params.clear()
         st.rerun()
 
