@@ -601,7 +601,14 @@ def _build_trend_context(top: dict, dune_context: dict, has_narrative: bool = Tr
         }
 
 
-def _build_watch(dune_context: dict, top: dict, all_narratives: list[dict]) -> dict:
+def _build_watch(dune_context: dict, top: dict, all_narratives: list[dict], has_narrative: bool = True) -> dict:
+    if not has_narrative:
+        return {
+            "title": "No signal yet",
+            "reason": "Run detection to surface developing narratives from live on-chain data.",
+            "status": "emerging",
+            "assets": [],
+        }
     try:
         volume_spikes = dune_context.get("volume_spikes") or []
         if volume_spikes:
