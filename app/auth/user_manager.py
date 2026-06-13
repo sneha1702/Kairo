@@ -46,6 +46,9 @@ class UserManager:
         self._client = MongoClient(mongo_uri, tlsCAFile=ca)
         self._col = self._client[mongo_db][self.COLLECTION]
         self._col.create_index([("username", ASCENDING)], unique=True)
+        self._sessions_col = self._client[mongo_db]["kairo_sessions"]
+        self._sessions_col.create_index([("token", ASCENDING)], unique=True)
+        self._sessions_col.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
 
     @staticmethod
     def _hash(password: str, salt: str) -> str:
