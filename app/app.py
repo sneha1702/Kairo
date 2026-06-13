@@ -1562,13 +1562,8 @@ def run() -> None:
         _render_login_page(mgr)  # calls st.stop() — nothing below runs
     is_admin = current_user.get("role") == "admin"
 
-    # ── User header + logout ──────────────────────────────────────────────────
+    # ── Slim user context bar ────────────────────────────────────────────────
     _render_user_header(current_user)
-    logout_col, _ = st.columns([1, 8])
-    with logout_col:
-        if st.button("Sign out", key="btn_logout"):
-            st.session_state.pop("_kairo_user", None)
-            st.rerun()
 
     # ── Tab layout ───────────────────────────────────────────────────────────
     if is_admin:
