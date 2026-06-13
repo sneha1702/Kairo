@@ -50,7 +50,8 @@
       "Bash(gcloud run deploy kairo-app *)",
       "Bash(/Users/snehaparihar/KairoAgent/.venv/bin/python -c \"import pymongo; print\\(pymongo.__version__\\)\")",
       "Bash(gcloud run *)",
-      "Bash(awk 'NR==1{start=$0} /22:27|22:28|22:29|22:30/{print}')"
+      "Bash(awk 'NR==1{start=$0} /22:27|22:28|22:29|22:30/{print}')",
+      "Bash(poetry lock *)"
     ]
   }
 }
