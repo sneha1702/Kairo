@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import pymongo
+from pymongo.server_api import ServerApi
 import requests
 from bs4 import BeautifulSoup
 from config.config import mongo_tls_ca_file
