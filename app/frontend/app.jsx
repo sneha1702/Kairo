@@ -80,7 +80,8 @@ function Sidebar({ view, setView }) {
               boxShadow: active ? "var(--shadow-soft)" : "none",
               border: active ? "1px solid var(--hairline)" : "1px solid transparent",
               fontSize: 15, fontWeight: 600, transition: "color 0.15s, background 0.15s",
-              marginTop: isLogout ? "auto" : undefined,
+              marginTop: isLogout ? 8 : undefined,
+              borderTop: isLogout ? "1px solid var(--hairline)" : undefined,
             }}
             onMouseOver={e => { if (isLogout) e.currentTarget.style.color = "var(--ink-2)"; }}
             onMouseOut={e => { if (isLogout) e.currentTarget.style.color = "var(--ink-4)"; }}
