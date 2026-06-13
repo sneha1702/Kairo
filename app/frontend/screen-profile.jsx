@@ -4,7 +4,7 @@
 const { useState } = React;
 
 function ProfileScreen() {
-  const user = window.KAIRO?.user || {};
+  const user = window.KAIRO?.auth_user || {};
   const filled = user.profile_filled || 0;
   const total  = user.profile_total  || 6;
   const pct    = total > 0 ? Math.round((filled / total) * 100) : 0;
