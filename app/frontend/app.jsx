@@ -47,6 +47,126 @@ function Logo() {
   );
 }
 
+function ProfileWidget({ setView }) {
+  const user = window.KAIRO?.user || {};
+  const filled = user.profile_filled || 0;
+  const total  = user.profile_total  || 6;
+  const isComplete = filled >= total;
+
+  const initials = (() => {
+    const f = (user.first_name || "").trim();
+    const l = (user.last_name  || "").trim();
+    if (f && l) return (f[0] + l[0]).toUpperCase();
+    if (f) return f.slice(0, 2).toUpperCase();
+    return (user.username || "?").slice(0, 2).toUpperCase();
+  })();
+
+  const displayName = [user.first_name, user.last_name].filter(Boolean).join(" ")
+    || user.username || "You";
+
+  const AVATAR_COLORS = [
+    "oklch(0.64 0.124 42)", "oklch(0.61 0.072 150)",
+    "oklch(0.59 0.090 252)", "oklch(0.62 0.090 300)",
+  ];
+  const avatarBg = AVATAR_COLORS[(user.username || "").charCodeAt(0) % AVATAR_COLORS.length] || "var(--accent)";
+
+  function handleSignOut(e) {
+    e.stopPropagation();
+    try {
+      window.parent.postMessage({ type: "kairo-action", action: "logout" }, "*");
+    } catch (_) {
+      try {
+        const url = new URL(window.top.location.href);
+        url.searchParams.set("kairo_action", "logout");
+        window.top.location.href = url.toString();
+      } catch (__) {}
+    }
+  }
+
+  return (
+    <div style={{
+      borderRadius: 14, background: "var(--surface)",
+      border: "1px solid var(--hairline)", overflow: "hidden",
+    }}>
+      {/* Avatar + name row — clicks to open profile screen */}
+      <div
+        onClick={() => setView("profile")}
+        style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "12px 13px", cursor: "pointer",
+          transition: "background 0.12s",
+        }}
+        onMouseOver={e => e.currentTarget.style.background = "var(--surface-2)"}
+        onMouseOut={e => e.currentTarget.style.background = "transparent"}
+      >
+        <div style={{
+          width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+          background: avatarBg, color: "oklch(0.98 0.004 80)",
+          display: "grid", placeItems: "center",
+          fontSize: 12.5, fontWeight: 800, letterSpacing: "-0.01em",
+        }}>{initials}</div>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{
+            fontSize: 13.5, fontWeight: 700, color: "var(--ink)",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>{displayName}</div>
+          <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 1 }}>
+            {user.role === "admin" ? "Admin" : "Member"}
+          </div>
+        </div>
+        <Icon name="arrowR" size={14} stroke={2} style={{ color: "var(--ink-4)", flexShrink: 0 }} />
+      </div>
+
+      {/* Plus CTA if profile incomplete */}
+      {!isComplete && (
+        <div
+          onClick={() => setView("profile")}
+          style={{
+            margin: "0 10px 8px", padding: "7px 10px",
+            background: "var(--accent-soft)",
+            borderRadius: 9, cursor: "pointer",
+            fontSize: 11.5, fontWeight: 600, color: "var(--accent-ink)",
+            lineHeight: 1.4,
+          }}
+        >
+          ✦ Fill profile details → 1 month free Plus
+          <div style={{
+            marginTop: 5, height: 4,
+            background: "color-mix(in oklch, var(--accent) 20%, transparent)",
+            borderRadius: 99, overflow: "hidden",
+          }}>
+            <div style={{
+              height: "100%", borderRadius: 99,
+              width: `${Math.round((filled / total) * 100)}%`,
+              background: "var(--accent)",
+            }} />
+          </div>
+        </div>
+      )}
+
+      {/* Sign out link */}
+      <button
+        onClick={handleSignOut}
+        style={{
+          width: "100%", padding: "8px 13px",
+          background: "transparent", border: "none",
+          borderTop: "1px solid var(--hairline)",
+          color: "var(--ink-4)", fontSize: 12, fontWeight: 600,
+          cursor: "pointer", textAlign: "left",
+          fontFamily: "var(--font-sans)",
+          transition: "color 0.12s",
+          display: "flex", alignItems: "center", gap: 7,
+        }}
+        onMouseOver={e => e.currentTarget.style.color = "var(--ink-2)"}
+        onMouseOut={e => e.currentTarget.style.color = "var(--ink-4)"}
+      >
+        <Icon name="arrowR" size={12} stroke={2} style={{ transform: "rotate(180deg)" }} />
+        Sign out
+      </button>
+    </div>
+  );
+}
+
 function Sidebar({ view, setView }) {
   return (
     <nav className="kairo-rail">
@@ -70,12 +190,7 @@ function Sidebar({ view, setView }) {
         })}
       </div>
       <div className="kairo-rail-foot">
-        <div style={{ padding: 16, borderRadius: 16, background: "var(--surface)", border: "1px solid var(--hairline)" }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>Understanding, not data.</div>
-          <p style={{ fontSize: 12.5, color: "var(--ink-3)", lineHeight: 1.5 }}>
-            Kairo explains the forces moving the assets you follow — no charts to decode.
-          </p>
-        </div>
+        <ProfileWidget setView={setView} />
       </div>
     </nav>
   );
