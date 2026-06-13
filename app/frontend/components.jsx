@@ -30,6 +30,7 @@ function Icon({ name, size = 18, stroke = 1.6, style }) {
     spark2: <><path d="M11 3 4 13h6l-1 8 8-11h-6l1-7Z" /></>,
     dot:    <circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none" />,
     markets:<><path d="M4 20V14M9 20V8M14 20V12M19 20V4" /></>,
+    user:   <><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" /></>,
   };
   return <svg {...p}>{paths[name] || null}</svg>;
 }
