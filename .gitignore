@@ -302,3 +302,4 @@ dev_feature_checklist.txt
 # Deployment guide — keep local only (contains infrastructure details)
 deploy/DEPLOYMENT.md
 bug_report.txt
+/bug_report.txt
