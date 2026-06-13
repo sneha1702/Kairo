@@ -1198,26 +1198,28 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     st.write("MongoDB Tracker:",  "✅ connected" if _tracker is not None else "❌ not connected")
 
 
-# ── Two-tab layout ────────────────────────────────────────────────────────────
-tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin"])
+def run() -> None:
+    """Entry point called by streamlit_app.py on every Streamlit rerun."""
+    # ── Two-tab layout ────────────────────────────────────────────────────────
+    tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin"])
 
-with tab_admin:
-    _admin_panel()
+    with tab_admin:
+        _admin_panel()
 
-# ── Kairo tab — iframe only ───────────────────────────────────────────────────
-with tab_kairo:
-    user_id        = st.session_state.get("admin_user_id", "default")
-    hours_lookback = int(st.session_state.get("detect_hours_input", _Cfg.DUNE_QUERY_WINDOW_HOURS))
+    # ── Kairo tab — iframe only ───────────────────────────────────────────────
+    with tab_kairo:
+        user_id        = st.session_state.get("admin_user_id", "default")
+        hours_lookback = int(st.session_state.get("detect_hours_input", _Cfg.DUNE_QUERY_WINDOW_HOURS))
 
-    kairo_data = _cached_build_data(user_id, hours_lookback)
-    kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
+        kairo_data = _cached_build_data(user_id, hours_lookback)
+        kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
 
-    try:
-        data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
-    except Exception as exc:
-        logger.exception("JSON serialisation failed: %s", exc)
-        from app.synthesize.kairo_data import _empty_data
-        data_json_str = json.dumps(_empty_data(), ensure_ascii=False)
+        try:
+            data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
+        except Exception as exc:
+            logger.exception("JSON serialisation failed: %s", exc)
+            from app.synthesize.kairo_data import _empty_data
+            data_json_str = json.dumps(_empty_data(), ensure_ascii=False)
 
-    html = build_kairo_html(data_json_str)
-    st.iframe(html, height=1400)
+        html = build_kairo_html(data_json_str)
+        st.iframe(html, height=1400)
