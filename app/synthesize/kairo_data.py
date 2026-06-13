@@ -272,8 +272,9 @@ def build_kairo_data(
         watch       = _build_watch(dune_context, top_narrative, mongo_narratives, has_narrative=has_narrative)
         tracker_data = _build_tracker(top_narrative, dune_context)
         trackers    = _build_all_trackers(mongo_narratives, dune_context, tracker_data)
-        narratives  = _build_narratives(mongo_narratives)
-        history     = _build_history(mongo_narratives)
+        narratives           = _build_narratives(mongo_narratives)
+        archived_narratives  = _build_archived_narratives(mongo_narratives)
+        history              = _build_history(mongo_narratives)
 
         markets = _build_markets()
 
