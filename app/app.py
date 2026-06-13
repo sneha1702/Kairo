@@ -1575,22 +1575,6 @@ def run() -> None:
         unsafe_allow_html=True,
     )
 
-    # Bridge: listen for postMessage from the React iframe and convert to query-param actions
-    st.markdown(
-        """<script>
-        window.addEventListener('message', function(e) {
-          if (e.data && e.data.type === 'kairo-action') {
-            try {
-              var url = new URL(window.location.href);
-              url.searchParams.set('kairo_action', e.data.action);
-              window.location.href = url.toString();
-            } catch(_) {}
-          }
-        }, false);
-        </script>""",
-        unsafe_allow_html=True,
-    )
-
     # ── Auth gate ─────────────────────────────────────────────────────────────
     mgr = _get_user_manager()
     current_user = st.session_state.get("_kairo_user")
@@ -1598,22 +1582,15 @@ def run() -> None:
         _render_login_page(mgr)  # calls st.stop() — nothing below runs
     is_admin = current_user.get("role") == "admin"
 
-    # ── Slim user context bar ────────────────────────────────────────────────
-    _render_user_header(current_user)
-
     # ── Tab layout ───────────────────────────────────────────────────────────
     if is_admin:
-        _tabs = st.tabs(["Kairo", "⚙ Admin", "Profile"])
-        tab_kairo, tab_admin, tab_profile = _tabs[0], _tabs[1], _tabs[2]
+        _tabs = st.tabs(["Kairo", "⚙ Admin"])
+        tab_kairo, tab_admin = _tabs[0], _tabs[1]
         with tab_admin:
             _admin_panel()
-        with tab_profile:
-            _profile_tab(current_user, mgr)
     else:
-        _tabs = st.tabs(["Kairo", "Profile"])
-        tab_kairo, tab_profile = _tabs[0], _tabs[1]
-        with tab_profile:
-            _profile_tab(current_user, mgr)
+        _tabs = st.tabs(["Kairo"])
+        tab_kairo = _tabs[0]
 
     # ── Kairo tab — iframe only ───────────────────────────────────────────────
     with tab_kairo:
