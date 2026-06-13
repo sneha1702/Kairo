@@ -522,8 +522,9 @@ def _render_login_page(mgr) -> None:
 
         with register_tab:
             with st.form("register_form", clear_on_submit=True):
-                new_user = st.text_input("Username", placeholder="choose a username", key="reg_user")
-                new_pass = st.text_input("Password", type="password", placeholder="at least 8 characters", key="reg_pass")
+                new_user  = st.text_input("Username", placeholder="choose a username", key="reg_user")
+                new_email = st.text_input("Email", placeholder="you@example.com (optional)", key="reg_email")
+                new_pass  = st.text_input("Password", type="password", placeholder="at least 8 characters", key="reg_pass")
                 new_pass2 = st.text_input("Confirm password", type="password", placeholder="repeat password", key="reg_pass2")
                 reg_submitted = st.form_submit_button("Create Account", use_container_width=True)
 
@@ -535,7 +536,7 @@ def _render_login_page(mgr) -> None:
                 elif new_pass != new_pass2:
                     st.error("Passwords do not match.")
                 else:
-                    ok = mgr.create_user(new_user, new_pass, role="user")
+                    ok = mgr.create_user(new_user, new_pass, role="user", email=new_email or "")
                     if ok:
                         st.success(f"Account created! You can now sign in as **{new_user.strip().lower()}**.")
                     else:
