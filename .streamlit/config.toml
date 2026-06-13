@@ -5,6 +5,12 @@ secondaryBackgroundColor = "#f0f2f6"
 textColor = "#31333F"
 font = "sans serif"
 
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+maxUploadSize = 50
+
 [client]
 showErrorDetails = false
 toolbarMode = "minimal"
