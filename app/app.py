@@ -573,6 +573,167 @@ if _Cfg.INGESTION_PROVIDER == "dune":
 else:
     from app.ingestion.defillama_pipeline import build_defillama_pipeline as _build_pipeline
 
+
+# ---------------------------------------------------------------------------
+# Profile helpers
+# ---------------------------------------------------------------------------
+
+def _get_initials(profile: dict) -> str:
+    first = (profile.get("first_name") or "").strip()
+    last  = (profile.get("last_name")  or "").strip()
+    if first and last:
+        return (first[0] + last[0]).upper()
+    if first:
+        return first[:2].upper()
+    return (profile.get("username") or "?")[:2].upper()
+
+
+@st.fragment
+def _profile_tab(user: dict, mgr) -> None:
+    from app.auth.user_manager import PROFESSIONS, TRADING_PROFILES, PURPOSES
+
+    username = user["username"]
+    profile  = mgr.get_profile(username) or user
+
+    filled = profile.get("profile_filled", 0)
+    total  = profile.get("profile_total", 6)
+
+    col, _ = st.columns([5, 2])
+    with col:
+        # ── Avatar + name ──────────────────────────────────────────────────
+        initials = _get_initials(profile)
+        display_name = " ".join(filter(None, [profile.get("first_name"), profile.get("last_name")])) or username
+        st.markdown(
+            f"""
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+              <div style="
+                width:58px;height:58px;border-radius:50%;
+                background:var(--accent);color:var(--paper);
+                display:grid;place-items:center;
+                font-size:23px;font-weight:800;flex-shrink:0;letter-spacing:-0.02em;
+              ">{initials}</div>
+              <div>
+                <div style="font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-0.02em">
+                  {display_name}
+                </div>
+                <div style="font-size:13px;color:var(--ink-3);margin-top:2px">
+                  @{username}
+                  <span style="
+                    margin-left:8px;background:{'var(--accent)' if profile['role']=='admin' else 'var(--ink-3)'};
+                    color:var(--paper);font-size:9px;font-weight:700;letter-spacing:0.08em;
+                    text-transform:uppercase;padding:2px 7px;border-radius:99px;
+                  ">{profile['role']}</span>
+                </div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # ── Plus membership progress ───────────────────────────────────────
+        if filled < total:
+            st.info(
+                f"✦ **Fill in all {total} profile details to get 1 month of free Plus membership!** "
+                f"({filled} of {total} completed)"
+            )
+            st.progress(int(filled / total * 100))
+        else:
+            st.success("🎉 Profile complete — your free Plus month is active!")
+
+        st.divider()
+
+        # ── Edit profile form ──────────────────────────────────────────────
+        st.subheader("Profile Details")
+        st.caption("All fields are optional.")
+
+        with st.form("profile_edit_form"):
+            fc1, fc2 = st.columns(2)
+            with fc1:
+                new_first = st.text_input("First name", value=profile.get("first_name", ""), placeholder="Jane")
+            with fc2:
+                new_last = st.text_input("Last name",  value=profile.get("last_name",  ""), placeholder="Smith")
+
+            new_email = st.text_input(
+                "Email",
+                value=profile.get("email", ""),
+                placeholder="you@example.com",
+            )
+
+            _prof_opts = [""] + PROFESSIONS
+            _prof_idx  = _prof_opts.index(profile.get("profession", "")) if profile.get("profession", "") in _prof_opts else 0
+            new_profession = st.selectbox(
+                "Profession",
+                options=_prof_opts,
+                index=_prof_idx,
+                format_func=lambda x: x or "Select your profession…",
+            )
+
+            _trade_opts = [""] + TRADING_PROFILES
+            _trade_idx  = _trade_opts.index(profile.get("trading_profile", "")) if profile.get("trading_profile", "") in _trade_opts else 0
+            new_trading = st.selectbox(
+                "Trading experience",
+                options=_trade_opts,
+                index=_trade_idx,
+                format_func=lambda x: x or "Select your experience level…",
+            )
+
+            _purp_opts = [""] + PURPOSES
+            _purp_idx  = _purp_opts.index(profile.get("purpose", "")) if profile.get("purpose", "") in _purp_opts else 0
+            new_purpose = st.selectbox(
+                "Why did you subscribe?",
+                options=_purp_opts,
+                index=_purp_idx,
+                format_func=lambda x: x or "Select your purpose…",
+            )
+
+            save_btn = st.form_submit_button("Save Profile", use_container_width=True)
+
+        if save_btn:
+            mgr.update_profile(username, {
+                "first_name":      new_first,
+                "last_name":       new_last,
+                "email":           new_email,
+                "profession":      new_profession,
+                "trading_profile": new_trading,
+                "purpose":         new_purpose,
+            })
+            refreshed = mgr.get_profile(username)
+            if refreshed:
+                st.session_state["_kairo_user"] = refreshed
+            st.success("Profile updated!")
+            st.rerun()
+
+        st.divider()
+
+        # ── Change password ────────────────────────────────────────────────
+        with st.expander("Change Password"):
+            with st.form("change_password_form"):
+                old_pw  = st.text_input("Current password",     type="password")
+                new_pw1 = st.text_input("New password",         type="password", help="At least 8 characters.")
+                new_pw2 = st.text_input("Confirm new password", type="password")
+                pw_btn  = st.form_submit_button("Update Password", use_container_width=True)
+
+            if pw_btn:
+                if not old_pw or not new_pw1:
+                    st.error("Please fill in all password fields.")
+                elif len(new_pw1) < 8:
+                    st.error("New password must be at least 8 characters.")
+                elif new_pw1 != new_pw2:
+                    st.error("Passwords do not match.")
+                else:
+                    ok = mgr.change_password(username, old_pw, new_pw1)
+                    if ok:
+                        st.success("Password changed successfully.")
+                    else:
+                        st.error("Current password is incorrect.")
+
+        st.divider()
+
+        # ── Sign out ───────────────────────────────────────────────────────
+        if st.button("Sign out", key="profile_tab_signout", use_container_width=True, type="secondary"):
+            st.session_state.pop("_kairo_user", None)
+            st.rerun()
+
 # ---------------------------------------------------------------------------
 # Fragment: entire admin panel.
 # Wrapping everything in ONE fragment means no interaction inside the admin
