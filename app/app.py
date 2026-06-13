@@ -1161,6 +1161,13 @@ def run() -> None:
         layout="wide",
         initial_sidebar_state="collapsed",
     )
+
+    # ── Auth gate ─────────────────────────────────────────────────────────────
+    mgr = _get_user_manager()
+    current_user = st.session_state.get("_kairo_user")
+    if not current_user:
+        _render_login_page(mgr)  # calls st.stop() — nothing below runs
+    is_admin = current_user.get("role") == "admin"
     st.markdown(
         """
         <style>
