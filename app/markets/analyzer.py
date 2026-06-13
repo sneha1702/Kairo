@@ -502,7 +502,7 @@ class MarketAnalyzer:
         return results
 
     def _save(self, results: list[dict]) -> None:
-        mc = pymongo.MongoClient(self.mongo_uri, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=8000)
+        mc = pymongo.MongoClient(self.mongo_uri, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=2000)
         mc[self.mongo_db][_COLLECTION_ANALYSIS].update_one(
             {"_id": _DOC_ID},
             {"$set": {"analyzed_at": datetime.now(timezone.utc), "projects": results}},
