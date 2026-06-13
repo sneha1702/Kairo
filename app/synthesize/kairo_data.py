@@ -239,12 +239,14 @@ def build_kairo_data(
 
         top_narrative: dict = mongo_narratives[0] if mongo_narratives else {}
 
+        has_narrative = bool(mongo_narratives)
+
         user        = _build_user(user_id, mongo_narratives, dune_context)
         story       = _build_story(top_narrative, dune_context)
         holdings    = _build_holdings(top_narrative, user["follows"])
-        events      = _build_events(dune_context)
-        trend_ctx   = _build_trend_context(top_narrative, dune_context)
-        watch       = _build_watch(dune_context, top_narrative, mongo_narratives)
+        events      = _build_events(dune_context, has_narrative=has_narrative)
+        trend_ctx   = _build_trend_context(top_narrative, dune_context, has_narrative=has_narrative)
+        watch       = _build_watch(dune_context, top_narrative, mongo_narratives, has_narrative=has_narrative)
         tracker_data = _build_tracker(top_narrative, dune_context)
         trackers    = _build_all_trackers(mongo_narratives, dune_context, tracker_data)
         narratives  = _build_narratives(mongo_narratives)
