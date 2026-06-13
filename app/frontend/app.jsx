@@ -11,6 +11,7 @@ const NAV = [
   { id: "history", label: "History",    icon: "history" },
   { id: "markets", label: "Markets",    icon: "markets" },
   { id: "config",  label: "Config",     icon: "watch" },
+  { id: "profile", label: "Profile",    icon: "user"   },
 ];
 
 /* accent palettes: hex swatch -> oklch var set */
