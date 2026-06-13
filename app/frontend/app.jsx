@@ -178,7 +178,7 @@ function App() {
 function kairoMount(attempts) {
   attempts = attempts || 0;
   const ready = window.MorningBrief && window.NarrativeTracker && window.NarrativeHistory
-    && window.ConfigScreen && window.CryptoMarkets
+    && window.ConfigScreen && window.CryptoMarkets && window.PolicyPulse
     && window.useTweaks && window.TweaksPanel && window.Icon && window.KAIRO;
   if (!ready) {
     if (attempts > 400) {
