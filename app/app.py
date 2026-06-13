@@ -1183,7 +1183,7 @@ def run() -> None:
           --accent-ink:  oklch(0.46  0.115 40);
           --font-sans:   "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
           --font-mono:   "IBM Plex Mono", ui-monospace, monospace;
-          --r-sm: 10px; --r-md: 16px; --r-lg: 22px;
+          --r-sm: 10px; --r-md: 16px; --r-lg: 22px; --r-xl: 28px;
           --shadow-card: 0 1px 2px oklch(0.5 0.02 60 / 0.05), 0 6px 22px oklch(0.5 0.02 60 / 0.06);
         }
 
