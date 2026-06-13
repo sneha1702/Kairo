@@ -127,6 +127,7 @@ function App() {
   else if (view === "narr") screen = <NarrativeTracker treatment={t.trackerTreatment} activeId={activeNarr} onSelect={setActiveNarr} />;
   else if (view === "history") screen = <NarrativeHistory />;
   else if (view === "markets") screen = <CryptoMarkets />;
+  else if (view === "policy") screen = PolicyPulse ? <PolicyPulse /> : <ConfigScreen />;
   else if (view === "profile") screen = ProfileScreen ? <ProfileScreen /> : <ConfigScreen />;
   else screen = <ConfigScreen />;
 
