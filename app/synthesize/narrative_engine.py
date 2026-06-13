@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 GEMINI_BACKOFF_BASE = 60   # seconds to wait on first 429
 GEMINI_MAX_RETRIES  = 5
 
-_PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts"
+_PROMPT_DIR     = Path(__file__).resolve().parents[1] / "prompts"
+_GENERATED_DIR  = Path(__file__).resolve().parents[1] / "app-generated"
 
 
 # ── .env loading (optional) ────────────────────────────────────────────────────
