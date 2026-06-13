@@ -248,10 +248,21 @@ function App() {
   else if (view === "profile") screen = ProfileScreen ? <ProfileScreen /> : <ConfigScreen />;
   else screen = <ConfigScreen />;
 
+  const username = (window.KAIRO?.user?.first_name || window.KAIRO?.user?.username || "").trim();
+
   return (
     <div className="kairo-app">
       <Sidebar view={view} setView={setView} />
-      <main className="kairo-main">
+      <main className="kairo-main" style={{ position: "relative" }}>
+        {username && (
+          <div style={{
+            position: "absolute", top: 18, right: 32,
+            fontSize: 13, fontWeight: 600, color: "var(--accent-ink)",
+            letterSpacing: "-0.01em",
+          }}>
+            Hey {username} <span style={{ color: "var(--ink-4)", fontWeight: 500 }}>(signed in)</span>
+          </div>
+        )}
         <div className="kairo-col" key={view}>{screen}</div>
       </main>
 
