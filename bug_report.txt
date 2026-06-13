@@ -158,4 +158,14 @@ Contact / Cluster Info
 
 
   project_id: 65e4b2cd6890d94133a153d3
-  
+  tckcafxe
+  cc33f572-1a5d-4176-8fa6-6f6f1795c328
+
+Then run these commands (or paste them into Claude here as ! commands so the output lands in this conversation):
+
+A. List current IP access list — verify what's there now:
+
+curl -s --user "$ATLAS_PUB:$ATLAS_PRIV" --digest \
+  -H "Accept: application/vnd.atlas.2023-02-01+json" \
+  "https://cloud.mongodb.com/api/atlas/v2/groups/$ATLAS_PROJECT_ID/accessList" \
+  | python3 -m json.tool
