@@ -193,11 +193,9 @@ function NarrativeHistory() {
   ({ Icon, ForceTag, Asset, StatusBadge, CardLabel, StrengthCurve,
      PhaseChip, SmartIntentBadge } = window);
 
-  const t = K.tracker;
-  const hasData = t && t.title && t.title !== "No narrative detected" && (t.day || 0) > 0;
   const hasArchived = (K.archived_narratives || []).length > 0;
 
-  if (!hasData && !hasArchived) {
+  if (!hasArchived) {
     return (
       <div className="screen-enter" style={{ display: "flex", flexDirection: "column", gap: "var(--gap)" }}>
         <header>
@@ -206,131 +204,19 @@ function NarrativeHistory() {
             <span className="eyebrow">Narrative history</span>
           </div>
           <h1 style={{ fontSize: "clamp(26px, 3.2vw, 34px)", fontWeight: 800, letterSpacing: "-0.025em" }}>
-            No history yet
+            Nothing here yet
           </h1>
           <p style={{ fontSize: 16, color: "var(--ink-2)", marginTop: 12, lineHeight: 1.6 }}>
-            Once narratives die out or weaken for two weeks, they'll appear here with
-            a timeline of when they moved to history.
+            Narratives that die out, reverse, or stay low-strength for more than two weeks will appear here with a timeline of when they faded.
           </p>
         </header>
       </div>
     );
   }
 
-  const episodes  = (t || {}).episodes || [];
-  const hasCurve  = t && t.curve && t.curve.length > 1;
-  const hasConclusion = t && (t.why_matters || t.implications);
-  const ageLabel  = hasData ? _ageLabel(t.day || 1, t.granularity) : "";
-
   return (
     <div className="screen-enter" style={{ display: "flex", flexDirection: "column", gap: "var(--gap)" }}>
-
-      {/* ── Retired narratives timeline (top) ─────────────────────── */}
-      {hasArchived && <ArchivedNarrativesSection />}
-
-      {/* ── Active narrative evolution (below) ───────────────────── */}
-      {hasData && (
-        <>
-          <header>
-            <div style={{ display: "flex", alignItems: "center", gap: 9, color: "var(--ink-3)", marginBottom: 12 }}>
-              <Icon name="history" size={18} stroke={1.8} />
-              <span className="eyebrow">Narrative evolution</span>
-            </div>
-            <h1 style={{ fontSize: "clamp(22px, 3vw, 32px)", fontWeight: 800,
-              letterSpacing: "-0.025em", lineHeight: 1.2 }}>{t.title}</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, flexWrap: "wrap" }}>
-              <StatusBadge status={t.status} />
-              <span style={{ fontSize: 14, color: "var(--ink-3)", fontWeight: 600 }}>
-                Active for {ageLabel}
-              </span>
-              <span className="mono" style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-2)" }}>
-                Strength {(t.strength || 0).toFixed(1)} / 10
-              </span>
-            </div>
-          </header>
-
-          {episodes.length > 0 && (
-            <article className="card" style={{ padding: "calc(var(--card-pad) + 4px)" }}>
-              <CardLabel icon="narr">How this narrative developed</CardLabel>
-              <p style={{ fontSize: 13.5, color: "var(--ink-3)", marginTop: -6, marginBottom: 22, lineHeight: 1.6 }}>
-                {t.granularity === 'week'
-                  ? (t.day <= 4
-                    ? "Each week this narrative has been active, from when it first appeared to now."
-                    : "Older weeks are rolled into a single summary. The most recent weeks are shown individually.")
-                  : (t.day <= 7
-                    ? "Each day this narrative has been active, from when it first appeared to now."
-                    : t.day <= 28
-                    ? "Older days are grouped into weekly summaries — recent activity shown individually."
-                    : "Older weeks are rolled into a single summary. The most recent activity is shown individually.")
-                }
-              </p>
-              {episodes.map((ep, i, arr) => (
-                <JourneyStep key={i} ep={ep} last={i === arr.length - 1} />
-              ))}
-            </article>
-          )}
-
-          {hasCurve && (
-            <article className="card" style={{ padding: "calc(var(--card-pad) + 4px)" }}>
-              <CardLabel
-                icon="history"
-                right={<span style={{ fontSize: 13, color: "var(--ink-3)" }}>{t.curve.length}-day arc</span>}
-              >
-                Signal strength over time
-              </CardLabel>
-              <div style={{ background: "var(--surface-2)", borderRadius: "var(--r-md)",
-                padding: "20px 18px 8px", marginTop: 4 }}>
-                <StrengthCurve data={t.curve} />
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-                  <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)" }}>Day 1</span>
-                  <span className="mono" style={{ fontSize: 12, color: "var(--ink-4)" }}>
-                    Today · {(t.strength || 0).toFixed(1)} / 10
-                  </span>
-                </div>
-              </div>
-            </article>
-          )}
-
-          {hasConclusion && (
-            <article className="card" style={{
-              padding: "calc(var(--card-pad) + 2px)",
-              background: "var(--ink)", borderColor: "var(--ink)", color: "var(--paper)",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14, opacity: 0.7 }}>
-                <Icon name="spark2" size={16} stroke={1.8} />
-                <span className="eyebrow" style={{ color: "var(--paper)", opacity: 0.8 }}>
-                  Where this narrative stands
-                </span>
-              </div>
-              <p style={{ fontSize: "clamp(15px, 1.9vw, 19px)", lineHeight: 1.65, fontWeight: 600,
-                color: "var(--paper)", maxWidth: "48ch", textWrap: "balance" }}>
-                {t.why_matters || t.implications}
-              </p>
-              {t.watch_for && (
-                <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.14)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
-                    textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>
-                    Watch for
-                  </div>
-                  <p style={{ fontSize: 14.5, color: "rgba(255,255,255,0.72)",
-                    lineHeight: 1.6, fontStyle: "italic", margin: 0 }}>{t.watch_for}</p>
-                </div>
-              )}
-              {t.risk_note && (
-                <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.10)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
-                    textTransform: "uppercase", color: "rgba(255,255,255,0.38)", marginBottom: 5 }}>
-                    Risk
-                  </div>
-                  <p style={{ fontSize: 14, color: "rgba(255,255,255,0.58)",
-                    lineHeight: 1.6, margin: 0 }}>{t.risk_note}</p>
-                </div>
-              )}
-            </article>
-          )}
-        </>
-      )}
-
+      <ArchivedNarrativesSection />
     </div>
   );
 }
