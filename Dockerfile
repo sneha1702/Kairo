@@ -18,6 +18,15 @@ RUN poetry config virtualenvs.create false \
 COPY patch_pymongo_ssl.py /tmp/patch_pymongo_ssl.py
 RUN python3 /tmp/patch_pymongo_ssl.py
 
+# Build a MongoDB-specific CA bundle:
+#   - Let's Encrypt ISRG Root X1 (Atlas historical CA)
+#   - Google Trust Services roots (Atlas migrated to GTS by June 2025)
+# Using a targeted bundle avoids ambiguity in certifi's full Mozilla store.
+RUN curl -fsSL https://letsencrypt.org/certs/isrgrootx1.pem -o /tmp/isrgrootx1.pem \
+    && curl -fsSL https://pki.goog/roots.pem -o /tmp/gts_roots.pem \
+    && cat /tmp/isrgrootx1.pem /tmp/gts_roots.pem > /app/mongodb_ca.pem \
+    && rm /tmp/isrgrootx1.pem /tmp/gts_roots.pem
+
 COPY app/ ./app/
 COPY config/ ./config/
 COPY .streamlit/ ./.streamlit/
