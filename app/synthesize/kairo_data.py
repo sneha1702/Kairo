@@ -460,7 +460,16 @@ def _build_holdings(top: dict, follows: list[str]) -> list[dict]:
         return []
 
 
-def _build_events(dune_context: dict) -> list[dict]:
+def _build_events(dune_context: dict, has_narrative: bool = True) -> list[dict]:
+    if not has_narrative:
+        return [{
+            "force": "smart-money",
+            "title": "No on-chain events yet",
+            "impact": "Run detection to load live events from Dune Analytics data.",
+            "assets": [],
+            "when": "—",
+        }]
+
     events: list[dict] = []
 
     # Event 1 — whale transactions (real wallet data)
