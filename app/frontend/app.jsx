@@ -129,7 +129,7 @@ function App() {
   else if (view === "profile") screen = ProfileScreen ? <ProfileScreen /> : <ConfigScreen />;
   else screen = <ConfigScreen />;
 
-  const username = (window.KAIRO?.user?.first_name || window.KAIRO?.user?.username || "").trim();
+  const username = (window.KAIRO?.auth_user?.first_name || window.KAIRO?.auth_user?.username || "").trim();
 
   return (
     <div className="kairo-app">
