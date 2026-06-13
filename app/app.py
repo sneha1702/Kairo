@@ -982,6 +982,215 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
 
 def run() -> None:
     """Entry point called by streamlit_app.py on every Streamlit rerun."""
+    st.set_page_config(
+        page_title="Kairo",
+        page_icon="🔮",
+        layout="wide",
+        initial_sidebar_state="collapsed",
+    )
+    st.markdown(
+        """
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+        /* ── Kairo design tokens (mirrors the React app) ── */
+        :root {
+          --paper:       oklch(0.985 0.006 80);
+          --surface:     oklch(0.995 0.004 85);
+          --surface-2:   oklch(0.965 0.008 80);
+          --hairline:    oklch(0.90  0.010 75);
+          --hairline-strong: oklch(0.84 0.012 70);
+          --ink:         oklch(0.27  0.012 60);
+          --ink-2:       oklch(0.42  0.012 60);
+          --ink-3:       oklch(0.58  0.012 65);
+          --ink-4:       oklch(0.70  0.010 70);
+          --accent:      oklch(0.64  0.124 42);
+          --accent-soft: oklch(0.92  0.045 50);
+          --accent-ink:  oklch(0.46  0.115 40);
+          --font-sans:   "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+          --font-mono:   "IBM Plex Mono", ui-monospace, monospace;
+          --r-sm: 10px; --r-md: 16px; --r-lg: 22px;
+          --shadow-card: 0 1px 2px oklch(0.5 0.02 60 / 0.05), 0 6px 22px oklch(0.5 0.02 60 / 0.06);
+        }
+
+        /* ── Chrome / chrome resets ── */
+        #MainMenu, header, footer { display: none !important; }
+        .stApp { padding: 0 !important; background: var(--paper) !important; }
+        .block-container { padding: 0 !important; max-width: 100% !important; }
+        div[data-testid="stVerticalBlock"] { gap: 0 !important; }
+        iframe { border: none !important; }
+
+        /* ── Global font ── */
+        .stApp, .stApp * {
+          font-family: var(--font-sans) !important;
+          -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Tabs ── */
+        .stTabs [data-baseweb="tab-list"] {
+          background: var(--surface) !important;
+          border-bottom: 1px solid var(--hairline) !important;
+          gap: 0 !important;
+          padding: 0 28px !important;
+        }
+        .stTabs [data-baseweb="tab"] {
+          font-weight: 600 !important;
+          font-size: 14px !important;
+          color: var(--ink-3) !important;
+          border-bottom: 2px solid transparent !important;
+          padding: 14px 18px !important;
+          background: transparent !important;
+        }
+        .stTabs [aria-selected="true"] {
+          color: var(--ink) !important;
+          border-bottom-color: var(--accent) !important;
+        }
+        .stTabs [data-baseweb="tab-panel"] { padding: 0 !important; }
+
+        /* ── Headings ── */
+        [data-testid="stHeadingWithActionElements"] h2,
+        [data-testid="stHeadingWithActionElements"] h3,
+        .stMarkdown h2, .stMarkdown h3 {
+          color: var(--ink) !important;
+          font-weight: 700 !important;
+          letter-spacing: -0.015em !important;
+          margin-top: 4px !important;
+        }
+
+        /* ── Divider ── */
+        hr { border-color: var(--hairline) !important; margin: 20px 0 !important; }
+
+        /* ── Widget labels ── */
+        [data-testid="stWidgetLabel"] p,
+        .stSelectbox label, .stSlider label, .stTextInput label,
+        .stCheckbox label, .stRadio label {
+          font-weight: 600 !important;
+          color: var(--ink-2) !important;
+          font-size: 13.5px !important;
+          letter-spacing: 0 !important;
+        }
+
+        /* ── Text input ── */
+        .stTextInput input {
+          background: var(--surface) !important;
+          border: 1px solid var(--hairline-strong) !important;
+          border-radius: var(--r-sm) !important;
+          color: var(--ink) !important;
+          font-size: 15px !important;
+          padding: 10px 14px !important;
+          box-shadow: none !important;
+        }
+        .stTextInput input:focus {
+          border-color: var(--accent) !important;
+          box-shadow: 0 0 0 3px var(--accent-soft) !important;
+        }
+
+        /* ── Selectbox ── */
+        [data-baseweb="select"] > div:first-child {
+          background: var(--surface) !important;
+          border: 1px solid var(--hairline-strong) !important;
+          border-radius: var(--r-sm) !important;
+          color: var(--ink) !important;
+          font-size: 15px !important;
+        }
+        [data-baseweb="popover"] [data-baseweb="menu"] {
+          background: var(--surface) !important;
+          border: 1px solid var(--hairline) !important;
+          border-radius: var(--r-md) !important;
+          box-shadow: var(--shadow-card) !important;
+        }
+        [data-baseweb="menu"] li {
+          color: var(--ink-2) !important;
+          font-size: 14.5px !important;
+        }
+        [data-baseweb="menu"] li:hover {
+          background: var(--surface-2) !important;
+        }
+
+        /* ── Slider ── */
+        [data-testid="stSlider"] [data-testid="stThumbValue"] {
+          color: var(--ink) !important;
+          font-weight: 700 !important;
+          font-family: var(--font-mono) !important;
+        }
+        [data-testid="stSlider"] [role="slider"] {
+          background: var(--accent) !important;
+          border-color: var(--accent) !important;
+        }
+        [data-testid="stSlider"] [data-testid="stSliderTrack"] > div:first-child {
+          background: var(--accent) !important;
+        }
+
+        /* ── Checkbox ── */
+        .stCheckbox [data-testid="stCheckbox"] > label {
+          color: var(--ink-2) !important;
+        }
+        .stCheckbox [data-testid="stCheckbox"] input:checked + div {
+          background: var(--accent) !important;
+          border-color: var(--accent) !important;
+        }
+
+        /* ── Buttons ── */
+        .stButton > button {
+          background: var(--accent) !important;
+          color: var(--paper) !important;
+          border: none !important;
+          border-radius: var(--r-sm) !important;
+          font-weight: 700 !important;
+          font-size: 14.5px !important;
+          padding: 11px 24px !important;
+          letter-spacing: -0.01em !important;
+          transition: background 0.15s !important;
+          box-shadow: none !important;
+        }
+        .stButton > button:hover {
+          background: var(--accent-ink) !important;
+          color: var(--paper) !important;
+        }
+        .stButton > button:focus {
+          box-shadow: 0 0 0 3px var(--accent-soft) !important;
+          outline: none !important;
+        }
+
+        /* ── Caption ── */
+        .stCaptionContainer p,
+        [data-testid="stCaptionContainer"] p {
+          color: var(--ink-3) !important;
+          font-size: 13px !important;
+        }
+
+        /* ── Alerts ── */
+        [data-testid="stAlert"] {
+          border-radius: var(--r-md) !important;
+          font-size: 14.5px !important;
+        }
+
+        /* ── Progress bar ── */
+        [data-testid="stProgressBar"] > div {
+          background: var(--accent-soft) !important;
+          border-radius: 99px !important;
+        }
+        [data-testid="stProgressBar"] > div > div {
+          background: var(--accent) !important;
+          border-radius: 99px !important;
+        }
+        [data-testid="stProgressBar"] + div p {
+          color: var(--ink-3) !important;
+          font-size: 13px !important;
+        }
+
+        /* ── Write / text ── */
+        .stMarkdown p, [data-testid="stText"] {
+          color: var(--ink-2) !important;
+          font-size: 14.5px !important;
+        }
+
+        /* ── Running indicator — keep visible but style it ── */
+        [data-testid="stStatusWidget"] { opacity: 0.7 !important; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
     # ── Two-tab layout ────────────────────────────────────────────────────────
     tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin"])
 
