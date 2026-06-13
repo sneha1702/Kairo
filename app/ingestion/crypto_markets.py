@@ -252,7 +252,13 @@ class CryptoMarketsUpdater:
         """Return the stored top20 config document, or None if absent."""
         try:
             from config.config import mongo_tls_ca_file
-            client = pymongo.MongoClient(mongo_uri, tlsCAFile=mongo_tls_ca_file(), serverSelectionTimeoutMS=2000)
+            client = pymongo.MongoClient(
+                mongo_uri,
+                tlsCAFile=mongo_tls_ca_file(),
+                server_api=ServerApi("1"),
+                connect=False,
+                serverSelectionTimeoutMS=5000,
+            )
             doc = client[mongo_db][COLLECTION].find_one({"_id": DOC_ID})
             client.close()
             return doc
