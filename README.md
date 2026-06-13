@@ -583,7 +583,10 @@ python3 -m py_compile scripts/purge.py
  # activate python env
  python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+poetry env use /opt/homebrew/bin/python3.10
+poetry install
+
+
 
 3. Run Purge
   poetry run python3 app/scripts/purge.py --all             # purge both ES and MongoDB
@@ -596,3 +599,7 @@ pip install -r requirements.txt
 poetry run python3 app/ingestion/dune_pipeline.py
 5. Run synthsize
 poetry  run python3 app/synthesize/signal_transformer.py --hours 48
+
+6. Launch app
+
+poetry run streamlit run app/app.py
