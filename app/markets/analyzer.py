@@ -515,7 +515,7 @@ class MarketAnalyzer:
     def load_from_mongo(mongo_uri: str, mongo_db: str = "kairo") -> Optional[dict]:
         """Return the analysis document from MongoDB, or None."""
         try:
-            mc  = pymongo.MongoClient(mongo_uri, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=5000)
+            mc  = pymongo.MongoClient(mongo_uri, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=2000)
             doc = mc[mongo_db][_COLLECTION_ANALYSIS].find_one({"_id": _DOC_ID})
             mc.close()
             return doc
