@@ -49,9 +49,10 @@ def make_narrative_id(narrative: Dict[str, Any]) -> str:
 class NarrativeTracker:
     def __init__(self, mongo_uri: str, db_name: str = "kairo"):
         logger.info("[MONGO] Connecting to MongoDB, db=%s", db_name)
+        from config.config import mongo_tls_ca_file
         self.client = MongoClient(
             mongo_uri,
-            tlsCAFile=certifi.where(),
+            tlsCAFile=mongo_tls_ca_file(),
             serverSelectionTimeoutMS=2000,
             connectTimeoutMS=2000,
             socketTimeoutMS=5000,
