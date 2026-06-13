@@ -14,10 +14,6 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-root --no-interaction --no-ansi
 
-# Patch pymongo to cap TLS at 1.2 — Atlas M0 rejects TLS 1.3 from Cloud Run.
-COPY patch_pymongo_ssl.py /tmp/patch_pymongo_ssl.py
-RUN python3 /tmp/patch_pymongo_ssl.py
-
 # Build a MongoDB-specific CA bundle:
 #   - Let's Encrypt ISRG Root X1 (Atlas historical CA)
 #   - Google Trust Services roots (Atlas migrated to GTS by June 2025)
