@@ -344,15 +344,16 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             return f"/* ERROR reading {path}: {exc} */"
 
     base = str(Path(__file__).resolve().parent / "frontend")
-    tweaks_panel_jsx     = _read(f"{base}/tweaks-panel.jsx")
-    components_jsx       = _read(f"{base}/components.jsx")
-    screen_morning_jsx   = _read(f"{base}/screen-morning.jsx")
-    screen_narrative_jsx = _read(f"{base}/screen-narrative.jsx")
-    screen_history_jsx   = _read(f"{base}/screen-history.jsx")
-    screen_config_jsx    = _read(f"{base}/screen-config.jsx")
-    screen_markets_jsx   = _read(f"{base}/screen-markets.jsx")
-    screen_profile_jsx   = _read(f"{base}/screen-profile.jsx")
-    app_jsx              = _read(f"{base}/app.jsx")
+    tweaks_panel_jsx       = _read(f"{base}/tweaks-panel.jsx")
+    components_jsx         = _read(f"{base}/components.jsx")
+    screen_morning_jsx     = _read(f"{base}/screen-morning.jsx")
+    screen_narrative_jsx   = _read(f"{base}/screen-narrative.jsx")
+    screen_history_jsx     = _read(f"{base}/screen-history.jsx")
+    screen_config_jsx      = _read(f"{base}/screen-config.jsx")
+    screen_markets_jsx     = _read(f"{base}/screen-markets.jsx")
+    screen_profile_jsx     = _read(f"{base}/screen-profile.jsx")
+    screen_regulations_jsx = _read(f"{base}/screen-regulations.jsx")
+    app_jsx                = _read(f"{base}/app.jsx")
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
