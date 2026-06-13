@@ -1535,6 +1535,22 @@ def run() -> None:
         unsafe_allow_html=True,
     )
 
+    # Bridge: listen for postMessage from the React iframe and convert to query-param actions
+    st.markdown(
+        """<script>
+        window.addEventListener('message', function(e) {
+          if (e.data && e.data.type === 'kairo-action') {
+            try {
+              var url = new URL(window.location.href);
+              url.searchParams.set('kairo_action', e.data.action);
+              window.location.href = url.toString();
+            } catch(_) {}
+          }
+        }, false);
+        </script>""",
+        unsafe_allow_html=True,
+    )
+
     # ── Auth gate ─────────────────────────────────────────────────────────────
     mgr = _get_user_manager()
     current_user = st.session_state.get("_kairo_user")
