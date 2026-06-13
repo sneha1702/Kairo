@@ -394,6 +394,179 @@ class _KairoEncoder(json.JSONEncoder):
 
 from config.config import Config as _Cfg
 
+# ---------------------------------------------------------------------------
+# Auth — user manager (cached for the session)
+# ---------------------------------------------------------------------------
+
+@st.cache_resource
+def _get_user_manager():
+    """Return a UserManager connected to MongoDB, or None if MONGO_URI not set."""
+    import os as _os
+    def _secret(key: str, default: str = "") -> str:
+        try:
+            return st.secrets.get(key, _os.getenv(key, getattr(_Cfg, key, default) or default))
+        except Exception:
+            return _os.getenv(key, getattr(_Cfg, key, default) or default)
+
+    mongo_uri = _secret("MONGO_URI")
+    mongo_db  = _secret("MONGO_DB") or "kairo"
+    if not mongo_uri:
+        return None
+    try:
+        from app.auth.user_manager import UserManager
+        mgr = UserManager(mongo_uri, mongo_db)
+        created = mgr.ensure_default_admin()
+        if created:
+            logger.info("Default admin account created (admin / kairo-admin). Change this password!")
+        return mgr
+    except Exception as exc:
+        logger.warning("UserManager init failed: %s", exc)
+        return None
+
+
+_LOGIN_CSS = """
+<style>
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+}
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
+  padding: 44px 40px 40px;
+}
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 32px;
+}
+.auth-logo-dot {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: var(--ink);
+  display: grid;
+  place-items: center;
+}
+.auth-logo-inner {
+  width: 13px; height: 13px;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 30%, transparent);
+}
+.auth-logo-text {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.auth-tagline {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-top: -26px;
+  margin-bottom: 32px;
+}
+</style>
+"""
+
+
+def _render_login_page(mgr) -> None:
+    """Show the Kairo login/register gate. Blocks the rest of the app via st.stop()."""
+    st.markdown(_LOGIN_CSS, unsafe_allow_html=True)
+
+    _, col, _ = st.columns([1, 1.4, 1])
+    with col:
+        st.markdown("""
+        <div class="auth-logo">
+          <div class="auth-logo-dot"><div class="auth-logo-inner"></div></div>
+          <span class="auth-logo-text">Kairo</span>
+        </div>
+        <p class="auth-tagline">Understanding, not data.</p>
+        """, unsafe_allow_html=True)
+
+        if mgr is None:
+            st.error("MongoDB not configured — authentication unavailable. Set MONGO_URI to enable login.")
+            st.stop()
+
+        sign_in_tab, register_tab = st.tabs(["Sign In", "Create Account"])
+
+        with sign_in_tab:
+            with st.form("login_form", clear_on_submit=False):
+                username = st.text_input("Username", placeholder="your username")
+                password = st.text_input("Password", type="password", placeholder="••••••••")
+                submitted = st.form_submit_button("Sign In", use_container_width=True)
+
+            if submitted:
+                if not username or not password:
+                    st.error("Please enter both username and password.")
+                else:
+                    user = mgr.authenticate(username, password)
+                    if user:
+                        st.session_state["_kairo_user"] = user
+                        st.rerun()
+                    else:
+                        st.error("Invalid username or password.")
+
+            st.markdown(
+                '<p style="font-size:12.5px;color:var(--ink-4);margin-top:8px;text-align:center">'
+                'Default admin: <code>admin</code> / <code>kairo-admin</code></p>',
+                unsafe_allow_html=True,
+            )
+
+        with register_tab:
+            with st.form("register_form", clear_on_submit=True):
+                new_user = st.text_input("Username", placeholder="choose a username", key="reg_user")
+                new_pass = st.text_input("Password", type="password", placeholder="at least 8 characters", key="reg_pass")
+                new_pass2 = st.text_input("Confirm password", type="password", placeholder="repeat password", key="reg_pass2")
+                reg_submitted = st.form_submit_button("Create Account", use_container_width=True)
+
+            if reg_submitted:
+                if not new_user or not new_pass:
+                    st.error("Username and password are required.")
+                elif len(new_pass) < 8:
+                    st.error("Password must be at least 8 characters.")
+                elif new_pass != new_pass2:
+                    st.error("Passwords do not match.")
+                else:
+                    ok = mgr.create_user(new_user, new_pass, role="user")
+                    if ok:
+                        st.success(f"Account created! You can now sign in as **{new_user.strip().lower()}**.")
+                    else:
+                        st.error(f"Username **{new_user.strip().lower()}** is already taken.")
+
+    st.stop()
+
+
+def _render_user_header(user: dict) -> None:
+    """Render a slim logged-in banner at the top of the page."""
+    role_badge_color = "var(--accent)" if user["role"] == "admin" else "var(--ink-3)"
+    st.markdown(
+        f"""
+        <div style="
+          display:flex; align-items:center; gap:10px;
+          padding:8px 24px; background:var(--surface);
+          border-bottom:1px solid var(--hairline);
+          font-family:var(--font-sans); font-size:13px; color:var(--ink-3);
+        ">
+          <span>Signed in as <strong style="color:var(--ink)">{user["username"]}</strong></span>
+          <span style="
+            background:{role_badge_color}; color:var(--paper);
+            font-size:10px; font-weight:700; letter-spacing:0.06em;
+            text-transform:uppercase; padding:2px 8px; border-radius:99px;
+          ">{user["role"]}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 if _Cfg.INGESTION_PROVIDER == "dune":
     from app.ingestion.dune_pipeline import build_pipeline as _build_pipeline
 else:
