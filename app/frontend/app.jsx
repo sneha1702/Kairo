@@ -169,30 +169,47 @@ function ProfileWidget({ setView }) {
   );
 }
 
+function handleLogout() {
+  try {
+    const url = new URL(window.top.location.href);
+    url.searchParams.set("kairo_action", "logout");
+    window.top.location.href = url.toString();
+  } catch (_) {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("kairo_action", "logout");
+      window.location.href = url.toString();
+    } catch (__) {}
+  }
+}
+
 function Sidebar({ view, setView }) {
   return (
     <nav className="kairo-rail">
       <div style={{ padding: "4px 4px 28px" }} className="kairo-logo"><Logo /></div>
       <div className="kairo-navitems">
         {NAV.map(n => {
-          const active = view === n.id;
+          const isLogout = n.action === "logout";
+          const active = !isLogout && view === n.id;
           return (
-            <button key={n.id} onClick={() => setView(n.id)} style={{
+            <button key={n.id} onClick={() => isLogout ? handleLogout() : setView(n.id)} style={{
               display: "flex", alignItems: "center", gap: 12, padding: "11px 13px",
-              borderRadius: 12, color: active ? "var(--ink)" : "var(--ink-3)",
+              borderRadius: 12,
+              color: isLogout ? "var(--ink-4)" : active ? "var(--ink)" : "var(--ink-3)",
               background: active ? "var(--surface)" : "transparent",
               boxShadow: active ? "var(--shadow-soft)" : "none",
               border: active ? "1px solid var(--hairline)" : "1px solid transparent",
               fontSize: 15, fontWeight: 600, transition: "color 0.15s, background 0.15s",
-            }}>
+              marginTop: isLogout ? "auto" : undefined,
+            }}
+            onMouseOver={e => { if (isLogout) e.currentTarget.style.color = "var(--ink-2)"; }}
+            onMouseOut={e => { if (isLogout) e.currentTarget.style.color = "var(--ink-4)"; }}
+            >
               <Icon name={n.icon} size={19} stroke={1.8} style={{ color: active ? "var(--accent-ink)" : "inherit" }} />
               {n.label}
             </button>
           );
         })}
-      </div>
-      <div className="kairo-rail-foot">
-        <ProfileWidget setView={setView} />
       </div>
     </nav>
   );
