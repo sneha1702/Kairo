@@ -1,7 +1,7 @@
 /* ============================================================
    Kairo — Profile screen (editable)
    ============================================================ */
-const { useState } = React;
+const { useState, useEffect } = React;
 
 const PROFESSIONS = [
   "Software Engineer / Developer", "Data Scientist / Analyst",
@@ -17,13 +17,40 @@ const PURPOSES = [
   "Just exploring",
 ];
 
+function Toast({ message, type = "success" }) {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(false), 5000);
+    return () => clearTimeout(t);
+  }, []);
+  if (!visible) return null;
+  const isErr = type === "error";
+  return (
+    <div style={{
+      position: "fixed", top: 24, right: 24, zIndex: 9999,
+      background: isErr ? "oklch(0.93 0.04 22)" : "oklch(0.96 0.025 155)",
+      border: `1.5px solid ${isErr ? "oklch(0.70 0.09 22)" : "var(--pos)"}`,
+      color: isErr ? "oklch(0.52 0.115 22)" : "var(--pos)",
+      borderRadius: "var(--r-md)", padding: "14px 20px",
+      fontWeight: 600, fontSize: 14,
+      boxShadow: "0 4px 24px oklch(0.5 0.02 60 / 0.12)",
+    }}>
+      {message}
+    </div>
+  );
+}
+
 function ProfileScreen() {
-  const user = window.KAIRO?.auth_user || {};
+  const K = window.KAIRO;
+  const user = K?.auth_user || {};
+  const config = K?.config || {};
+
   const filled = user.profile_filled || 0;
   const total  = user.profile_total  || 6;
   const pct    = total > 0 ? Math.round((filled / total) * 100) : 0;
   const isComplete = filled >= total;
 
+  /* ── profile form ── */
   const [firstName,      setFirstName]      = useState(user.first_name      || "");
   const [lastName,       setLastName]       = useState(user.last_name       || "");
   const [email,          setEmail]          = useState(user.email           || "");
@@ -31,6 +58,22 @@ function ProfileScreen() {
   const [tradingProfile, setTradingProfile] = useState(user.trading_profile || "");
   const [purpose,        setPurpose]        = useState(user.purpose         || "");
   const [saving,         setSaving]         = useState(false);
+
+  /* ── change password ── */
+  const [oldPw,    setOldPw]    = useState("");
+  const [newPw1,   setNewPw1]   = useState("");
+  const [newPw2,   setNewPw2]   = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwError,  setPwError]  = useState("");
+
+  /* ── delete account ── */
+  const [showDelete,     setShowDelete]     = useState(false);
+  const [deleteConfirm,  setDeleteConfirm]  = useState("");
+  const [deleting,       setDeleting]       = useState(false);
+
+  /* ── server-sent one-time signals ── */
+  const [toast,     setToast]     = useState(config.toast     || null);
+  const [pwResult,  setPwResult]  = useState(config.pw_result || null);
 
   const initials = (() => {
     const f = (user.first_name || "").trim();
@@ -49,29 +92,54 @@ function ProfileScreen() {
   ];
   const avatarBg = ACCENT_COLORS[(user.username || "").charCodeAt(0) % ACCENT_COLORS.length] || "var(--accent)";
 
-  function handleSave() {
-    setSaving(true);
-    const data = JSON.stringify({
-      first_name:      firstName.trim(),
-      last_name:       lastName.trim(),
-      email:           email.trim(),
-      profession:      profession,
-      trading_profile: tradingProfile,
-      purpose:         purpose,
-    });
+  function navigate(params) {
     try {
       const url = new URL(window.top.location.href);
-      url.searchParams.set("kairo_action", "save-profile");
-      url.searchParams.set("profile_data", data);
+      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
       window.top.location.href = url.toString();
     } catch (_) {
       try {
         const url = new URL(window.location.href);
-        url.searchParams.set("kairo_action", "save-profile");
-        url.searchParams.set("profile_data", data);
+        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
         window.location.href = url.toString();
-      } catch (__) { setSaving(false); }
+      } catch (__) {}
     }
+  }
+
+  function handleSave() {
+    setSaving(true);
+    navigate({
+      kairo_action:  "save-profile",
+      profile_data:  JSON.stringify({
+        first_name:      firstName.trim(),
+        last_name:       lastName.trim(),
+        email:           email.trim(),
+        profession,
+        trading_profile: tradingProfile,
+        purpose,
+      }),
+    });
+  }
+
+  function handleChangePassword() {
+    setPwError("");
+    if (!oldPw || !newPw1)  { setPwError("Please fill in all password fields."); return; }
+    if (newPw1.length < 8)  { setPwError("New password must be at least 8 characters."); return; }
+    if (newPw1 !== newPw2)  { setPwError("Passwords do not match."); return; }
+    setPwSaving(true);
+    navigate({
+      kairo_action: "change-password",
+      pw_data:      JSON.stringify({ old: oldPw, new: newPw1 }),
+    });
+  }
+
+  function handleDeleteAccount() {
+    if (deleteConfirm !== user.username) return;
+    setDeleting(true);
+    navigate({
+      kairo_action: "delete-account",
+      confirm_user: user.username,
+    });
   }
 
   const inputStyle = {
@@ -85,12 +153,23 @@ function ProfileScreen() {
     fontSize: 12.5, color: "var(--ink-3)", fontWeight: 600,
     letterSpacing: "0.01em", marginBottom: 5, display: "block",
   };
-
   function focusIn(e)  { e.target.style.borderColor = "var(--accent)"; }
   function focusOut(e) { e.target.style.borderColor = "var(--hairline-strong)"; }
 
+  /* pw result toast text */
+  const pwResultToast = pwResult === "ok"
+    ? { msg: "Password changed successfully.", type: "success" }
+    : pwResult === "wrong_password"
+    ? { msg: "Current password is incorrect.", type: "error" }
+    : pwResult === "error"
+    ? { msg: "Password change failed. Try again.", type: "error" }
+    : null;
+
   return (
     <div className="screen-enter">
+      {toast       && <Toast key="profile-toast"   message={toast}            type="success" />}
+      {pwResultToast && <Toast key="pw-toast" message={pwResultToast.msg} type={pwResultToast.type} />}
+
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
 
         {/* ── Header ── */}
@@ -153,95 +232,173 @@ function ProfileScreen() {
         <div className="card" style={{ padding: "var(--card-pad)", marginBottom: 20 }}>
           <div className="eyebrow" style={{ marginBottom: 20 }}>Your details</div>
 
-          {/* Name row */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
             <div>
               <label style={labelStyle}>First name</label>
-              <input
-                style={inputStyle} type="text" value={firstName} placeholder="Jane"
-                onChange={e => setFirstName(e.target.value)}
-                onFocus={focusIn} onBlur={focusOut}
-              />
+              <input style={inputStyle} type="text" value={firstName} placeholder="Jane"
+                onChange={e => setFirstName(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
             </div>
             <div>
               <label style={labelStyle}>Last name</label>
-              <input
-                style={inputStyle} type="text" value={lastName} placeholder="Smith"
-                onChange={e => setLastName(e.target.value)}
-                onFocus={focusIn} onBlur={focusOut}
-              />
+              <input style={inputStyle} type="text" value={lastName} placeholder="Smith"
+                onChange={e => setLastName(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
             </div>
           </div>
 
-          {/* Email */}
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Email</label>
-            <input
-              style={inputStyle} type="email" value={email} placeholder="you@example.com"
-              onChange={e => setEmail(e.target.value)}
-              onFocus={focusIn} onBlur={focusOut}
-            />
+            <input style={inputStyle} type="email" value={email} placeholder="you@example.com"
+              onChange={e => setEmail(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
           </div>
 
-          {/* Profession */}
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Profession</label>
-            <select
-              style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
-              value={profession}
-              onChange={e => setProfession(e.target.value)}
-              onFocus={focusIn} onBlur={focusOut}
-            >
+            <select style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
+              value={profession} onChange={e => setProfession(e.target.value)} onFocus={focusIn} onBlur={focusOut}>
               <option value="">Select your profession…</option>
               {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
 
-          {/* Trading experience */}
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Trading experience</label>
-            <select
-              style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
-              value={tradingProfile}
-              onChange={e => setTradingProfile(e.target.value)}
-              onFocus={focusIn} onBlur={focusOut}
-            >
+            <select style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
+              value={tradingProfile} onChange={e => setTradingProfile(e.target.value)} onFocus={focusIn} onBlur={focusOut}>
               <option value="">Select your experience level…</option>
               {TRADING_PROFILES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 
-          {/* Purpose */}
           <div style={{ marginBottom: 24 }}>
             <label style={labelStyle}>Why did you subscribe?</label>
-            <select
-              style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
-              value={purpose}
-              onChange={e => setPurpose(e.target.value)}
-              onFocus={focusIn} onBlur={focusOut}
-            >
+            <select style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
+              value={purpose} onChange={e => setPurpose(e.target.value)} onFocus={focusIn} onBlur={focusOut}>
               <option value="">Select your purpose…</option>
               {PURPOSES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
 
-          {/* Save button */}
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            style={{
-              width: "100%", padding: "12px 24px",
-              background: saving ? "var(--ink-4)" : "var(--accent)",
-              color: "var(--paper)", border: "none",
-              borderRadius: "var(--r-sm)", fontSize: 15, fontWeight: 700,
-              cursor: saving ? "default" : "pointer",
-              fontFamily: "var(--font-sans)", transition: "background 0.15s",
-            }}
-            onMouseOver={e => { if (!saving) e.currentTarget.style.background = "var(--accent-ink)"; }}
-            onMouseOut={e => { if (!saving) e.currentTarget.style.background = "var(--accent)"; }}
-          >
+          <button onClick={handleSave} disabled={saving} style={{
+            width: "100%", padding: "12px 24px",
+            background: saving ? "var(--ink-4)" : "var(--accent)",
+            color: "var(--paper)", border: "none",
+            borderRadius: "var(--r-sm)", fontSize: 15, fontWeight: 700,
+            cursor: saving ? "default" : "pointer",
+            fontFamily: "var(--font-sans)", transition: "background 0.15s",
+          }}
+          onMouseOver={e => { if (!saving) e.currentTarget.style.background = "var(--accent-ink)"; }}
+          onMouseOut={e => { if (!saving) e.currentTarget.style.background = saving ? "var(--ink-4)" : "var(--accent)"; }}>
             {saving ? "Saving…" : "Save Profile"}
           </button>
+        </div>
+
+        {/* ── Change Password ── */}
+        <div className="card" style={{ padding: "var(--card-pad)", marginBottom: 20 }}>
+          <div className="eyebrow" style={{ marginBottom: 20 }}>Change Password</div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Current password</label>
+            <input style={inputStyle} type="password" value={oldPw} placeholder="••••••••"
+              onChange={e => setOldPw(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>New password</label>
+            <input style={inputStyle} type="password" value={newPw1} placeholder="at least 8 characters"
+              onChange={e => setNewPw1(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <label style={labelStyle}>Confirm new password</label>
+            <input style={inputStyle} type="password" value={newPw2} placeholder="repeat new password"
+              onChange={e => setNewPw2(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
+          </div>
+
+          {pwError && (
+            <div style={{
+              fontSize: 13.5, color: "oklch(0.52 0.115 22)",
+              background: "oklch(0.93 0.04 22)", borderRadius: "var(--r-sm)",
+              padding: "10px 14px", marginBottom: 14,
+            }}>{pwError}</div>
+          )}
+
+          <button onClick={handleChangePassword} disabled={pwSaving} style={{
+            width: "100%", padding: "11px 24px",
+            background: pwSaving ? "var(--ink-4)" : "var(--surface-2)",
+            color: pwSaving ? "var(--paper)" : "var(--ink-2)",
+            border: "1px solid var(--hairline-strong)",
+            borderRadius: "var(--r-sm)", fontSize: 15, fontWeight: 700,
+            cursor: pwSaving ? "default" : "pointer",
+            fontFamily: "var(--font-sans)", transition: "all 0.15s",
+          }}
+          onMouseOver={e => { if (!pwSaving) { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.borderColor = "var(--ink-3)"; } }}
+          onMouseOut={e => { if (!pwSaving) { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.borderColor = "var(--hairline-strong)"; } }}>
+            {pwSaving ? "Updating…" : "Update Password"}
+          </button>
+        </div>
+
+        {/* ── Danger Zone — Delete Account ── */}
+        <div className="card" style={{
+          padding: "var(--card-pad)", marginBottom: 48,
+          borderColor: showDelete ? "oklch(0.72 0.09 22)" : "var(--hairline)",
+        }}>
+          <div style={{
+            fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 500,
+            letterSpacing: "0.10em", textTransform: "uppercase",
+            color: "oklch(0.58 0.095 22)", marginBottom: 12,
+          }}>Danger Zone</div>
+
+          <p style={{ fontSize: 14, color: "var(--ink-3)", marginBottom: 16, lineHeight: 1.6 }}>
+            Permanently delete your account and all associated data. This cannot be undone.
+          </p>
+
+          {!showDelete ? (
+            <button onClick={() => setShowDelete(true)} style={{
+              padding: "10px 20px",
+              background: "transparent",
+              color: "oklch(0.52 0.115 22)",
+              border: "1.5px solid oklch(0.75 0.08 22)",
+              borderRadius: "var(--r-sm)", fontSize: 14, fontWeight: 700,
+              cursor: "pointer", fontFamily: "var(--font-sans)", transition: "background 0.15s",
+            }}
+            onMouseOver={e => { e.currentTarget.style.background = "oklch(0.94 0.035 22)"; }}
+            onMouseOut={e => { e.currentTarget.style.background = "transparent"; }}>
+              Delete My Account
+            </button>
+          ) : (
+            <div>
+              <p style={{ fontSize: 13.5, color: "oklch(0.52 0.115 22)", marginBottom: 10, fontWeight: 600, lineHeight: 1.5 }}>
+                Type your username <code style={{ background: "var(--surface-2)", padding: "1px 5px", borderRadius: 4 }}>{user.username}</code> to confirm:
+              </p>
+              <input
+                style={{ ...inputStyle, marginBottom: 14, borderColor: "oklch(0.75 0.08 22)" }}
+                type="text" value={deleteConfirm} placeholder={user.username}
+                onChange={e => setDeleteConfirm(e.target.value)} onFocus={focusIn} onBlur={focusOut}
+              />
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={handleDeleteAccount}
+                  disabled={deleteConfirm !== user.username || deleting}
+                  style={{
+                    padding: "10px 20px", flex: 1,
+                    background: (deleteConfirm === user.username && !deleting)
+                      ? "oklch(0.52 0.115 22)" : "var(--ink-4)",
+                    color: "var(--paper)", border: "none",
+                    borderRadius: "var(--r-sm)", fontSize: 14, fontWeight: 700,
+                    cursor: (deleteConfirm === user.username && !deleting) ? "pointer" : "default",
+                    fontFamily: "var(--font-sans)", transition: "background 0.15s",
+                  }}>
+                  {deleting ? "Deleting…" : "Yes, delete my account"}
+                </button>
+                <button onClick={() => { setShowDelete(false); setDeleteConfirm(""); }} style={{
+                  padding: "10px 20px",
+                  background: "var(--surface-2)", color: "var(--ink-2)",
+                  border: "1px solid var(--hairline-strong)",
+                  borderRadius: "var(--r-sm)", fontSize: 14, fontWeight: 600,
+                  cursor: "pointer", fontFamily: "var(--font-sans)",
+                }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

@@ -595,7 +595,7 @@ STRICT DE-DUPLICATION AND CONTINUITY RULES — follow these exactly:
     as any entry above, even if new data re-confirms it.
   • If new signals strengthen or extend a prior narrative, UPDATE it by returning the SAME narrative_id
     with refreshed fields (updated summary, new evidence appended, higher confidence if warranted).
-  • Only create a brand-new narrative_id if NO existing entry covers the theme AND signal_count ≥ 2.
+  • Only create a brand-new narrative_id if NO existing entry covers the theme AND signal_count ≥ 1.
   • Do NOT fragment one theme into multiple small narratives.
   • When in doubt whether a theme is new vs. a prior one — treat it as the prior one and update it.
 
@@ -649,7 +649,7 @@ SCENARIO A — CONTINUING / ACCELERATING
           Update confidence based on fresh signals. Update top_tokens if changed.
 
 SCENARIO B — NEW NARRATIVE
-  Condition: A theme in Section 3 has signal_count ≥ 2 AND no match in Section 2.
+  Condition: A theme in Section 3 has signal_count ≥ 1 AND no match in Section 2.
   Action: Create a new narrative_id. Set status=NEW.
           The narrative must represent a real-world investor story, not a token cluster.
 
