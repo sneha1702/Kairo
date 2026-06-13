@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CryptoRegulationDatabase",
+  "description": "Schema for storing crypto regulatory developments captured by Gemini research runs",
+  "type": "object",
+  "required": ["metadata", "regulations"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["generated_at", "lookback_days", "sources_checked", "prompt_version"],
+      "properties": {
+        "generated_at": { "type": "string", "format": "date-time" },
+        "lookback_days": { "type": "integer" },
+        "sources_checked": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "prompt_version": { "type": "string" }
+      }
+    },
+    "regulations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id","jurisdiction","jurisdiction_code","regulator","regulation_name","event_type","date_of_event","date_captured","source_tier","source_url","official_source_verified","summary","classification","key_dates"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,4}-[0-9]{8}-[a-z0-9-]+$",
+            "description": "Primary key: JURISDICTION-YYYYMMDD-slug, e.g. US-20260529-cftc-perp-futures"
+          },
+          "jurisdiction": { "type": "string" },
+          "jurisdiction_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 or bloc code: US, EU, UK, SG, JP, AE, AU, etc."
+          },
+          "regulator": { "type": "string" },
+          "regulation_name": { "type": "string" },
+          "event_type": {
+            "type": "string",
+            "enum": ["law_passed","rule_published","guidance_issued","enforcement_action","deadline","consultation_opened","consultation_closed"]
+          },
+          "date_of_event": { "type": "string", "format": "date" },
+          "date_captured": { "type": "string", "format": "date" },
+          "source_tier": { "type": "string", "enum": ["1","2","3"] },
+          "source_url": { "type": "string", "format": "uri" },
+          "official_source_url": { "type": ["string","null"], "format": "uri" },
+          "official_source_verified": { "type": "boolean" },
+          "summary": {
+            "type": "string",
+            "maxLength": 700,
+            "description": "Plain English, max 100 words, no legal jargon"
+          },
+          "classification": {
+            "type": "object",
+            "required": ["impact_direction","market_access","beneficiary","harm_vector","theme","status","significance"],
+            "properties": {
+              "impact_direction": {
+                "type": "string",
+                "enum": ["restrictive","permissive","neutral","mixed"]
+              },
+              "market_access": {
+                "type": "string",
+                "enum": ["improves","restricts","no_change"]
+              },
+              "beneficiary": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["retail_investors","institutional_investors","exchanges","defi_protocols","stablecoin_issuers","asset_managers","banks","no_clear_beneficiary"]
+                },
+                "minItems": 1
+              },
+              "harm_vector": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["retail_investors","exchanges","defi_protocols","stablecoin_issuers","privacy","innovation","none"]
+                },
+                "minItems": 1
+              },
+              "theme": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["market_access","consumer_protection","security_of_assets","aml_kyc","tax_reporting","stablecoin_rules","defi_regulation","tokenisation","cbdc","enforcement","licensing","self_custody"]
+                },
+                "minItems": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": ["proposed","passed","effective","deadline_approaching","enforcement_action"]
+              },
+              "significance": {
+                "type": "string",
+                "enum": ["high","medium","low"]
+              }
+            }
+          },
+          "key_dates": {
+            "type": "object",
+            "properties": {
+              "proposed": { "type": ["string","null"], "format": "date" },
+              "passed": { "type": ["string","null"], "format": "date" },
+              "effective": { "type": ["string","null"], "format": "date" },
+              "deadline": { "type": ["string","null"], "format": "date" }
+            }
+          },
+          "flagged_contradictions": { "type": ["string","null"] }
+        }
+      }
+    },
+    "unverified_stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "headline": { "type": "string" },
+          "source": { "type": "string" },
+          "reason_excluded": { "type": "string" }
+        }
+      }
+    },
+    "coverage_gaps": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
