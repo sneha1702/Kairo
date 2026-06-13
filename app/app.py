@@ -541,6 +541,7 @@ def _render_login_page(mgr) -> None:
             with st.form("login_form", clear_on_submit=False):
                 username = st.text_input("Username", placeholder="your username")
                 password = st.text_input("Password", type="password", placeholder="••••••••")
+                remember_me = st.checkbox("Keep me signed in for 30 days", value=False)
                 submitted = st.form_submit_button("Sign In", use_container_width=True)
 
             if submitted:
@@ -550,6 +551,13 @@ def _render_login_page(mgr) -> None:
                     user = mgr.authenticate(username, password)
                     if user:
                         st.session_state["_kairo_user"] = user
+                        if remember_me:
+                            try:
+                                _token = mgr.create_session_token(user["username"])
+                                st.query_params["auto_session"] = _token
+                                st.session_state["_kairo_session_token"] = _token
+                            except Exception as _exc:
+                                logger.warning("remember-me token creation failed: %s", _exc)
                         st.rerun()
                     else:
                         st.error("Invalid username or password.")
