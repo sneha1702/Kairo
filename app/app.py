@@ -1371,11 +1371,23 @@ def run() -> None:
         """,
         unsafe_allow_html=True,
     )
-    # ── Two-tab layout ────────────────────────────────────────────────────────
-    tab_kairo, tab_admin = st.tabs(["Kairo", "⚙ Admin"])
+    # ── User header + logout ──────────────────────────────────────────────────
+    _render_user_header(current_user)
+    logout_col, _ = st.columns([1, 8])
+    with logout_col:
+        if st.button("Sign out", key="btn_logout"):
+            st.session_state.pop("_kairo_user", None)
+            st.rerun()
 
-    with tab_admin:
-        _admin_panel()
+    # ── Tab layout (admin tab only for admins) ────────────────────────────────
+    if is_admin:
+        _tabs = st.tabs(["Kairo", "⚙ Admin"])
+        tab_kairo, tab_admin = _tabs[0], _tabs[1]
+        with tab_admin:
+            _admin_panel()
+    else:
+        _tabs = st.tabs(["Kairo"])
+        tab_kairo = _tabs[0]
 
     # ── Kairo tab — iframe only ───────────────────────────────────────────────
     with tab_kairo:
