@@ -1694,6 +1694,16 @@ def run() -> None:
         # Inject auth profile under a separate key — kairo_data["user"] is the
         # morning-brief user section ({name, date, summary}); don't overwrite it.
         kairo_data["auth_user"] = dict(current_user)
+        # Inject one-time transient UI signals (popped so they don't repeat on refresh)
+        _init_view = st.session_state.pop("_kairo_init_view", None)
+        _toast = st.session_state.pop("_kairo_toast", None)
+        _pw_result = st.session_state.pop("_kairo_pw_result", None)
+        if _init_view:
+            kairo_data["config"]["initial_view"] = _init_view
+        if _toast:
+            kairo_data["config"]["toast"] = _toast
+        if _pw_result:
+            kairo_data["config"]["pw_result"] = _pw_result
 
         try:
             data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
