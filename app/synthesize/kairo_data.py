@@ -65,6 +65,29 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _time_ago(dt_val: Any) -> str:
+    """Return a human-readable relative time string from an ISO datetime or datetime object."""
+    try:
+        if isinstance(dt_val, str):
+            dt_val = datetime.fromisoformat(dt_val.replace("Z", "+00:00"))
+        if isinstance(dt_val, datetime):
+            if dt_val.tzinfo is None:
+                dt_val = dt_val.replace(tzinfo=timezone.utc)
+            delta = _now() - dt_val
+            total_seconds = int(delta.total_seconds())
+            if total_seconds < 3600:
+                mins = max(1, total_seconds // 60)
+                return f"{mins}m ago"
+            if total_seconds < 86400:
+                hrs = total_seconds // 3600
+                return f"{hrs}h ago"
+            days = total_seconds // 86400
+            return f"{days}d ago"
+    except Exception:
+        pass
+    return "recently"
+
+
 def _days_since(dt_val: Any) -> int:
     """Return days since dt_val (datetime or ISO string), 0-indexed: 0 = same day."""
     try:
