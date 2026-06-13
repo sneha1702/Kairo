@@ -1,7 +1,21 @@
 /* ============================================================
-   Kairo — Profile screen (read-only display, edit via Profile tab)
+   Kairo — Profile screen (editable)
    ============================================================ */
 const { useState } = React;
+
+const PROFESSIONS = [
+  "Software Engineer / Developer", "Data Scientist / Analyst",
+  "Finance / Investment Professional", "Entrepreneur / Founder",
+  "Student", "Product Manager", "Designer / Creative",
+  "Researcher / Academic", "Marketing / Growth", "Other",
+];
+const TRADING_PROFILES = ["Beginner", "Experienced"];
+const PURPOSES = [
+  "Learn about crypto markets", "Track narratives & trends",
+  "Research before investing", "Professional market intelligence",
+  "Building a product or tool", "Academic or research purposes",
+  "Just exploring",
+];
 
 function ProfileScreen() {
   const user = window.KAIRO?.auth_user || {};
@@ -9,6 +23,14 @@ function ProfileScreen() {
   const total  = user.profile_total  || 6;
   const pct    = total > 0 ? Math.round((filled / total) * 100) : 0;
   const isComplete = filled >= total;
+
+  const [firstName,      setFirstName]      = useState(user.first_name      || "");
+  const [lastName,       setLastName]       = useState(user.last_name       || "");
+  const [email,          setEmail]          = useState(user.email           || "");
+  const [profession,     setProfession]     = useState(user.profession      || "");
+  const [tradingProfile, setTradingProfile] = useState(user.trading_profile || "");
+  const [purpose,        setPurpose]        = useState(user.purpose         || "");
+  const [saving,         setSaving]         = useState(false);
 
   const initials = (() => {
     const f = (user.first_name || "").trim();
@@ -21,37 +43,51 @@ function ProfileScreen() {
   const displayName = [user.first_name, user.last_name].filter(Boolean).join(" ")
     || user.username || "You";
 
-  function handleSignOut(e) {
-    e.preventDefault();
+  const ACCENT_COLORS = [
+    "oklch(0.64 0.124 42)", "oklch(0.61 0.072 150)",
+    "oklch(0.59 0.090 252)", "oklch(0.62 0.090 300)",
+  ];
+  const avatarBg = ACCENT_COLORS[(user.username || "").charCodeAt(0) % ACCENT_COLORS.length] || "var(--accent)";
+
+  function handleSave() {
+    setSaving(true);
+    const data = JSON.stringify({
+      first_name:      firstName.trim(),
+      last_name:       lastName.trim(),
+      email:           email.trim(),
+      profession:      profession,
+      trading_profile: tradingProfile,
+      purpose:         purpose,
+    });
     try {
-      window.parent.postMessage({ type: "kairo-action", action: "logout" }, "*");
+      const url = new URL(window.top.location.href);
+      url.searchParams.set("kairo_action", "save-profile");
+      url.searchParams.set("profile_data", data);
+      window.top.location.href = url.toString();
     } catch (_) {
       try {
-        const url = new URL(window.top.location.href);
-        url.searchParams.set("kairo_action", "logout");
-        window.top.location.href = url.toString();
-      } catch (__) {}
+        const url = new URL(window.location.href);
+        url.searchParams.set("kairo_action", "save-profile");
+        url.searchParams.set("profile_data", data);
+        window.location.href = url.toString();
+      } catch (__) { setSaving(false); }
     }
   }
 
-  const profileFields = [
-    { label: "First name",         value: user.first_name },
-    { label: "Last name",          value: user.last_name },
-    { label: "Email",              value: user.email },
-    { label: "Profession",         value: user.profession },
-    { label: "Trading experience", value: user.trading_profile },
-    { label: "Purpose",            value: user.purpose },
-  ];
+  const inputStyle = {
+    width: "100%", padding: "9px 13px",
+    background: "var(--surface-2)", border: "1px solid var(--hairline-strong)",
+    borderRadius: "var(--r-sm)", color: "var(--ink)", fontSize: 14.5,
+    fontFamily: "var(--font-sans)", outline: "none",
+    transition: "border-color 0.15s", boxSizing: "border-box",
+  };
+  const labelStyle = {
+    fontSize: 12.5, color: "var(--ink-3)", fontWeight: 600,
+    letterSpacing: "0.01em", marginBottom: 5, display: "block",
+  };
 
-  const ACCENT_COLORS = [
-    "oklch(0.64 0.124 42)",
-    "oklch(0.61 0.072 150)",
-    "oklch(0.59 0.090 252)",
-    "oklch(0.62 0.090 300)",
-  ];
-  const avatarBg = ACCENT_COLORS[
-    (user.username || "").charCodeAt(0) % ACCENT_COLORS.length
-  ] || "var(--accent)";
+  function focusIn(e)  { e.target.style.borderColor = "var(--accent)"; }
+  function focusOut(e) { e.target.style.borderColor = "var(--hairline-strong)"; }
 
   return (
     <div className="screen-enter">
@@ -63,8 +99,7 @@ function ProfileScreen() {
             width: 72, height: 72, borderRadius: "50%",
             background: avatarBg, color: "oklch(0.98 0.004 80)",
             display: "grid", placeItems: "center",
-            fontSize: 27, fontWeight: 800, flexShrink: 0,
-            letterSpacing: "-0.02em",
+            fontSize: 27, fontWeight: 800, flexShrink: 0, letterSpacing: "-0.02em",
           }}>{initials}</div>
           <div>
             <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em" }}>
@@ -74,9 +109,9 @@ function ProfileScreen() {
               <span>@{user.username}</span>
               <span style={{
                 background: user.role === "admin" ? "var(--accent)" : "var(--ink-3)",
-                color: "var(--paper)",
-                fontSize: 9, fontWeight: 700, letterSpacing: "0.08em",
-                textTransform: "uppercase", padding: "2px 7px", borderRadius: 99,
+                color: "var(--paper)", fontSize: 9, fontWeight: 700,
+                letterSpacing: "0.08em", textTransform: "uppercase",
+                padding: "2px 7px", borderRadius: 99,
               }}>{user.role}</span>
             </div>
           </div>
@@ -89,27 +124,19 @@ function ProfileScreen() {
             border: "1.5px solid color-mix(in oklch, var(--accent) 40%, transparent)",
             borderRadius: "var(--r-lg)", padding: "20px 24px", marginBottom: 28,
           }}>
-            <div style={{
-              fontWeight: 700, color: "var(--accent-ink)", fontSize: 15, marginBottom: 6,
-              display: "flex", alignItems: "center", gap: 8,
-            }}>
+            <div style={{ fontWeight: 700, color: "var(--accent-ink)", fontSize: 15, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 18 }}>✦</span>
               Complete your profile — get 1 month of free Plus
             </div>
             <div style={{ fontSize: 13, color: "var(--ink-2)", marginBottom: 14 }}>
-              {filled} of {total} details filled in.
+              {filled} of {total} details filled in. Fill all fields below and save.
             </div>
-            {/* Progress track */}
-            <div style={{ height: 7, background: "var(--hairline)", borderRadius: 99, overflow: "hidden", marginBottom: 10 }}>
+            <div style={{ height: 7, background: "var(--hairline)", borderRadius: 99, overflow: "hidden" }}>
               <div style={{
-                height: "100%", width: `${pct}%`,
-                background: "var(--accent)", borderRadius: 99,
-                transition: "width 0.5s cubic-bezier(0.22,1,0.36,1)",
+                height: "100%", width: `${pct}%`, background: "var(--accent)",
+                borderRadius: 99, transition: "width 0.5s cubic-bezier(0.22,1,0.36,1)",
               }} />
             </div>
-            <p style={{ fontSize: 12.5, color: "var(--ink-3)", margin: 0 }}>
-              Open the <strong>Profile</strong> tab above to fill in the remaining {total - filled} field{total - filled !== 1 ? "s" : ""}.
-            </p>
           </div>
         ) : (
           <div style={{
@@ -122,55 +149,100 @@ function ProfileScreen() {
           </div>
         )}
 
-        {/* ── Profile fields card ── */}
+        {/* ── Editable profile form ── */}
         <div className="card" style={{ padding: "var(--card-pad)", marginBottom: 20 }}>
-          <div className="eyebrow" style={{ marginBottom: 18 }}>Your details</div>
-          <div style={{ display: "grid", gap: 16 }}>
-            {profileFields.map(f => (
-              <div key={f.label} style={{
-                display: "grid",
-                gridTemplateColumns: "150px 1fr",
-                gap: 12, alignItems: "start",
-              }}>
-                <div style={{
-                  fontSize: 12.5, color: "var(--ink-3)", fontWeight: 600,
-                  paddingTop: 1, letterSpacing: "0.01em",
-                }}>{f.label}</div>
-                <div style={{
-                  fontSize: 14.5,
-                  color: f.value ? "var(--ink)" : "var(--ink-4)",
-                  fontStyle: f.value ? "normal" : "italic",
-                }}>{f.value || "not set"}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            marginTop: 20, paddingTop: 16,
-            borderTop: "1px solid var(--hairline)",
-          }}>
-            <p style={{ fontSize: 12.5, color: "var(--ink-3)", margin: 0 }}>
-              To edit these details or change your password, open the{" "}
-              <strong style={{ color: "var(--ink-2)" }}>Profile</strong> tab in the navigation bar above.
-            </p>
-          </div>
-        </div>
+          <div className="eyebrow" style={{ marginBottom: 20 }}>Your details</div>
 
-        {/* ── Sign out ── */}
-        <button
-          onClick={handleSignOut}
-          style={{
-            width: "100%", padding: "13px 24px",
-            background: "var(--surface)",
-            border: "1px solid var(--hairline-strong)",
-            borderRadius: "var(--r-sm)", color: "var(--ink-2)",
-            fontFamily: "var(--font-sans)", fontSize: 15, fontWeight: 600,
-            cursor: "pointer", transition: "background 0.15s, color 0.15s",
-          }}
-          onMouseOver={e => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--ink)"; }}
-          onMouseOut={e => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--ink-2)"; }}
-        >
-          Sign out
-        </button>
+          {/* Name row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>First name</label>
+              <input
+                style={inputStyle} type="text" value={firstName} placeholder="Jane"
+                onChange={e => setFirstName(e.target.value)}
+                onFocus={focusIn} onBlur={focusOut}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Last name</label>
+              <input
+                style={inputStyle} type="text" value={lastName} placeholder="Smith"
+                onChange={e => setLastName(e.target.value)}
+                onFocus={focusIn} onBlur={focusOut}
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Email</label>
+            <input
+              style={inputStyle} type="email" value={email} placeholder="you@example.com"
+              onChange={e => setEmail(e.target.value)}
+              onFocus={focusIn} onBlur={focusOut}
+            />
+          </div>
+
+          {/* Profession */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Profession</label>
+            <select
+              style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
+              value={profession}
+              onChange={e => setProfession(e.target.value)}
+              onFocus={focusIn} onBlur={focusOut}
+            >
+              <option value="">Select your profession…</option>
+              {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+
+          {/* Trading experience */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Trading experience</label>
+            <select
+              style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
+              value={tradingProfile}
+              onChange={e => setTradingProfile(e.target.value)}
+              onFocus={focusIn} onBlur={focusOut}
+            >
+              <option value="">Select your experience level…</option>
+              {TRADING_PROFILES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+
+          {/* Purpose */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={labelStyle}>Why did you subscribe?</label>
+            <select
+              style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
+              value={purpose}
+              onChange={e => setPurpose(e.target.value)}
+              onFocus={focusIn} onBlur={focusOut}
+            >
+              <option value="">Select your purpose…</option>
+              {PURPOSES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+
+          {/* Save button */}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              width: "100%", padding: "12px 24px",
+              background: saving ? "var(--ink-4)" : "var(--accent)",
+              color: "var(--paper)", border: "none",
+              borderRadius: "var(--r-sm)", fontSize: 15, fontWeight: 700,
+              cursor: saving ? "default" : "pointer",
+              fontFamily: "var(--font-sans)", transition: "background 0.15s",
+            }}
+            onMouseOver={e => { if (!saving) e.currentTarget.style.background = "var(--accent-ink)"; }}
+            onMouseOut={e => { if (!saving) e.currentTarget.style.background = "var(--accent)"; }}
+          >
+            {saving ? "Saving…" : "Save Profile"}
+          </button>
+        </div>
 
       </div>
     </div>
