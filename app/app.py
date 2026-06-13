@@ -369,7 +369,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div class="kairo-loading">
+      <div class="kairo-loading-logo">
+        <div class="kairo-loading-dot"><div class="kairo-loading-dot-inner"></div></div>
+        <span style="font-size:21px;font-weight:800;letter-spacing:-0.03em;color:var(--ink)">Kairo</span>
+      </div>
+      <div class="kairo-loading-text">Loading your news…</div>
+    </div>
+  </div>
   <script>window.KAIRO = {data_json};</script>
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
