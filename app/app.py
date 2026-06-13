@@ -1566,15 +1566,19 @@ def run() -> None:
             st.session_state.pop("_kairo_user", None)
             st.rerun()
 
-    # ── Tab layout (admin tab only for admins) ────────────────────────────────
+    # ── Tab layout ───────────────────────────────────────────────────────────
     if is_admin:
-        _tabs = st.tabs(["Kairo", "⚙ Admin"])
-        tab_kairo, tab_admin = _tabs[0], _tabs[1]
+        _tabs = st.tabs(["Kairo", "⚙ Admin", "Profile"])
+        tab_kairo, tab_admin, tab_profile = _tabs[0], _tabs[1], _tabs[2]
         with tab_admin:
             _admin_panel()
+        with tab_profile:
+            _profile_tab(current_user, mgr)
     else:
-        _tabs = st.tabs(["Kairo"])
-        tab_kairo = _tabs[0]
+        _tabs = st.tabs(["Kairo", "Profile"])
+        tab_kairo, tab_profile = _tabs[0], _tabs[1]
+        with tab_profile:
+            _profile_tab(current_user, mgr)
 
     # ── Kairo tab — iframe only ───────────────────────────────────────────────
     with tab_kairo:
