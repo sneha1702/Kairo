@@ -546,7 +546,17 @@ def _build_events(dune_context: dict, has_narrative: bool = True) -> list[dict]:
     return events[:2]
 
 
-def _build_trend_context(top: dict, dune_context: dict) -> dict:
+def _build_trend_context(top: dict, dune_context: dict, has_narrative: bool = True) -> dict:
+    if not has_narrative:
+        return {
+            "title": "Capital Flow Analysis",
+            "rows": [
+                {"label": "CEX Flows",     "value": "No data", "tone": "neutral"},
+                {"label": "Bridge Volume", "value": "No data", "tone": "neutral"},
+                {"label": "Window",        "value": "24h",     "tone": "neutral"},
+            ],
+            "interpretation": "Run narrative detection to load capital flow data.",
+        }
     try:
         token_flows = dune_context.get("token_flows") or []
         title = "Capital Flow Analysis"
