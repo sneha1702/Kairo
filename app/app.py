@@ -1532,8 +1532,8 @@ def run() -> None:
           font-size: 14.5px !important;
         }
 
-        /* ── Running indicator — keep visible but style it ── */
-        [data-testid="stStatusWidget"] { opacity: 0.7 !important; }
+        /* ── Running indicator — hide it, show loading inside the iframe ── */
+        [data-testid="stStatusWidget"] { display: none !important; }
         </style>
         """,
         unsafe_allow_html=True,
