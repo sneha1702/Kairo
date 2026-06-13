@@ -20,6 +20,7 @@ RUN python3 /tmp/patch_pymongo_ssl.py
 
 COPY app/ ./app/
 COPY config/ ./config/
+COPY .streamlit/ ./.streamlit/
 COPY streamlit_app.py .
 
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
