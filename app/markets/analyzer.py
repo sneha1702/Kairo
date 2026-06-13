@@ -454,7 +454,7 @@ class MarketAnalyzer:
         Analyze all (or a subset of) top-20 projects.
         progress_cb(current: int, total: int, project_name: str)
         """
-        mc  = pymongo.MongoClient(self.mongo_uri, tlsCAFile=__import__('config.config', fromlist=['mongo_tls_ca_file']).mongo_tls_ca_file(), serverSelectionTimeoutMS=2000)
+        mc  = pymongo.MongoClient(self.mongo_uri, tlsCAFile=mongo_tls_ca_file(), serverSelectionTimeoutMS=2000)
         doc = mc[self.mongo_db][_COLLECTION_CMC].find_one({"_id": _DOC_ID})
         mc.close()
 
@@ -502,7 +502,7 @@ class MarketAnalyzer:
         return results
 
     def _save(self, results: list[dict]) -> None:
-        mc = pymongo.MongoClient(self.mongo_uri, tlsCAFile=__import__('config.config', fromlist=['mongo_tls_ca_file']).mongo_tls_ca_file(), serverSelectionTimeoutMS=2000)
+        mc = pymongo.MongoClient(self.mongo_uri, tlsCAFile=mongo_tls_ca_file(), serverSelectionTimeoutMS=2000)
         mc[self.mongo_db][_COLLECTION_ANALYSIS].update_one(
             {"_id": _DOC_ID},
             {"$set": {"analyzed_at": datetime.now(timezone.utc), "projects": results}},
@@ -515,7 +515,7 @@ class MarketAnalyzer:
     def load_from_mongo(mongo_uri: str, mongo_db: str = "kairo") -> Optional[dict]:
         """Return the analysis document from MongoDB, or None."""
         try:
-            mc  = pymongo.MongoClient(mongo_uri, tlsCAFile=__import__('config.config', fromlist=['mongo_tls_ca_file']).mongo_tls_ca_file(), serverSelectionTimeoutMS=2000)
+            mc  = pymongo.MongoClient(mongo_uri, tlsCAFile=mongo_tls_ca_file(), serverSelectionTimeoutMS=2000)
             doc = mc[mongo_db][_COLLECTION_ANALYSIS].find_one({"_id": _DOC_ID})
             mc.close()
             return doc

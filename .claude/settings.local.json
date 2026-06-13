@@ -57,7 +57,11 @@
       "Bash(gcloud logging *)",
       "WebFetch(domain:docs.cloud.google.com)",
       "Bash(grep -v \"^$\")",
-      "Bash(grep -v \"^$\\\\|^\t2\")"
+      "Bash(grep -v \"^$\\\\|^\t2\")",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:discuss.streamlit.io)",
+      "WebFetch(domain:bobcares.com)"
     ]
   }
 }

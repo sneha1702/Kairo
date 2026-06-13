@@ -144,3 +144,14 @@ Contact / Cluster Info
 - GCP Project: kairoagent-497417
 - Egress IP (Cloud NAT): 136.114.200.1
 - Most recent failing Cloud Run revision: kairo-app-00033-8cl (2026-06-13)
+
+
+❯ 1. Strip all SSL patches, modern config (Recommended)
+     Remove patch_pymongo_ssl.py, remove _patch_pymongo_tls() runtime wrapper, upgrade pymongo to latest 4.x, add server_api=ServerApi('1'), connect=False, and append ?retryWrites=true&w=majority&appName=KairoApp&tls=true to URI. Tests the hypothesis that our own TLS-1.2 cap is breaking SNI.
+  2. Keep TLS patches, just add ServerApi + connect=False
+     More conservative — keep all current SSL machinery and the CA bundle that just deployed, only add server_api=ServerApi('1') and connect=False to MongoClient calls. Lower blast radius if previous patches were actually doing something.
+  3. Diagnostic: tlsAllowInvalidHostnames + 0.0.0.0/0 whitelist
+     Temporarily set tlsAllowInvalidHostnames=True in MongoClient and open Atlas Network Access to 0.0.0.0/0. If this connects, the issue is cert hostname / IP whitelist. If it still fails with Alert 80, the issue is purely server-side and only Atlas M2+ upgrade will fix it.
+  4. Upgrade Atlas cluster to M2 / Flex
+     Stop fighting M0's shared-cluster TLS routing entirely. M2/Flex use dedicated TLS endpoints, no SNI multiplexing, and don't have the Alert 80 behavior. Costs ~$9/month minimum. This is what the MongoDB team would recommend after seeing the bug report you prepared earlier.
+  5. Type something.
