@@ -2,17 +2,18 @@
    Kairo — app shell, navigation, tweaks
    ============================================================ */
 const { useState, useEffect } = React;
-let Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen, CryptoMarkets, ProfileScreen;
+let Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen, CryptoMarkets, ProfileScreen, PolicyPulse;
 let useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor;
 
 const NAV = [
-  { id: "today",   label: "Today",        icon: "today" },
-  { id: "narr",    label: "Narratives",   icon: "narr" },
-  { id: "history", label: "History",      icon: "history" },
-  { id: "markets", label: "Markets",      icon: "markets" },
-  { id: "config",  label: "Subscription", icon: "watch" },
-  { id: "profile", label: "Profile",      icon: "user"   },
-  { id: "logout",  label: "Sign out",     icon: "logout", action: "logout" },
+  { id: "today",      label: "Today",          icon: "today"   },
+  { id: "narr",       label: "Narratives",     icon: "narr"    },
+  { id: "history",    label: "History",        icon: "history" },
+  { id: "markets",    label: "Markets",        icon: "markets" },
+  { id: "policy",     label: "Policy Pulse",   icon: "scale"   },
+  { id: "config",     label: "Subscription",   icon: "watch"   },
+  { id: "profile",    label: "Profile",        icon: "user"    },
+  { id: "logout",     label: "Sign out",       icon: "logout", action: "logout" },
 ];
 
 /* accent palettes: hex swatch -> oklch var set */
