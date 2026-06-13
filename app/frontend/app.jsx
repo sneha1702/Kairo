@@ -106,7 +106,7 @@ function App() {
     return first ? first.id : "l2-rotation";
   });
 
-  useEffect(() => { localStorage.setItem("kairo-view", view); }, [view]);
+  // view is intentionally not persisted — initial_view from server handles post-action nav
 
   // apply theme tweaks to :root
   useEffect(() => {
