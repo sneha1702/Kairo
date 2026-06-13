@@ -1458,7 +1458,8 @@ def _empty_data(user_id: str = "default") -> dict:
         "statuses": STATUSES,
         "tracker":  _empty_tracker(),
         "trackers": {},
-        "narratives": [],
+        "narratives":          [],
+        "archived_narratives": [],
         "history": {
             "title":    "Pattern Memory",
             "subtitle": "How today's story compares with prior occurrences",
