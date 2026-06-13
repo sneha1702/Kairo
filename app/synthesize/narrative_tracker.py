@@ -54,9 +54,11 @@ class NarrativeTracker:
         self.client = MongoClient(
             mongo_uri,
             tlsCAFile=mongo_tls_ca_file(),
-            serverSelectionTimeoutMS=2000,
-            connectTimeoutMS=2000,
-            socketTimeoutMS=5000,
+            server_api=ServerApi("1"),
+            connect=False,
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000,
+            socketTimeoutMS=10000,
         )
         self.db = self.client[db_name]
         # Force an actual connection attempt so failures surface here rather than lazily.
