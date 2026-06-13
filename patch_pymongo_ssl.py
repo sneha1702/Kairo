@@ -2,11 +2,10 @@
 """
 Build-time patch: force TLS 1.2 max in pymongo's ssl_support.get_ssl_context.
 
-Atlas M0 (free tier) sends TLSV1_ALERT_INTERNAL_ERROR when the TLS 1.3
-ClientHello arrives from Cloud Run's network stack. Capping the SSL context
-at TLS 1.2 avoids the extension that triggers the rejection.
+Atlas M0 rejects certain TLS ClientHellos from Cloud Run.
+Capping at TLS 1.2 avoids the extension that triggers the rejection.
 
-Run once after `poetry install` during Docker image build.
+Works with both pymongo 3.x and 4.x.
 """
 import pathlib
 import pymongo.ssl_support as _m
@@ -14,15 +13,20 @@ import pymongo.ssl_support as _m
 p = pathlib.Path(_m.__file__)
 code = p.read_text()
 
-TARGET = '            ctx.options |= ssl.OP_NO_RENEGOTIATION'
+# Try 4.x target first (has OP_NO_RENEGOTIATION), then fall back to 3.x
+TARGETS = [
+    '            ctx.options |= ssl.OP_NO_RENEGOTIATION',
+    '            ctx.options |= ssl.OP_NO_COMPRESSION',
+]
 
-if TARGET not in code:
-    print(f"[patch_pymongo_ssl] Target line not found in {p} — already patched or layout changed")
+target = next((t for t in TARGETS if t in code), None)
+if target is None:
+    print(f"[patch_pymongo_ssl] No known target line found in {p} — skipping")
     raise SystemExit(0)
 
 ADDITION = (
     "\n"
-    "        # Force TLS 1.2 max: Atlas M0 rejects TLS 1.3 from Cloud Run\n"
+    "        # Force TLS 1.2 max: Atlas M0 rejects certain TLS handshakes from Cloud Run\n"
     '        if hasattr(_stdlibssl, "TLSVersion"):\n'
     "            try:\n"
     "                ctx.maximum_version = _stdlibssl.TLSVersion.TLSv1_2\n"
@@ -31,5 +35,5 @@ ADDITION = (
     "                    ctx.options |= _stdlibssl.OP_NO_TLSv1_3\n"
 )
 
-p.write_text(code.replace(TARGET, TARGET + ADDITION, 1))
-print(f"[patch_pymongo_ssl] Patched {p}")
+p.write_text(code.replace(target, target + ADDITION, 1))
+print(f"[patch_pymongo_ssl] Patched {p} (target: {target.strip()})")
