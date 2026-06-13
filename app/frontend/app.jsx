@@ -6,12 +6,13 @@ let Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen, Crypto
 let useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor;
 
 const NAV = [
-  { id: "today",   label: "Today",      icon: "today" },
-  { id: "narr",    label: "Narratives", icon: "narr" },
-  { id: "history", label: "History",    icon: "history" },
-  { id: "markets", label: "Markets",    icon: "markets" },
-  { id: "config",  label: "Config",     icon: "watch" },
-  { id: "profile", label: "Profile",    icon: "user"   },
+  { id: "today",   label: "Today",        icon: "today" },
+  { id: "narr",    label: "Narratives",   icon: "narr" },
+  { id: "history", label: "History",      icon: "history" },
+  { id: "markets", label: "Markets",      icon: "markets" },
+  { id: "config",  label: "Subscription", icon: "watch" },
+  { id: "profile", label: "Profile",      icon: "user"   },
+  { id: "logout",  label: "Sign out",     icon: "logout", action: "logout" },
 ];
 
 /* accent palettes: hex swatch -> oklch var set */
