@@ -558,8 +558,8 @@ class NarrativeEngine:
         # ── Save prompt to disk ────────────────────────────────────────────────
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         try:
-            _PROMPT_DIR.mkdir(parents=True, exist_ok=True)
-            prompt_file = _PROMPT_DIR / f"prompt_{ts}.txt"
+            _GENERATED_DIR.mkdir(parents=True, exist_ok=True)
+            prompt_file = _GENERATED_DIR / f"prompt_{ts}.txt"
             prompt_file.write_text(prompt, encoding="utf-8")
             logger.info("[GEMINI] Prompt saved → %s (%d chars)", prompt_file, len(prompt))
         except Exception as exc:
@@ -572,7 +572,7 @@ class NarrativeEngine:
 
         # ── Save raw Gemini response alongside the prompt ──────────────────────
         try:
-            response_file = _PROMPT_DIR / f"response_{ts}.txt"
+            response_file = _GENERATED_DIR / f"response_{ts}.txt"
             response_file.write_text(raw_response, encoding="utf-8")
             logger.info("[GEMINI] Response saved  → %s", response_file)
         except Exception as exc:
