@@ -1364,10 +1364,27 @@ def run() -> None:
         initial_sidebar_state="collapsed",
     )
 
-    # Handle logout action triggered by the React iframe via query param
+    # Handle actions triggered by the React iframe via query params
     _qp = st.query_params.get("kairo_action", "")
     if _qp == "logout":
         st.session_state.pop("_kairo_user", None)
+        st.query_params.clear()
+        st.rerun()
+    elif _qp == "save-profile":
+        _raw = st.query_params.get("profile_data", "")
+        if _raw and st.session_state.get("_kairo_user"):
+            try:
+                import json as _json
+                _updates = _json.loads(_raw)
+                _mgr2 = _get_user_manager()
+                if _mgr2:
+                    _uname = st.session_state["_kairo_user"]["username"]
+                    _mgr2.update_profile(_uname, _updates)
+                    _refreshed = _mgr2.get_profile(_uname)
+                    if _refreshed:
+                        st.session_state["_kairo_user"] = _refreshed
+            except Exception as _exc:
+                logger.warning("save-profile failed: %s", _exc)
         st.query_params.clear()
         st.rerun()
 
