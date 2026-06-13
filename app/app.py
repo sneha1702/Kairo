@@ -1324,6 +1324,13 @@ def run() -> None:
         initial_sidebar_state="collapsed",
     )
 
+    # Handle logout action triggered by the React iframe via query param
+    _qp = st.query_params.get("kairo_action", "")
+    if _qp == "logout":
+        st.session_state.pop("_kairo_user", None)
+        st.query_params.clear()
+        st.rerun()
+
     st.markdown(
         """
         <style>
