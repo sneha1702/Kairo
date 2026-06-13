@@ -33,6 +33,7 @@ from typing import Optional
 import pymongo
 import requests
 from bs4 import BeautifulSoup
+from config.config import mongo_tls_ca_file
 
 logger = logging.getLogger(__name__)
 
