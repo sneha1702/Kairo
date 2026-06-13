@@ -28,7 +28,6 @@ COPY app/ ./app/
 COPY config/ ./config/
 COPY .streamlit/ ./.streamlit/
 COPY streamlit_app.py .
-COPY diagnose_atlas_tls.py .
 
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
