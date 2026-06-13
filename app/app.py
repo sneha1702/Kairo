@@ -1587,6 +1587,8 @@ def run() -> None:
 
         kairo_data = _cached_build_data(user_id, hours_lookback)
         kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
+        # Inject current user profile so the React app can display it
+        kairo_data["user"] = dict(current_user)
 
         try:
             data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
