@@ -111,7 +111,7 @@ function BriefingSections({ t }) {
   );
 }
 
-/* ---- live narratives rail (index) ---- */
+/* ---- live narratives rail (index) — full-width row cards ---- */
 function NarrativeRail({ onDrill }) {
   if (!K.narratives || K.narratives.length === 0) {
     return (
@@ -134,44 +134,79 @@ function NarrativeRail({ onDrill }) {
 
   return (
     <div>
-      <CardLabel icon="narr">Live narratives Kairo is tracking</CardLabel>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "var(--gap)" }}>
+      <CardLabel icon="narr">
+        Live narratives Kairo is tracking
+        <span style={{ marginLeft: 8, color: "var(--ink-4)", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+          {K.narratives.length}
+        </span>
+      </CardLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap)" }}>
         {K.narratives.map(n => (
-          <button key={n.id} onClick={() => onDrill(n.id)} className="card" style={{
-            padding: 18, textAlign: "left", transition: "transform 0.18s, box-shadow 0.18s",
-            width: "100%",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-              <ForceTag id={n.force} size="sm" />
-              <span className="mono" style={{ fontSize: 12, color: "var(--ink-3)" }}>{n.granularity === 'week' ? 'Week' : 'Day'} {n.day}</span>
-            </div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, lineHeight: 1.3 }}>{n.title}</h3>
-            {(n.phase || n.summary_line) && (
-              <div style={{ marginBottom: 10, display: "flex", flexDirection: "column", gap: 5 }}>
-                {n.phase && <PhaseChip phase={n.phase} />}
+          <div key={n.id} className="card" style={{ padding: "22px 26px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 24 }}>
+
+              {/* ── Left: meta + title + summary + assets ── */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                  <span className="mono" style={{ fontSize: 11.5, color: "var(--ink-4)", fontWeight: 600 }}>
+                    {n.granularity === "week" ? "Week" : "Day"} {n.day}
+                  </span>
+                  <ForceTag id={n.force} size="sm" />
+                  {n.phase && <PhaseChip phase={n.phase} />}
+                  {n.smart_money_intent && <SmartIntentBadge intent={n.smart_money_intent} />}
+                </div>
+
+                <h3 style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.25, marginBottom: 8, letterSpacing: "-0.015em" }}>
+                  {n.title}
+                </h3>
+
                 {n.summary_line && (
-                  <p style={{ fontSize: 13, color: "var(--ink-3)", lineHeight: 1.5, margin: 0 }}>{n.summary_line}</p>
+                  <p style={{ fontSize: 14.5, color: "var(--ink-3)", lineHeight: 1.6, margin: "0 0 12px" }}>
+                    {n.summary_line}
+                  </p>
+                )}
+
+                {n.assets && n.assets.length > 0 && (
+                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                    {n.assets.map(a => <Asset key={a} sym={a} />)}
+                  </div>
                 )}
               </div>
-            )}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <StatusBadge status={n.status} size="sm" />
-              <span className="mono" style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>{n.strength.toFixed(1)}</span>
-            </div>
-            {n.assets && n.assets.length > 0 && (
-              <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
-                {n.assets.map(a => <Asset key={a} sym={a} />)}
+
+              {/* ── Right: strength + status + CTA ── */}
+              <div style={{
+                display: "flex", flexDirection: "column",
+                alignItems: "flex-end", justifyContent: "space-between",
+                gap: 14, flexShrink: 0, minWidth: 120,
+              }}>
+                <div style={{ textAlign: "right" }}>
+                  <div className="mono" style={{ fontSize: 26, fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
+                    {n.strength.toFixed(1)}
+                  </div>
+                  <div className="eyebrow" style={{ marginTop: 3 }}>strength</div>
+                </div>
+
+                <StatusBadge status={n.status} size="sm" />
+
+                <button
+                  onClick={() => onDrill(n.id)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    background: "var(--accent)", color: "var(--paper)",
+                    padding: "9px 16px", borderRadius: "var(--r-sm)",
+                    fontSize: 13.5, fontWeight: 700, border: "none",
+                    cursor: "pointer", fontFamily: "var(--font-sans)",
+                    whiteSpace: "nowrap", transition: "background 0.15s",
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = "var(--accent-ink)"}
+                  onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}
+                >
+                  View detail <Icon name="arrowR" size={13} stroke={2} />
+                </button>
               </div>
-            )}
-            {n.smart_money_intent && (
-              <div style={{ marginBottom: 8 }}>
-                <SmartIntentBadge intent={n.smart_money_intent} />
-              </div>
-            )}
-            <div style={{ display: "flex", alignItems: "center", gap: 5, color: "var(--accent-ink)", fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-              View detail <Icon name="arrowR" size={13} stroke={2} />
+
             </div>
-          </button>
+          </div>
         ))}
       </div>
     </div>
