@@ -1446,6 +1446,29 @@ def run() -> None:
         st.session_state["_kairo_init_view"] = "profile"
         _preserve_session_token()
         st.rerun()
+    elif _qp == "add-concept":
+        _concept_url  = st.query_params.get("concept_url", "").strip()
+        _concept_name = st.query_params.get("concept_name", "").strip()
+        if _concept_url and _concept_name and st.session_state.get("_kairo_user"):
+            _con_trk = _get_concept_tracker()
+            _eng = init_services()[1]
+            if _con_trk and _eng:
+                try:
+                    _result = _con_trk.fetch_and_store(_eng, _concept_name, _concept_url)
+                    if _result.get("saved"):
+                        st.session_state["_kairo_toast"] = f'"{_concept_name}" added to Crypto 101!'
+                    elif _result.get("skipped"):
+                        st.session_state["_kairo_toast"] = f'"{_concept_name}" is already in Crypto 101.'
+                    elif _result.get("error"):
+                        st.session_state["_kairo_toast"] = f'Could not add concept: {_result["error"][:80]}'
+                except Exception as _exc:
+                    logger.warning("add-concept failed: %s", _exc)
+                    st.session_state["_kairo_toast"] = "Concept fetch failed — please try again."
+            else:
+                st.session_state["_kairo_toast"] = "Gemini or MongoDB not configured."
+        st.session_state["_kairo_init_view"] = "learn"
+        _preserve_session_token()
+        st.rerun()
     elif _qp == "delete-account":
         _confirm = st.query_params.get("confirm_user", "")
         if st.session_state.get("_kairo_user"):
