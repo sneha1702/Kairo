@@ -2121,12 +2121,15 @@ def run() -> None:
         _init_view = st.session_state.pop("_kairo_init_view", None)
         _toast = st.session_state.pop("_kairo_toast", None)
         _pw_result = st.session_state.pop("_kairo_pw_result", None)
+        _pw_message = st.session_state.pop("_kairo_pw_message", None)
         if _init_view:
             kairo_data["config"]["initial_view"] = _init_view
         if _toast:
             kairo_data["config"]["toast"] = _toast
         if _pw_result:
             kairo_data["config"]["pw_result"] = _pw_result
+        if _pw_message:
+            kairo_data["config"]["pw_message"] = _pw_message
 
         try:
             data_json_str = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
