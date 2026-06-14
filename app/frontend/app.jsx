@@ -51,60 +51,82 @@ function Logo() {
   );
 }
 
-function handleLogout() {
-  if (!window.confirm("Sign out of Kairo?")) return;
+function doLogoutNav() {
   try { sessionStorage.clear(); } catch (_) {}
-  // Build the logout URL from the top-level Streamlit frame's href.
-  // Use direct location assignment — not window.open — so browsers treat
-  // it as a navigation, not a popup (which can be blocked or open a new tab).
-  const doLogout = (base) => {
+  const buildUrl = (base) => {
     const u = new URL(base);
     u.searchParams.delete("auto_session");
     u.searchParams.set("kairo_action", "logout");
     return u.toString();
   };
   try {
-    // Primary: navigate the top-level Streamlit window directly.
-    window.top.location.href = doLogout(window.top.location.href);
+    window.top.location.href = buildUrl(window.top.location.href);
   } catch (_) {
     try {
-      // Fallback: parent frame (same result in most Streamlit setups).
-      window.parent.location.href = doLogout(window.parent.location.href);
+      window.parent.location.href = buildUrl(window.parent.location.href);
     } catch (_2) {
-      // Last resort: reload top frame to the base URL which will clear the session.
       try { window.top.location.replace("/?kairo_action=logout"); } catch (_3) {}
     }
   }
 }
 
 function Sidebar({ view, setView }) {
+  const [logoutPending, setLogoutPending] = useState(false);
   return (
     <nav className="kairo-rail">
       <div style={{ padding: "4px 4px 28px" }} className="kairo-logo"><Logo /></div>
       <div className="kairo-navitems">
-        {NAV.map(n => {
-          const isLogout = n.action === "logout";
-          const active = !isLogout && view === n.id;
+        {NAV.filter(n => n.action !== "logout").map(n => {
+          const active = view === n.id;
           return (
-            <button key={n.id} onClick={() => isLogout ? handleLogout() : setView(n.id)} style={{
+            <button key={n.id} onClick={() => setView(n.id)} style={{
               display: "flex", alignItems: "center", gap: 12, padding: "11px 13px",
               borderRadius: 12,
-              color: isLogout ? "var(--ink-4)" : active ? "var(--ink)" : "var(--ink-3)",
+              color: active ? "var(--ink)" : "var(--ink-3)",
               background: active ? "var(--surface)" : "transparent",
               boxShadow: active ? "var(--shadow-soft)" : "none",
               border: active ? "1px solid var(--hairline)" : "1px solid transparent",
               fontSize: 15, fontWeight: 600, transition: "color 0.15s, background 0.15s",
-              marginTop: isLogout ? 8 : undefined,
-              borderTop: isLogout ? "1px solid var(--hairline)" : undefined,
-            }}
-            onMouseOver={e => { if (isLogout) e.currentTarget.style.color = "var(--ink-2)"; }}
-            onMouseOut={e => { if (isLogout) e.currentTarget.style.color = "var(--ink-4)"; }}
-            >
+            }}>
               <Icon name={n.icon} size={19} stroke={1.8} style={{ color: active ? "var(--accent-ink)" : "inherit" }} />
               {n.label}
             </button>
           );
         })}
+
+        <div style={{ marginTop: 8, borderTop: "1px solid var(--hairline)", paddingTop: 8 }}>
+          {logoutPending ? (
+            <div style={{ padding: "8px 13px" }}>
+              <div style={{ fontSize: 13.5, color: "var(--ink-2)", fontWeight: 500, marginBottom: 9 }}>Sign out of Kairo?</div>
+              <div style={{ display: "flex", gap: 7 }}>
+                <button onClick={doLogoutNav} style={{
+                  flex: 1, padding: "7px 0", borderRadius: 8, border: "none",
+                  background: "var(--accent)", color: "white",
+                  fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}>Yes</button>
+                <button onClick={() => setLogoutPending(false)} style={{
+                  flex: 1, padding: "7px 0", borderRadius: 8,
+                  border: "1px solid var(--hairline)", background: "transparent",
+                  color: "var(--ink-2)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setLogoutPending(true)} style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "11px 13px",
+              borderRadius: 12, width: "100%",
+              color: "var(--ink-4)", background: "transparent",
+              border: "1px solid transparent",
+              fontSize: 15, fontWeight: 600, transition: "color 0.15s",
+            }}
+            onMouseOver={e => e.currentTarget.style.color = "var(--ink-2)"}
+            onMouseOut={e => e.currentTarget.style.color = "var(--ink-4)"}
+            >
+              <Icon name="logout" size={19} stroke={1.8} />
+              Sign out
+            </button>
+          )}
+        </div>
       </div>
     </nav>
   );
