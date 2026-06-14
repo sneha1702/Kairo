@@ -13,7 +13,7 @@ maxUploadSize = 50
 
 [client]
 showErrorDetails = false
-toolbarMode = "minimal"
+toolbarMode = "viewer"
 
 [logger]
 level = "info"
