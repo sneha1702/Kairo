@@ -1745,6 +1745,17 @@ def run() -> None:
             logger.warning("Failed to load regulations for kairo_data: %s", _exc)
             kairo_data.setdefault("regulations", [])
             kairo_data.setdefault("regulation_last_run", {})
+        # Inject Crypto 101 concepts
+        try:
+            _con_trk = _get_concept_tracker()
+            if _con_trk:
+                kairo_data["concepts"] = _con_trk.get_all_concepts()
+            else:
+                kairo_data.setdefault("concepts", [])
+        except Exception as _exc:
+            logger.warning("Failed to load concepts for kairo_data: %s", _exc)
+            kairo_data.setdefault("concepts", [])
+
         # Inject one-time transient UI signals (popped so they don't repeat on refresh)
         _init_view = st.session_state.pop("_kairo_init_view", None)
         _toast = st.session_state.pop("_kairo_toast", None)
