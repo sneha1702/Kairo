@@ -2468,12 +2468,10 @@ def run() -> None:
         st.query_params.clear()
         st.rerun()
 
-    st.markdown(
-        """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+    # CSS already injected at the top of run() — no duplicate needed here.
 
-        /* ── Kairo design tokens (mirrors the React app) ── */
+    # ── Auth gate ─────────────────────────────────────────────────────────────
+    _AUTH_GATE_START = True  # marker so the next read finds the right location
         :root {
           --paper:       oklch(0.985 0.006 80);
           --surface:     oklch(0.995 0.004 85);
