@@ -2504,24 +2504,25 @@ def run() -> None:
 
 
     # ── Auth gate ─────────────────────────────────────────────────────────────
-    mgr = _get_user_manager()
     current_user = st.session_state.get("_kairo_user")
     if not current_user:
-        # Try remember-me token from URL before showing the login page
+        # Try remember-me token from URL — only load user manager if token is present
         _rm_token = st.query_params.get("auto_session", "")
-        if _rm_token and mgr:
-            try:
-                _rm_uname = mgr.validate_session_token(_rm_token)
-                if _rm_uname:
-                    _rm_profile = mgr.get_profile(_rm_uname)
-                    if _rm_profile:
-                        st.session_state["_kairo_user"] = _rm_profile
-                        st.session_state["_kairo_session_token"] = _rm_token
-                        current_user = _rm_profile
-            except Exception as _exc:
-                logger.warning("remember-me validation failed: %s", _exc)
+        if _rm_token:
+            mgr = _get_user_manager()
+            if mgr:
+                try:
+                    _rm_uname = mgr.validate_session_token(_rm_token)
+                    if _rm_uname:
+                        _rm_profile = mgr.get_profile(_rm_uname)
+                        if _rm_profile:
+                            st.session_state["_kairo_user"] = _rm_profile
+                            st.session_state["_kairo_session_token"] = _rm_token
+                            current_user = _rm_profile
+                except Exception as _exc:
+                    logger.warning("remember-me validation failed: %s", _exc)
     if not current_user:
-        _render_login_page(mgr)  # calls st.stop() — nothing below runs
+        _render_login_page()  # calls st.stop() — nothing below runs
     is_admin = current_user.get("role") == "admin"
 
     # ── Tab layout ───────────────────────────────────────────────────────────
