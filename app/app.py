@@ -1164,6 +1164,7 @@ def _render_login_page() -> None:
                         generic_err = str(exc) if exc.code == "locked" else generic_err
                     if user:
                         st.session_state["_kairo_user"] = user
+                        st.session_state["_kairo_just_logged_in"] = True
                         if remember_me:
                             try:
                                 _token = mgr.create_session_token(user["username"])
