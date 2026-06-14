@@ -53,18 +53,27 @@ function Logo() {
 
 function handleLogout() {
   if (!window.confirm("Sign out of Kairo?")) return;
-  const buildUrl = (base) => {
+  try { sessionStorage.clear(); } catch (_) {}
+  // Build the logout URL from the top-level Streamlit frame's href.
+  // Use direct location assignment — not window.open — so browsers treat
+  // it as a navigation, not a popup (which can be blocked or open a new tab).
+  const doLogout = (base) => {
     const u = new URL(base);
     u.searchParams.delete("auto_session");
     u.searchParams.set("kairo_action", "logout");
     return u.toString();
   };
-  try { sessionStorage.clear(); } catch (_) {}
-  // Streamlit's component iframe sandbox blocks window.top.location
-  // navigation, but allows popups to escape via window.open(url, '_top').
-  const url = buildUrl(window.top.location.href);
-  if (!window.open(url, '_top')) {
-    window.location.href = buildUrl(window.location.href);
+  try {
+    // Primary: navigate the top-level Streamlit window directly.
+    window.top.location.href = doLogout(window.top.location.href);
+  } catch (_) {
+    try {
+      // Fallback: parent frame (same result in most Streamlit setups).
+      window.parent.location.href = doLogout(window.parent.location.href);
+    } catch (_2) {
+      // Last resort: reload top frame to the base URL which will clear the session.
+      try { window.top.location.replace("/?kairo_action=logout"); } catch (_3) {}
+    }
   }
 }
 
