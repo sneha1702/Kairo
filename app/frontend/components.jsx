@@ -32,6 +32,7 @@ function Icon({ name, size = 18, stroke = 1.6, style }) {
     markets:<><path d="M4 20V14M9 20V8M14 20V12M19 20V4" /></>,
     user:   <><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" /></>,
     logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></>,
+    book:   <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" /></>,
   };
   return <svg {...p}>{paths[name] || null}</svg>;
 }
