@@ -1755,16 +1755,36 @@ def run() -> None:
     elif _qp == "change-password":
         _pw_raw = st.query_params.get("pw_data", "")
         if _pw_raw and st.session_state.get("_kairo_user"):
+            from app.auth.user_manager import AuthError as _AuthErr
             try:
                 import json as _json
                 _pw_data = _json.loads(_pw_raw)
                 _mgr_pw = _get_user_manager()
                 if _mgr_pw:
                     _uname = st.session_state["_kairo_user"]["username"]
-                    _ok = _mgr_pw.change_password(
-                        _uname, _pw_data.get("old", ""), _pw_data.get("new", "")
-                    )
-                    st.session_state["_kairo_pw_result"] = "ok" if _ok else "wrong_password"
+                    try:
+                        _ok = _mgr_pw.change_password(
+                            _uname, _pw_data.get("old", ""), _pw_data.get("new", "")
+                        )
+                    except _AuthErr as _ae:
+                        _ok = False
+                        st.session_state["_kairo_pw_result"] = "weak_password"
+                        st.session_state["_kairo_pw_message"] = str(_ae)
+                    else:
+                        if _ok:
+                            # Password rotation revokes every existing session
+                            # for this user (see UserManager). Re-issue a fresh
+                            # session token for the current device so the user
+                            # isn't surprise-logged-out of the tab they're in.
+                            st.session_state["_kairo_pw_result"] = "ok"
+                            try:
+                                _new_tok = _mgr_pw.create_session_token(_uname)
+                                st.session_state["_kairo_session_token"] = _new_tok
+                                st.query_params["auto_session"] = _new_tok
+                            except Exception:
+                                pass
+                        elif "_kairo_pw_result" not in st.session_state:
+                            st.session_state["_kairo_pw_result"] = "wrong_password"
             except Exception as _exc:
                 logger.warning("change-password failed: %s", _exc)
                 st.session_state["_kairo_pw_result"] = "error"
