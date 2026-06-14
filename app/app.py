@@ -2587,4 +2587,4 @@ def run() -> None:
             data_json_str = json.dumps(_empty_data(), ensure_ascii=False)
 
         html = build_kairo_html(data_json_str)
-        st.components.v1.html(html, height=1400, scrolling=True)
+        st.components.v1.html(html, height=900, scrolling=False)
