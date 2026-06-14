@@ -137,9 +137,13 @@ function ProfileScreen() {
 
   function handleChangePassword() {
     setPwError("");
-    if (!oldPw || !newPw1)  { setPwError("Please fill in all password fields."); return; }
-    if (newPw1.length < 8)  { setPwError("New password must be at least 8 characters."); return; }
-    if (newPw1 !== newPw2)  { setPwError("Passwords do not match."); return; }
+    if (!oldPw || !newPw1)   { setPwError("Please fill in all password fields."); return; }
+    if (newPw1.length < 10)  { setPwError("New password must be at least 10 characters."); return; }
+    if (!/[A-Za-z]/.test(newPw1) || !/\d/.test(newPw1)) {
+      setPwError("Use a mix of letters and numbers."); return;
+    }
+    if (newPw1 === oldPw)    { setPwError("Pick a new password — don't reuse the old one."); return; }
+    if (newPw1 !== newPw2)   { setPwError("Passwords do not match."); return; }
     setPwSaving(true);
     navigate({
       kairo_action: "change-password",
