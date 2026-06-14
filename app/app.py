@@ -1382,11 +1382,79 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
 
     st.divider()
 
-    # ── 6. Service Status ─────────────────────────────────────────────────────
+    # ── 6. Regulation Update (Policy Pulse) ───────────────────────────────────
+    st.subheader("Regulation Update")
+    st.caption(
+        "Calls Gemini to fetch the latest crypto regulatory developments from global Tier 1 law firm "
+        "trackers and official regulator feeds. Only genuinely new updates are stored in MongoDB — "
+        "duplicates are automatically skipped."
+    )
+
+    _reg_tracker = _get_regulation_tracker()
+    if _reg_tracker:
+        try:
+            _last_reg_run = _reg_tracker.get_last_run()
+        except Exception:
+            _last_reg_run = None
+
+        if _last_reg_run:
+            _lr_at = _last_reg_run.get("run_at", "")
+            if hasattr(_lr_at, "isoformat"):
+                _lr_at = _lr_at.isoformat()
+            _lr_saved   = _last_reg_run.get("saved", 0)
+            _lr_skipped = _last_reg_run.get("skipped", 0)
+            st.info(
+                f"Last run: **{str(_lr_at)[:19].replace('T', ' ')} UTC** — "
+                f"{_lr_saved} new update(s) saved, {_lr_skipped} duplicate(s) skipped."
+            )
+        else:
+            st.caption("No regulation fetch has been run yet.")
+
+        if st.button("⚖ Fetch Regulation Update", use_container_width=True, key="btn_fetch_regulations"):
+            if _engine is None:
+                st.error("Gemini (NarrativeEngine) is not configured. Check GEMINI_KEY.")
+            else:
+                _reg_prog   = st.progress(0, text="Calling Gemini for regulatory intelligence…")
+                _reg_status = st.empty()
+                try:
+                    _reg_prog.progress(20, text="Gathering known regulation IDs from MongoDB…")
+                    _reg_prog.progress(40, text="Sending prompt to Gemini…")
+                    _reg_result = _reg_tracker.fetch_and_store(_engine)
+                    _reg_prog.progress(100, text="Done.")
+                    if "error" in _reg_result:
+                        _reg_status.error(f"Regulation fetch failed: {_reg_result['error']}")
+                    else:
+                        _saved   = _reg_result.get("saved", 0)
+                        _skipped = _reg_result.get("skipped", 0)
+                        _total   = _reg_result.get("total_found", 0)
+                        if _saved > 0:
+                            _reg_status.success(
+                                f"Done — {_saved} new regulation(s) saved, "
+                                f"{_skipped} duplicate(s) skipped (of {_total} found). "
+                                "Switch to the **Policy Pulse** tab to view."
+                            )
+                        else:
+                            _reg_status.info(
+                                f"No new regulations this run — {_skipped} already known (of {_total} found). "
+                                "Policy Pulse is already up to date."
+                            )
+                    _cached_build_data.clear()
+                    st.rerun()
+                except Exception as _exc:
+                    _reg_prog.empty()
+                    _reg_status.error(f"Regulation fetch failed: {_exc}")
+                    logger.exception("Regulation fetch failed")
+    else:
+        st.warning("MongoDB not configured — RegulationTracker unavailable. Set MONGO_URI to enable.")
+
+    st.divider()
+
+    # ── 7. Service Status ─────────────────────────────────────────────────────
     st.subheader("Service Status")
-    st.write("Elasticsearch:",    "✅ connected" if _es      is not None else "❌ not connected")
-    st.write("Narrative Engine:", "✅ ready"     if _engine  is not None else "❌ not ready")
-    st.write("MongoDB Tracker:",  "✅ connected" if _tracker is not None else "❌ not connected")
+    st.write("Elasticsearch:",       "✅ connected" if _es           is not None else "❌ not connected")
+    st.write("Narrative Engine:",    "✅ ready"     if _engine        is not None else "❌ not ready")
+    st.write("MongoDB Tracker:",     "✅ connected" if _tracker        is not None else "❌ not connected")
+    st.write("Regulation Tracker:",  "✅ connected" if _reg_tracker   is not None else "❌ not connected")
 
 
 def run() -> None:
