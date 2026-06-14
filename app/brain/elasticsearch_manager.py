@@ -10,7 +10,13 @@ from typing import List, Dict, Any
 
 class ElasticsearchManager:
     def __init__(self, es_url: str, username: str, password: str, api_key_id: str):
-        """Initialize Elasticsearch connection."""
+        """Initialize Elasticsearch connection.
+
+        The ping is best-effort with a short timeout so we never block page
+        startup if ES is degraded. The website does not require ES — only
+        ingestion and detection flows do. A failed ping just disables ES
+        features; reads/writes against Mongo continue normally.
+        """
         self.logger = logging.getLogger(__name__)
         self._available = False
         self.logger.info("Connecting to Elasticsearch at %s", es_url)
@@ -22,7 +28,10 @@ class ElasticsearchManager:
         )
 
         try:
-            ok = self.es.ping()
+            # Short-bounded ping: if ES is unreachable we don't want to hang
+            # the user-facing page render for 10s. Anything that actually
+            # needs ES (ingestion, detection) still uses the 10s client default.
+            ok = self.es.options(request_timeout=3).ping()
             self._available = bool(ok)
             self.logger.info("Elasticsearch ping status: %s", ok)
         except Exception as e:
