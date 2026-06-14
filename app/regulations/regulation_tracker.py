@@ -21,6 +21,9 @@ logger = logging.getLogger(__name__)
 
 _SCHEMA_PATH = Path(__file__).resolve().parent / "crypto_regulation_schema.json"
 
+_PROMPT_DIR         = Path(__file__).resolve().parents[1] / "prompts"
+_PROMPT             = (_PROMPT_DIR / "regulation_analyzer_prompt.txt").read_text(encoding="utf-8")
+
 REGULATION_PROMPT = """
 You are a crypto regulatory intelligence analyst. Your job is to find, read, and summarise the latest regulatory developments in cryptocurrency from around the world, with particular emphasis on China, India, the European Union, and the United States.
 

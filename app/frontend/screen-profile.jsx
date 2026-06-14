@@ -58,7 +58,8 @@ function ProfileScreen() {
   const [tradingProfile, setTradingProfile] = useState(user.trading_profile || "");
   const [purpose,        setPurpose]        = useState(user.purpose         || "");
   const [saving,         setSaving]         = useState(false);
-  const [editing,        setEditing]        = useState(false);
+  // Stay in edit mode if returning from a save (config.toast is set by the server)
+  const [editing,        setEditing]        = useState(!!config.toast);
 
   /* ── change password ── */
   const [oldPw,    setOldPw]    = useState("");
