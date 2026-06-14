@@ -998,63 +998,131 @@ def _run_detection_flow(_es, _engine, _tracker, user_id: str, hours: int) -> Non
 
 
 def _admin_panel_content(_es, _engine, _tracker) -> None:
-    from datetime import date as _date, timedelta as _td
+    import os as _os
 
-    st.text_input("User ID", value="default", key="admin_user_id")
-    _user_id = st.session_state.get("admin_user_id", "default")
+    _mongo_uri = _os.getenv("MONGO_URI") or _Cfg.MONGO_URI
+    _mongo_db  = _os.getenv("MONGO_DB")  or _Cfg.MONGO_DB or "kairo"
+    _user_id   = "default"
+
+    # ── Table header ──────────────────────────────────────────────────────────
+    _h1, _h2, _h3, _h4 = st.columns([2, 2, 2, 2])
+    with _h1: st.markdown("**Data Source**")
+    with _h2: st.markdown("**Ingestion (last 24h)**")
+    with _h3: st.markdown("**Purge All**")
+    with _h4: st.markdown("**Backfill (last 6 months)**")
+
+    st.markdown(
+        "<hr style='margin:6px 0 10px;border-color:var(--hairline)'>",
+        unsafe_allow_html=True,
+    )
+
+    # ── Row 1: Narratives ─────────────────────────────────────────────────────
+    _r1c1, _r1c2, _r1c3, _r1c4 = st.columns([2, 2, 2, 2])
+    with _r1c1: st.markdown("**Narratives**")
+    with _r1c2: _narr_ingest    = st.button("Run",      key="btn_narr_ingest",    use_container_width=True)
+    with _r1c3: _narr_purge     = st.button("Purge",    key="btn_narr_purge",     use_container_width=True, type="secondary")
+    with _r1c4: _narr_backfill  = st.button("Backfill", key="btn_narr_backfill",  use_container_width=True)
+
+    # ── Row 2: Market Analysis ────────────────────────────────────────────────
+    _r2c1, _r2c2, _r2c3, _r2c4 = st.columns([2, 2, 2, 2])
+    with _r2c1: st.markdown("**Market Analysis**")
+    with _r2c2: _mkt_ingest     = st.button("Run",      key="btn_mkt_ingest",     use_container_width=True)
+    with _r2c3: _mkt_purge      = st.button("Purge",    key="btn_mkt_purge",      use_container_width=True, type="secondary")
+    with _r2c4: st.markdown("—")
+
+    # ── Row 3: Policy Updates ─────────────────────────────────────────────────
+    _r3c1, _r3c2, _r3c3, _r3c4 = st.columns([2, 2, 2, 2])
+    with _r3c1: st.markdown("**Policy Updates**")
+    with _r3c2: _pol_ingest     = st.button("Run",      key="btn_pol_ingest",     use_container_width=True)
+    with _r3c3: _pol_purge      = st.button("Purge",    key="btn_pol_purge",      use_container_width=True, type="secondary")
+    with _r3c4: _pol_backfill   = st.button("Backfill", key="btn_pol_backfill",   use_container_width=True)
 
     st.divider()
 
-    # ── 1. Fetch On-Chain Data ─────────────────────────────────────────────────
-    st.subheader("Fetch On-Chain Data")
-    st.caption("Ingest historical on-chain data from Dune into Elasticsearch. Up to 6 months back.")
+    # ── Action dispatch — runs below the table ────────────────────────────────
+    # Purge confirmations (session-persistent) take priority over fresh clicks.
 
-    _today         = _date.today()
-    _max_backfill  = _today - _td(days=180)   # 6-month hard cap
-    _fcol1, _fcol2 = st.columns(2)
-    with _fcol1:
-        _start_date = st.date_input(
-            "From (UTC)",
-            value=_today - _td(days=30),
-            min_value=_max_backfill,
-            max_value=_today,
-            key="fetch_start_date",
-            help="Earliest supported: 6 months back.",
-        )
-    with _fcol2:
-        _end_date = st.date_input(
-            "To (UTC)", value=_today, min_value=_max_backfill, max_value=_today, key="fetch_end_date"
-        )
+    if st.session_state.get("_narr_purge_pending"):
+        st.warning("Permanently delete **all narratives**? This cannot be undone.")
+        _pc1, _pc2 = st.columns(2)
+        with _pc1:
+            if st.button("Confirm", key="_narr_purge_yes", type="primary", use_container_width=True):
+                if _tracker:
+                    _n = _tracker.purge_narratives(_user_id)
+                    st.session_state.pop("_narr_purge_pending", None)
+                    _cached_build_data.clear()
+                    st.success(f"Deleted {_n} narrative(s).")
+                    st.rerun()
+                else:
+                    st.error("MongoDB tracker not connected.")
+        with _pc2:
+            if st.button("Cancel", key="_narr_purge_no", use_container_width=True):
+                st.session_state.pop("_narr_purge_pending", None)
+                st.rerun()
 
-    _fetch_valid = bool(_start_date and _end_date and _end_date > _start_date)
-    if _fetch_valid:
-        _delta_days  = (_end_date - _start_date).days
-        _delta_hours = _delta_days * 24
-        _backfill_mode = _delta_days >= 7
-        if _backfill_mode:
-            _n_chunks = (_delta_days + 6) // 7
-            st.caption(f"📦 Backfill mode — {_delta_days} days → {_n_chunks} weekly chunk(s)")
-        else:
-            st.caption(f"⚡ Direct query — {_delta_hours} hours")
-    elif _start_date and _end_date:
-        st.warning("End date must be after start date.")
-        _delta_hours = 0
-        _backfill_mode = False
-    else:
-        _delta_hours = 0
-        _backfill_mode = False
+    elif st.session_state.get("_mkt_purge_pending"):
+        st.warning("Permanently delete **all market analysis data**? This cannot be undone.")
+        _pc1, _pc2 = st.columns(2)
+        with _pc1:
+            if st.button("Confirm", key="_mkt_purge_yes", type="primary", use_container_width=True):
+                try:
+                    from pymongo import MongoClient as _MC
+                    from config.config import mongo_tls_ca_file as _tls
+                    from pymongo.server_api import ServerApi as _SA
+                    _c = _MC(_mongo_uri, tlsCAFile=_tls(), server_api=_SA("1"), connect=False)
+                    _c[_mongo_db]["crypto_markets_config"].drop()
+                    _c.close()
+                    st.session_state.pop("_mkt_purge_pending", None)
+                    _cached_build_data.clear()
+                    st.success("Market data purged.")
+                    st.rerun()
+                except Exception as _exc:
+                    st.error(f"Purge failed: {_exc}")
+        with _pc2:
+            if st.button("Cancel", key="_mkt_purge_no", use_container_width=True):
+                st.session_state.pop("_mkt_purge_pending", None)
+                st.rerun()
 
-    _run_detect_after = st.checkbox(
-        "Also run narrative detection after ingestion",
-        value=False,
-        key="fetch_run_detect",
-    )
+    elif st.session_state.get("_pol_purge_pending"):
+        st.warning("Permanently delete **all policy/regulation data**? This cannot be undone.")
+        _pc1, _pc2 = st.columns(2)
+        with _pc1:
+            if st.button("Confirm", key="_pol_purge_yes", type="primary", use_container_width=True):
+                try:
+                    from pymongo import MongoClient as _MC
+                    from config.config import mongo_tls_ca_file as _tls
+                    from pymongo.server_api import ServerApi as _SA
+                    _c = _MC(_mongo_uri, tlsCAFile=_tls(), server_api=_SA("1"), connect=False)
+                    _c[_mongo_db]["crypto_regulations"].drop()
+                    _c[_mongo_db]["regulation_runs"].drop()
+                    _c.close()
+                    st.session_state.pop("_pol_purge_pending", None)
+                    _cached_build_data.clear()
+                    st.success("Policy data purged.")
+                    st.rerun()
+                except Exception as _exc:
+                    st.error(f"Purge failed: {_exc}")
+        with _pc2:
+            if st.button("Cancel", key="_pol_purge_no", use_container_width=True):
+                st.session_state.pop("_pol_purge_pending", None)
+                st.rerun()
 
-    if st.button("Fetch Data", use_container_width=True, key="btn_fetch_data",
-                 disabled=not _fetch_valid):
-        _start_dt = datetime(_start_date.year, _start_date.month, _start_date.day, tzinfo=timezone.utc)
-        _end_dt   = datetime(_end_date.year,   _end_date.month,   _end_date.day,
-                             hour=23, minute=59, second=59, tzinfo=timezone.utc)
+    # Set purge pending on fresh button clicks (no action on same rerun)
+    elif _narr_purge:
+        st.session_state["_narr_purge_pending"] = True
+        st.rerun()
+
+    elif _mkt_purge:
+        st.session_state["_mkt_purge_pending"] = True
+        st.rerun()
+
+    elif _pol_purge:
+        st.session_state["_pol_purge_pending"] = True
+        st.rerun()
+
+    # ── Narratives: Ingestion 24h ─────────────────────────────────────────────
+    elif _narr_ingest:
+        st.markdown("**Narratives — Ingestion (24h)**")
         try:
             _pipeline = _build_pipeline()
         except Exception as exc:
@@ -1062,399 +1130,143 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
             logger.exception("Pipeline init failed")
             return
 
-        _total_rows    = 0
-        _total_indexed = 0
-        _all_errors: list[str] = []
-
-        if _backfill_mode:
-            # Chunked: iterate weekly slices from start → end
-            _cursor = _start_dt
-            _chunks: list[tuple[datetime, datetime]] = []
-            while _cursor < _end_dt:
-                _ce = min(_cursor + _td(days=7), _end_dt)
-                _chunks.append((_cursor, _ce))
-                _cursor = _ce
-
-            _prog = st.progress(0, text=f"Chunk 1/{len(_chunks)}…")
-            _stat = st.empty()
-            for _i, (_cs, _ce) in enumerate(_chunks):
-                _end_str = _ce.strftime("%Y-%m-%d %H:%M:%S")
-                _prog.progress(
-                    int(100 * _i / len(_chunks)),
-                    text=f"Chunk {_i + 1}/{len(_chunks)}: {_cs.date()} → {_ce.date()}",
-                )
-                try:
-                    _res = _pipeline.run_all(
-                        end_time=_end_str,
-                        time_window_hours=168,
-                    )
-                    _total_rows    += sum(r.rows_fetched  for r in _res.values())
-                    _total_indexed += sum(r.docs_indexed  for r in _res.values())
-                    _all_errors.extend(
-                        f"[{r.query_name}] chunk {_i + 1}: {r.error}"
-                        for r in _res.values() if r.error
-                    )
-                except Exception as exc:
-                    _all_errors.append(f"Chunk {_i + 1}: {exc}")
-                    logger.exception("Backfill chunk %d failed", _i + 1)
-
-            _prog.progress(100, text="Done.")
-        else:
-            # Single direct query
-            _prog = st.progress(0, text=f"Running {_Cfg.INGESTION_PROVIDER} pipeline…")
-            _stat = st.empty()
-            _end_str = _end_dt.strftime("%Y-%m-%d %H:%M:%S")
-            try:
-                _prog.progress(20, text="Fetching on-chain data…")
-                _res = _pipeline.run_all(
-                    end_time=_end_str,
-                    time_window_hours=_delta_hours,
-                )
-                _total_rows    = sum(r.rows_fetched  for r in _res.values())
-                _total_indexed = sum(r.docs_indexed  for r in _res.values())
-                _all_errors.extend(
-                    f"[{r.query_name}] {r.error}" for r in _res.values() if r.error
-                )
-                _prog.progress(100, text="Done.")
-            except Exception as exc:
-                _prog.empty()
-                st.error(f"Ingestion failed: {exc}")
-                logger.exception("Ingestion failed")
-                return
+        _now     = datetime.now(timezone.utc)
+        _end_str = _now.strftime("%Y-%m-%d %H:%M:%S")
+        _prog    = st.progress(0, text=f"Running {_Cfg.INGESTION_PROVIDER} pipeline (24h)…")
+        _stat    = st.empty()
+        try:
+            _prog.progress(20, text="Fetching on-chain data…")
+            _res          = _pipeline.run_all(end_time=_end_str, time_window_hours=24)
+            _total_rows   = sum(r.rows_fetched for r in _res.values())
+            _total_indexed = sum(r.docs_indexed for r in _res.values())
+            _errors       = [f"[{r.query_name}] {r.error}" for r in _res.values() if r.error]
+            _prog.progress(50, text="Running narrative detection…")
+        except Exception as exc:
+            _prog.empty()
+            st.error(f"Ingestion failed: {exc}")
+            logger.exception("Ingestion failed")
+            return
 
         _cached_build_data.clear()
-        if _all_errors:
-            _stat.warning(
-                f"Ingested {_total_rows:,} rows ({_total_indexed:,} indexed) with {len(_all_errors)} error(s): "
-                + "; ".join(_all_errors[:3])
-            )
+        if _errors:
+            _stat.warning(f"Ingested {_total_rows:,} rows ({_total_indexed:,} indexed) — {len(_errors)} error(s)")
         else:
-            _stat.success(f"Ingested {_total_rows:,} rows, {_total_indexed:,} docs indexed.")
+            _stat.info(f"Ingested {_total_rows:,} rows, {_total_indexed:,} indexed.")
 
-        if _run_detect_after:
-            st.markdown("---")
-            st.markdown("**Running detection on fetched data…**")
-            _detect_h = _delta_hours if not _backfill_mode else (_delta_days * 24 + 24)
-            _run_detection_flow(_es, _engine, _tracker, _user_id, hours=max(_detect_h, 48))
-        else:
-            st.rerun()
+        _run_detection_flow(_es, _engine, _tracker, _user_id, hours=24)
 
-    st.divider()
-
-    # ── 2. Narrative Detection ────────────────────────────────────────────────
-    st.subheader("Narrative Detection")
-    st.caption("Runs Gemini detection on data currently in Elasticsearch.")
-
-    _detect_hours = st.number_input(
-        "Lookback window (hours)",
-        min_value=1,
-        max_value=8760,
-        value=2160,
-        step=24,
-        key="detect_hours_input",
-        help="2160 = 90 days. Use a large value to include all backfilled data.",
-    )
-
-    if st.button("🔮 Run Detection", use_container_width=True, key="btn_run_detection"):
-        _run_detection_flow(_es, _engine, _tracker, _user_id, hours=int(_detect_hours))
-
-    st.divider()
-
-    # ── 2b. Narrative Backfill ─────────────────────────────────────────────────
-    st.subheader("Narrative Backfill")
-    st.caption(
-        "Generates narratives in **weekly chunks** going back up to 6 months. "
-        "Each week's output is automatically passed to the next as context — "
-        "preventing Gemini from recreating the same narratives across windows."
-    )
-
-    _today_bf      = _date.today()
-    _bf_min_date   = _today_bf - _td(days=180)
-    _bf_presets    = {"2 weeks": 14, "1 month": 30, "3 months": 90, "6 months": 180}
-
-    _bf_preset_col, _bf_custom_col = st.columns([2, 3])
-    with _bf_preset_col:
-        _bf_preset = st.selectbox(
-            "Quick preset",
-            options=list(_bf_presets.keys()),
-            index=1,
-            key="bf_preset",
-        )
-    with _bf_custom_col:
-        _bf_start = st.date_input(
-            "Or custom start date (UTC)",
-            value=_today_bf - _td(days=_bf_presets[_bf_preset]),
-            min_value=_bf_min_date,
-            max_value=_today_bf - _td(days=1),
-            key="bf_start_date",
-            help="Earliest: 6 months back. Narratives are generated from this date to today.",
-        )
-
-    _bf_days  = (_today_bf - _bf_start).days if _bf_start else 30
-    _bf_days  = max(1, min(_bf_days, 180))   # clamp to 6-month limit
-    _bf_weeks = (_bf_days + 6) // 7
-    st.caption(f"📦 {_bf_days} days → **{_bf_weeks} weekly Gemini call(s)**  ·  ~{_bf_weeks * 15}s minimum run time")
-
-    _bf_col1, _bf_col2 = st.columns(2)
-    with _bf_col1:
-        _bf_sleep = st.number_input(
-            "Sleep between calls (s)",
-            min_value=5, max_value=120, value=15, step=5,
-            key="bf_sleep_between",
-            help="Pause between Gemini calls. Default 15s keeps you under the 10 RPM free-tier limit.",
-        )
-    with _bf_col2:
-        _bf_dry_run = st.checkbox(
-            "Dry run (preview windows, no Gemini calls)",
-            value=False,
-            key="bf_dry_run",
-        )
-
-    if st.button("📅 Run Narrative Backfill", use_container_width=True, key="btn_narrative_backfill"):
+    # ── Narratives: Backfill 6 months ─────────────────────────────────────────
+    elif _narr_backfill:
+        st.markdown("**Narratives — Backfill (6 months)**")
         _run_narrative_backfill_flow(
             _es, _engine, _tracker, _user_id,
-            backfill_days=_bf_days,
-            sleep_between=int(_bf_sleep),
-            dry_run=_bf_dry_run,
+            backfill_days=180,
+            sleep_between=15,
         )
 
-    st.divider()
-
-    # ── 3. Purge Narratives ───────────────────────────────────────────────────
-    st.subheader("Purge Narratives")
-    st.caption(f"Permanently delete all narratives for user **{_user_id}** from MongoDB.")
-
-    if not st.session_state.get("confirm_purge_pending"):
-        if st.button("🗑 Purge Narratives", use_container_width=True,
-                     key="btn_purge_start", type="secondary"):
-            st.session_state["confirm_purge_pending"] = True
-            st.rerun()
-    else:
-        st.warning(
-            f"This will permanently delete **all narratives** for user `{_user_id}`. "
-            "This cannot be undone."
-        )
-        _pc1, _pc2 = st.columns(2)
-        with _pc1:
-            if st.button("✅ Confirm Purge", use_container_width=True,
-                         key="btn_purge_confirm", type="primary"):
-                if _tracker:
-                    _n_deleted = _tracker.purge_narratives(_user_id)
-                    st.session_state.pop("confirm_purge_pending", None)
-                    _cached_build_data.clear()
-                    st.success(f"Deleted {_n_deleted} narrative(s).")
-                    st.rerun()
-                else:
-                    st.error("MongoDB tracker not connected.")
-        with _pc2:
-            if st.button("Cancel", use_container_width=True, key="btn_purge_cancel"):
-                st.session_state.pop("confirm_purge_pending", None)
-                st.rerun()
-
-    st.divider()
-
-    # ── 4. Markets Update ─────────────────────────────────────────────────────
-    st.subheader("Markets Data (Top 20)")
-    st.caption("Fetches top 20 by market cap from CoinMarketCap and stores in MongoDB.")
-
-    _cmc_key = st.text_input(
-        "CoinMarketCap API Key",
-        value=_Cfg.CMC_API_KEY or "",
-        type="password",
-        key="admin_cmc_key",
-        help="Free key from coinmarketcap.com/api/  —  stored only in session, not saved to disk.",
-    )
-    _no_roadmap = st.checkbox(
-        "Skip roadmap discovery (faster, website links only)",
-        value=False,
-        key="markets_skip_roadmap",
-    )
-
-    if st.button("🔄 Refresh Markets Data", use_container_width=True, key="btn_refresh_markets"):
-        _key = _cmc_key or _Cfg.CMC_API_KEY
-        if not _key:
-            st.error("CMC_API_KEY required. Get a free key at coinmarketcap.com/api/ and add it above.")
+    # ── Market Analysis: Ingestion 24h ────────────────────────────────────────
+    elif _mkt_ingest:
+        st.markdown("**Market Analysis — Ingestion (24h)**")
+        _cmc_key = _Cfg.CMC_API_KEY
+        if not _cmc_key:
+            st.error("CMC_API_KEY not configured. Set it in your environment or Streamlit secrets.")
         else:
-            import os as _os
-            _mongo_uri = _os.getenv("MONGO_URI") or _Cfg.MONGO_URI
-            _mongo_db  = _os.getenv("MONGO_DB")  or _Cfg.MONGO_DB or "kairo"
             _mkt_prog = st.progress(0, text="Fetching CoinMarketCap data…")
+            _mkt_stat = st.empty()
             try:
                 from app.ingestion.crypto_markets import CryptoMarketsUpdater
-                _mkt_prog.progress(20, text="Calling CoinMarketCap API…")
-                _upd = CryptoMarketsUpdater(_key, _mongo_uri, _mongo_db)
-                _mkt_prog.progress(40, text="Fetching listings + metadata…")
-                _projects = _upd.build_projects(discover_roadmaps=not _no_roadmap)
-                _mkt_prog.progress(85, text="Saving to MongoDB…")
+                _mkt_prog.progress(15, text="Calling CoinMarketCap API…")
+                _upd      = CryptoMarketsUpdater(_cmc_key, _mongo_uri, _mongo_db)
+                _projects = _upd.build_projects(discover_roadmaps=True)
+                _mkt_prog.progress(55, text="Saving to MongoDB…")
                 _upd.save_to_mongo(_projects)
+                _mkt_prog.progress(65, text="Running AI analysis…")
+
+                from app.markets.analyzer import MarketAnalyzer
+                _analyzer = MarketAnalyzer(_mongo_uri, _mongo_db)
+
+                def _cb(current, total, name):
+                    pct = 65 + int(30 * current / total)
+                    _mkt_prog.progress(pct, text=f"Analysed {name} ({current}/{total})…")
+
+                _results  = _analyzer.analyze_all(fetch_pages=True, dry_run=False, progress_cb=_cb)
+                _ok       = sum(1 for r in _results if not r.get("analysis_error"))
                 _cached_build_data.clear()
                 _mkt_prog.progress(100, text="Done.")
-                st.success(f"Updated {len(_projects)} projects. Switch to the Markets tab to view.")
+                _mkt_stat.success(
+                    f"Updated {len(_projects)} projects, {_ok} analysed. Switch to Markets tab."
+                )
                 st.rerun()
             except Exception as _exc:
                 _mkt_prog.empty()
                 st.error(f"Markets update failed: {_exc}")
                 logger.exception("Markets update failed")
 
-    st.divider()
-
-    # ── 5. AI Market Analysis (Gemini) ────────────────────────────────────────
-    st.subheader("AI Market Analysis")
-    st.caption(
-        "Uses Gemini to generate plain-English project summaries, ecosystem categories, "
-        "traditional finance analogies, and roadmap summaries for each top-20 project. "
-        "Run this after **Refresh Markets Data** above."
-    )
-
-    _ai_fast = st.checkbox(
-        "Fast mode — skip roadmap page fetching (use Gemini knowledge only)",
-        value=False,
-        key="analysis_fast_mode",
-        help="Fetching roadmap pages adds ~10s for the batch but gives Gemini real content to summarise.",
-    )
-    _ai_symbols_raw = st.text_input(
-        "Limit to specific symbols (optional)",
-        value="",
-        placeholder="e.g. BTC ETH SOL — leave blank to analyse all 20",
-        key="analysis_symbols",
-    )
-
-    if st.button("🤖 Run AI Market Analysis", use_container_width=True, key="btn_run_analysis"):
-        import os as _os
-        _mongo_uri = _os.getenv("MONGO_URI") or _Cfg.MONGO_URI
-        _mongo_db  = _os.getenv("MONGO_DB")  or _Cfg.MONGO_DB or "kairo"
-
-        _ai_prog    = st.progress(0, text="Initialising Gemini…")
-        _ai_status  = st.empty()
-        _ai_details = st.empty()
-
-        try:
-            from app.markets.analyzer import MarketAnalyzer
-
-            _analyzer     = MarketAnalyzer(_mongo_uri, _mongo_db)
-            _ai_symbols   = [s.strip().upper() for s in _ai_symbols_raw.split() if s.strip()] or None
-            _fetch_roads  = not _ai_fast
-
-            # Phase-1 progress: roadmap fetching (if enabled)
-            if _fetch_roads:
-                _ai_prog.progress(5, text="Fetching roadmap pages in parallel…")
-
-            # We run analysis in a loop and update progress via callback
-            _results_container: list = []
-            _total_est = len(_ai_symbols) if _ai_symbols else 20
-
-            def _progress_cb(current, total, name):
-                pct  = int(5 + 90 * current / total)
-                _ai_prog.progress(pct, text=f"Analysed {name} ({current}/{total})…")
-                _results_container.append(name)
-
-            _results = _analyzer.analyze_all(
-                symbols=_ai_symbols,
-                fetch_pages=_fetch_roads,
-                dry_run=False,
-                progress_cb=_progress_cb,
-            )
-
-            _ok    = sum(1 for r in _results if not r.get("analysis_error"))
-            _errs  = sum(1 for r in _results if     r.get("analysis_error"))
-            _cached_build_data.clear()
-            _ai_prog.progress(100, text="Done.")
-
-            if _errs:
-                _ai_status.warning(
-                    f"Analysis complete — {_ok}/{len(_results)} projects OK, {_errs} had errors. "
-                    "Switch to the Markets tab to review."
-                )
-            else:
-                _ai_status.success(
-                    f"AI analysis complete — {_ok} projects analysed. "
-                    "Switch to the Markets tab to see summaries, TradFi analogies, and roadmap breakdowns."
-                )
-            st.rerun()
-
-        except ValueError as _exc:
-            _ai_prog.empty()
-            _ai_status.error(f"{_exc}")
-        except Exception as _exc:
-            _ai_prog.empty()
-            _ai_status.error(f"Analysis failed: {_exc}")
-            logger.exception("AI market analysis failed")
-
-    st.divider()
-
-    # ── 6. Regulation Update (Policy Pulse) ───────────────────────────────────
-    st.subheader("Regulation Update")
-    st.caption(
-        "Calls Gemini to fetch the latest crypto regulatory developments from global Tier 1 law firm "
-        "trackers and official regulator feeds. Only genuinely new updates are stored in MongoDB — "
-        "duplicates are automatically skipped."
-    )
-
-    _reg_tracker = _get_regulation_tracker()
-    if _reg_tracker:
-        try:
-            _last_reg_run = _reg_tracker.get_last_run()
-        except Exception:
-            _last_reg_run = None
-
-        if _last_reg_run:
-            _lr_at = _last_reg_run.get("run_at", "")
-            if hasattr(_lr_at, "isoformat"):
-                _lr_at = _lr_at.isoformat()
-            _lr_saved   = _last_reg_run.get("saved", 0)
-            _lr_skipped = _last_reg_run.get("skipped", 0)
-            st.info(
-                f"Last run: **{str(_lr_at)[:19].replace('T', ' ')} UTC** — "
-                f"{_lr_saved} new update(s) saved, {_lr_skipped} duplicate(s) skipped."
-            )
+    # ── Policy Updates: Ingestion 24h ─────────────────────────────────────────
+    elif _pol_ingest:
+        st.markdown("**Policy Updates — Ingestion (24h)**")
+        _reg_tracker = _get_regulation_tracker()
+        if not _reg_tracker:
+            st.warning("MongoDB not configured — RegulationTracker unavailable. Set MONGO_URI.")
+        elif _engine is None:
+            st.error("Gemini not configured. Check GEMINI_KEY.")
         else:
-            st.caption("No regulation fetch has been run yet.")
-
-        if st.button("⚖ Fetch Regulation Update", use_container_width=True, key="btn_fetch_regulations"):
-            if _engine is None:
-                st.error("Gemini (NarrativeEngine) is not configured. Check GEMINI_KEY.")
-            else:
-                _reg_prog   = st.progress(0, text="Calling Gemini for regulatory intelligence…")
-                _reg_status = st.empty()
-                try:
-                    _reg_prog.progress(20, text="Gathering known regulation IDs from MongoDB…")
-                    _reg_prog.progress(40, text="Sending prompt to Gemini…")
-                    _reg_result = _reg_tracker.fetch_and_store(_engine)
-                    _reg_prog.progress(100, text="Done.")
-                    if "error" in _reg_result:
-                        _reg_status.error(f"Regulation fetch failed: {_reg_result['error']}")
+            _reg_prog = st.progress(0, text="Calling Gemini for regulatory intelligence…")
+            _reg_stat = st.empty()
+            try:
+                _reg_prog.progress(40, text="Sending prompt to Gemini…")
+                _result  = _reg_tracker.fetch_and_store(_engine)
+                _reg_prog.progress(100, text="Done.")
+                if "error" in _result:
+                    _reg_stat.error(f"Regulation fetch failed: {_result['error']}")
+                else:
+                    _saved   = _result.get("saved", 0)
+                    _skipped = _result.get("skipped", 0)
+                    _total   = _result.get("total_found", 0)
+                    if _saved:
+                        _reg_stat.success(
+                            f"{_saved} new regulation(s) saved, {_skipped} skipped (of {_total} found)."
+                        )
                     else:
-                        _saved   = _reg_result.get("saved", 0)
-                        _skipped = _reg_result.get("skipped", 0)
-                        _total   = _reg_result.get("total_found", 0)
-                        if _saved > 0:
-                            _reg_status.success(
-                                f"Done — {_saved} new regulation(s) saved, "
-                                f"{_skipped} duplicate(s) skipped (of {_total} found). "
-                                "Switch to the **Policy Pulse** tab to view."
-                            )
-                        else:
-                            _reg_status.info(
-                                f"No new regulations this run — {_skipped} already known (of {_total} found). "
-                                "Policy Pulse is already up to date."
-                            )
-                    _cached_build_data.clear()
-                    st.rerun()
-                except Exception as _exc:
-                    _reg_prog.empty()
-                    _reg_status.error(f"Regulation fetch failed: {_exc}")
-                    logger.exception("Regulation fetch failed")
-    else:
-        st.warning("MongoDB not configured — RegulationTracker unavailable. Set MONGO_URI to enable.")
+                        _reg_stat.info(
+                            f"No new regulations — {_skipped} already known (of {_total} found)."
+                        )
+                _cached_build_data.clear()
+                st.rerun()
+            except Exception as _exc:
+                _reg_prog.empty()
+                st.error(f"Regulation fetch failed: {_exc}")
+                logger.exception("Regulation fetch failed")
 
-    st.divider()
-
-    # ── 7. Service Status ─────────────────────────────────────────────────────
-    st.subheader("Service Status")
-    st.write("Elasticsearch:",       "✅ connected" if _es           is not None else "❌ not connected")
-    st.write("Narrative Engine:",    "✅ ready"     if _engine        is not None else "❌ not ready")
-    st.write("MongoDB Tracker:",     "✅ connected" if _tracker        is not None else "❌ not connected")
-    st.write("Regulation Tracker:",  "✅ connected" if _reg_tracker   is not None else "❌ not connected")
+    # ── Policy Updates: Backfill 6 months ─────────────────────────────────────
+    elif _pol_backfill:
+        st.markdown("**Policy Updates — Backfill (6 months)**")
+        _reg_tracker = _get_regulation_tracker()
+        if not _reg_tracker:
+            st.warning("MongoDB not configured — RegulationTracker unavailable. Set MONGO_URI.")
+        elif _engine is None:
+            st.error("Gemini not configured. Check GEMINI_KEY.")
+        else:
+            _reg_prog = st.progress(0, text="Querying Gemini for historical regulations (6 months)…")
+            _reg_stat = st.empty()
+            try:
+                _reg_prog.progress(40, text="Sending prompt to Gemini…")
+                _result  = _reg_tracker.fetch_and_store(_engine)
+                _reg_prog.progress(100, text="Done.")
+                if "error" in _result:
+                    _reg_stat.error(f"Backfill failed: {_result['error']}")
+                else:
+                    _saved   = _result.get("saved", 0)
+                    _skipped = _result.get("skipped", 0)
+                    _reg_stat.success(
+                        f"Backfill complete — {_saved} regulation(s) added, {_skipped} already known."
+                    )
+                _cached_build_data.clear()
+                st.rerun()
+            except Exception as _exc:
+                _reg_prog.empty()
+                st.error(f"Backfill failed: {_exc}")
+                logger.exception("Policy backfill failed")
 
 
 def run() -> None:
