@@ -1788,6 +1788,19 @@ def run() -> None:
         # Inject auth profile under a separate key — kairo_data["user"] is the
         # morning-brief user section ({name, date, summary}); don't overwrite it.
         kairo_data["auth_user"] = dict(current_user)
+        # Inject latest regulations for the Policy Pulse tab
+        try:
+            _reg_trk = _get_regulation_tracker()
+            if _reg_trk:
+                kairo_data["regulations"] = _reg_trk.get_latest_regulations(limit=60)
+                kairo_data["regulation_last_run"] = _reg_trk.get_last_run() or {}
+            else:
+                kairo_data.setdefault("regulations", [])
+                kairo_data.setdefault("regulation_last_run", {})
+        except Exception as _exc:
+            logger.warning("Failed to load regulations for kairo_data: %s", _exc)
+            kairo_data.setdefault("regulations", [])
+            kairo_data.setdefault("regulation_last_run", {})
         # Inject one-time transient UI signals (popped so they don't repeat on refresh)
         _init_view = st.session_state.pop("_kairo_init_view", None)
         _toast = st.session_state.pop("_kairo_toast", None)
