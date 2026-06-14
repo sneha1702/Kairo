@@ -332,11 +332,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
     # ── layout CSS from Kairo.html's inline <style> block ───────────────────
     layout_css = r"""
-    .kairo-app { display: flex; min-height: 100vh; }
+    /* ── App shell: fixed viewport height, main content scrolls ── */
+    .kairo-app { display: flex; height: 100vh; overflow: hidden; }
 
     .kairo-rail {
       width: 244px; flex-shrink: 0;
-      position: sticky; top: 0; align-self: flex-start; height: 100vh;
+      height: 100vh; overflow-y: auto;
       padding: 26px 18px; display: flex; flex-direction: column;
       border-right: 1px solid var(--hairline);
       background: color-mix(in oklch, var(--paper) 60%, var(--surface));
@@ -346,26 +347,29 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
     .kairo-main {
       flex: 1; min-width: 0;
-      padding: 52px 44px 130px; display: flex; justify-content: center;
+      height: 100vh; overflow-y: auto;
+      padding: 52px 44px 80px; display: flex; justify-content: center;
     }
     .kairo-col { width: 100%; max-width: 1200px; }
 
-    @media (max-width: 900px) {
-      .kairo-app { flex-direction: column; }
+    @media (max-width: 640px) {
+      .kairo-app { flex-direction: column; height: auto; overflow: visible; }
       .kairo-rail {
-        width: auto; height: auto; flex-direction: row; align-items: center;
+        width: auto; height: auto; overflow-y: visible;
+        flex-direction: row; align-items: center;
         gap: 6px; padding: 12px 18px; z-index: 30;
         border-right: none; border-bottom: 1px solid var(--hairline);
         background: color-mix(in oklch, var(--paper) 80%, var(--surface));
         backdrop-filter: blur(8px);
+        position: sticky; top: 0;
       }
       .kairo-logo { padding: 0 14px 0 2px !important; }
       .kairo-navitems { flex-direction: row; margin-left: auto; gap: 4px; }
       .kairo-rail-foot { display: none; }
-      .kairo-main { padding: 30px 18px 110px; }
+      .kairo-main { height: auto; overflow-y: visible; padding: 30px 18px 60px; }
     }
-    @media (max-width: 520px) {
-      .kairo-navitems button span:last-child { }
+    @media (max-width: 480px) {
+      .kairo-navitems button span:last-child { display: none; }
     }
 
     /* ── Loading screen (replaced by React once mounted) ── */
