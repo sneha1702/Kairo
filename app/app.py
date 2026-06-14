@@ -1651,12 +1651,17 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     _mongo_db  = _os.getenv("MONGO_DB")  or _Cfg.MONGO_DB or "kairo"
     _user_id   = "default"
 
+    _BACKFILL_PRESETS = {
+        "2 days": 2, "1 week": 7, "1 month": 30,
+        "3 months": 90, "6 months": 180, "1 year": 365,
+    }
+
     # ── Table ─────────────────────────────────────────────────────────────────
     _h1, _h2, _h3, _h4 = st.columns([2, 2, 2, 2])
     with _h1: st.markdown("**Data Source**")
     with _h2: st.markdown("**Ingestion (last 24h)**")
     with _h3: st.markdown("**Purge All**")
-    with _h4: st.markdown("**Backfill (last 6 months)**")
+    with _h4: st.markdown("**Backfill**")
 
     st.markdown(
         "<hr style='margin:6px 0 14px;border-color:var(--hairline)'>",
@@ -1690,17 +1695,17 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
 
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-    # Row 4: Crypto 101 Concepts
+    # Row 4: Concept Extractor / Education
     _r4c1, _r4c2, _r4c3, _r4c4 = st.columns([2, 2, 2, 2])
-    with _r4c1: st.markdown("**Crypto 101 Concepts**")
-    with _r4c2: st.markdown("— (use URL form below)")
-    with _r4c3: _con_purge = st.button("Purge", key="btn_con_purge", use_container_width=True, type="secondary")
+    with _r4c1: st.markdown("**Concept Extractor**")
+    with _r4c2: _con_ingest    = st.button("Run",   key="btn_con_ingest", use_container_width=True)
+    with _r4c3: _con_purge     = st.button("Purge", key="btn_con_purge",  use_container_width=True, type="secondary")
     with _r4c4: st.markdown("—")
 
     st.divider()
 
     # ── Action dispatch ───────────────────────────────────────────────────────
-    # Priority order: purge confirmations → backfill options → fresh actions
+    # Priority order: purge confirmations → options panels → set-pending → run
 
     # ── Purge confirmations ───────────────────────────────────────────────────
     if st.session_state.get("_narr_purge_pending"):
@@ -1769,7 +1774,7 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 st.rerun()
 
     elif st.session_state.get("_con_purge_pending"):
-        st.warning("Permanently delete **all Crypto 101 concepts**? This cannot be undone.")
+        st.warning("Permanently delete **all concept extractor data**? This cannot be undone.")
         _pc1, _pc2 = st.columns(2)
         with _pc1:
             if st.button("Confirm", key="_con_purge_yes", type="primary", use_container_width=True):
@@ -1787,21 +1792,29 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 st.session_state.pop("_con_purge_pending", None)
                 st.rerun()
 
-    # ── Backfill options panels ───────────────────────────────────────────────
+    # ── Narratives backfill options ───────────────────────────────────────────
     elif st.session_state.get("_backfill_pending") == "narratives":
         st.markdown("**Narratives — Backfill options**")
+        _bf_period = st.selectbox(
+            "Backfill period",
+            options=list(_BACKFILL_PRESETS.keys()),
+            index=4,
+            key="_narr_bf_period",
+        )
+        _bf_days   = _BACKFILL_PRESETS[_bf_period]
+        _n_chunks  = (_bf_days + 6) // 7
         _fetch_onchain = st.checkbox(
-            "Also fetch on-chain data for the last 6 months before synthesizing",
+            "Also fetch on-chain data for this period before synthesizing",
             value=False,
             key="_narr_bf_fetch",
             help=(
-                "Unchecked (default): Gemini synthesizes using data already in Elasticsearch — fast. "
-                "Checked: fetches fresh on-chain data in weekly chunks first, then synthesizes — adds significant time."
+                "Unchecked (default): synthesize from existing Elasticsearch data — fast. "
+                "Checked: fetch fresh on-chain data first (adds significant time)."
             ),
         )
         st.caption(
-            "Synthesize only — using existing Elasticsearch data." if not _fetch_onchain
-            else "Fetch 6 months of on-chain data (26 weekly chunks) → then synthesize narratives."
+            f"{_bf_period} → {_n_chunks} weekly Gemini call(s)"
+            + (" + on-chain data fetch" if _fetch_onchain else " · synthesize only")
         )
         _bfc1, _bfc2 = st.columns(2)
         with _bfc1:
@@ -1812,7 +1825,6 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 st.rerun()
 
         if _narr_bf_run:
-            # Pop state before any st.rerun() calls inside the flow functions
             st.session_state.pop("_backfill_pending", None)
             if _fetch_onchain:
                 from datetime import timedelta as _td
@@ -1822,9 +1834,8 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                     st.error(f"Pipeline init failed: {exc}")
                     logger.exception("Pipeline init failed")
                     return
-                _now      = datetime.now(timezone.utc)
-                _n_chunks = 26
-                _prog_oc  = st.progress(0, text=f"On-chain chunk 1/{_n_chunks}…")
+                _now     = datetime.now(timezone.utc)
+                _prog_oc = st.progress(0, text=f"On-chain chunk 1/{_n_chunks}…")
                 for _i in range(_n_chunks):
                     _chunk_end = _now - _td(weeks=_i)
                     _prog_oc.progress(
@@ -1840,27 +1851,33 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                         st.warning(f"Chunk {_i + 1} failed: {exc}")
                         logger.exception("On-chain backfill chunk %d failed", _i + 1)
                 _prog_oc.progress(50, text="On-chain fetch done. Starting Gemini synthesis…")
-
             _run_narrative_backfill_flow(
                 _es, _engine, _tracker, _user_id,
-                backfill_days=180,
+                backfill_days=_bf_days,
                 sleep_between=15,
             )
 
+    # ── Policy Updates backfill options ──────────────────────────────────────
     elif st.session_state.get("_backfill_pending") == "policy":
         st.markdown("**Policy Updates — Backfill options**")
+        _bf_period = st.selectbox(
+            "Backfill period",
+            options=list(_BACKFILL_PRESETS.keys()),
+            index=4,
+            key="_pol_bf_period",
+        )
         _fetch_web = st.checkbox(
             "Also fetch fresh regulation data from web before synthesizing",
             value=False,
             key="_pol_bf_fetch",
             help=(
-                "Unchecked (default): uses regulations already stored in MongoDB. "
-                "Checked: calls Gemini to pull new regulatory developments from web trackers first."
+                "Unchecked (default): uses regulations already in MongoDB. "
+                "Checked: calls Gemini to pull new regulatory developments from web trackers."
             ),
         )
         st.caption(
             "Synthesize only — using existing MongoDB regulations." if not _fetch_web
-            else "Fetch new regulation data from web trackers via Gemini → deduplicate → store."
+            else f"Fetch {_bf_period} of regulation data from web trackers via Gemini → deduplicate → store."
         )
         _bfc1, _bfc2 = st.columns(2)
         with _bfc1:
@@ -1882,12 +1899,12 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                     _existing = _reg_tracker.get_latest_regulations(limit=1000)
                     st.info(
                         f"Found **{len(_existing)}** regulation(s) already in MongoDB. "
-                        "Existing data is already synthesized. Enable the checkbox to pull fresh web data."
+                        "Enable the checkbox to pull fresh web data."
                     )
                 except Exception as _exc:
                     st.error(f"Failed to read regulations: {_exc}")
             else:
-                _reg_prog = st.progress(0, text="Querying Gemini for historical regulations (6 months)…")
+                _reg_prog = st.progress(0, text=f"Querying Gemini for {_bf_period} of regulatory history…")
                 _reg_stat = st.empty()
                 try:
                     _reg_prog.progress(40, text="Sending prompt to Gemini…")
@@ -1908,6 +1925,129 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                     st.error(f"Backfill failed: {_exc}")
                     logger.exception("Policy backfill failed")
 
+    # ── Market Analysis ingestion options ─────────────────────────────────────
+    elif st.session_state.get("_mkt_options_pending"):
+        st.markdown("**Market Analysis — Ingestion options**")
+        _discover_roadmaps = st.checkbox(
+            "Discover roadmaps (fetches roadmap pages per project)",
+            value=False,
+            key="_mkt_roadmap",
+            help=(
+                "Unchecked (default): faster, uses Gemini knowledge only. "
+                "Checked: fetches each project's roadmap page — adds 15–30 min."
+            ),
+        )
+        st.caption(
+            "Fast mode — Gemini knowledge only." if not _discover_roadmaps
+            else "Roadmap pages will be fetched for each of the top 20 projects."
+        )
+        _mc1, _mc2 = st.columns(2)
+        with _mc1:
+            _mkt_run = st.button("Run Ingestion", key="_mkt_run_opt", type="primary", use_container_width=True)
+        with _mc2:
+            if st.button("Cancel", key="_mkt_cancel_opt", use_container_width=True):
+                st.session_state.pop("_mkt_options_pending", None)
+                st.rerun()
+
+        if _mkt_run:
+            st.session_state.pop("_mkt_options_pending", None)
+            _cmc_key = _Cfg.CMC_API_KEY
+            if not _cmc_key:
+                st.error("CMC_API_KEY not configured. Set it in your environment or Streamlit secrets.")
+            else:
+                _mkt_prog = st.progress(0, text="Fetching CoinMarketCap data…")
+                _mkt_stat = st.empty()
+                try:
+                    from app.ingestion.crypto_markets import CryptoMarketsUpdater
+                    _mkt_prog.progress(15, text="Calling CoinMarketCap API…")
+                    _upd      = CryptoMarketsUpdater(_cmc_key, _mongo_uri, _mongo_db)
+                    _projects = _upd.build_projects(discover_roadmaps=_discover_roadmaps)
+                    _mkt_prog.progress(55, text="Saving to MongoDB…")
+                    _upd.save_to_mongo(_projects)
+                    _mkt_prog.progress(65, text="Running AI analysis…")
+                    from app.markets.analyzer import MarketAnalyzer
+                    _analyzer = MarketAnalyzer(_mongo_uri, _mongo_db)
+                    def _mkt_cb(current, total, name):
+                        pct = 65 + int(30 * current / total)
+                        _mkt_prog.progress(pct, text=f"Analysed {name} ({current}/{total})…")
+                    _results  = _analyzer.analyze_all(
+                        fetch_pages=_discover_roadmaps, dry_run=False, progress_cb=_mkt_cb
+                    )
+                    _ok = sum(1 for r in _results if not r.get("analysis_error"))
+                    _cached_build_data.clear()
+                    _mkt_prog.progress(100, text="Done.")
+                    _mkt_stat.success(
+                        f"Updated {len(_projects)} projects, {_ok} analysed. Switch to Markets tab."
+                    )
+                    st.rerun()
+                except Exception as _exc:
+                    _mkt_prog.empty()
+                    st.error(f"Markets update failed: {_exc}")
+                    logger.exception("Markets update failed")
+
+    # ── Concept Extractor ingestion options ───────────────────────────────────
+    elif st.session_state.get("_con_options_pending"):
+        st.markdown("**Concept Extractor / Education — options**")
+        _con_url = st.text_input(
+            "Source URL (optional)",
+            placeholder="https://www.scs.org.sg/articles/cryptocurrency-singapore",
+            key="_con_url_input",
+            help=(
+                "Leave blank: prompt is sent as-is, Gemini uses its knowledge + default sources in the prompt. "
+                "Enter a URL: the URL is appended to the prompt so Gemini fetches and reads that page."
+            ),
+        )
+        _con_url_stripped = _con_url.strip()
+        st.caption(
+            "No URL — Gemini uses its knowledge + default sources." if not _con_url_stripped
+            else f"URL will be passed to Gemini: {_con_url_stripped}"
+        )
+        _cc1, _cc2 = st.columns(2)
+        with _cc1:
+            _con_run = st.button("Run", key="_con_run_opt", type="primary", use_container_width=True)
+        with _cc2:
+            if st.button("Cancel", key="_con_cancel_opt", use_container_width=True):
+                st.session_state.pop("_con_options_pending", None)
+                st.rerun()
+
+        if _con_run:
+            st.session_state.pop("_con_options_pending", None)
+            _con_trk_adm = _get_concept_tracker()
+            if not _con_trk_adm:
+                st.warning("MongoDB not configured — ConceptTracker unavailable.")
+            elif _engine is None:
+                st.error("Gemini not configured. Check GEMINI_KEY.")
+            else:
+                _con_prog = st.progress(0, text="Preparing concept extraction…")
+                _con_stat = st.empty()
+                try:
+                    if _con_url_stripped:
+                        _con_prog.progress(20, text="Fetching page content…")
+                    _con_prog.progress(40, text="Sending prompt to Gemini…")
+                    _result = _con_trk_adm.fetch_and_store_from_url(_engine, _con_url_stripped)
+                    _con_prog.progress(100, text="Done.")
+                    if "error" in _result:
+                        _con_stat.error(f"Extraction failed: {_result['error']}")
+                    else:
+                        _sv  = _result.get("saved", 0)
+                        _sk  = _result.get("skipped", 0)
+                        _tot = _result.get("total_found", 0)
+                        _grp = _result.get("groups_updated", 0)
+                        if _sv:
+                            _con_stat.success(
+                                f"{_sv} concept(s) added, {_sk} already known "
+                                f"(of {_tot} found) · {_grp} group(s) updated."
+                            )
+                        else:
+                            _con_stat.info(
+                                f"No new concepts — {_sk} already known (of {_tot} found)."
+                            )
+                    _cached_build_data.clear()
+                except Exception as _exc:
+                    _con_prog.empty()
+                    st.error(f"Concept extraction failed: {_exc}")
+                    logger.exception("Concept extraction failed")
+
     # ── Set pending state on fresh button clicks ──────────────────────────────
     elif _narr_purge:
         st.session_state["_narr_purge_pending"] = True
@@ -1927,8 +2067,14 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     elif _pol_backfill:
         st.session_state["_backfill_pending"] = "policy"
         st.rerun()
+    elif _mkt_ingest:
+        st.session_state["_mkt_options_pending"] = True
+        st.rerun()
+    elif _con_ingest:
+        st.session_state["_con_options_pending"] = True
+        st.rerun()
 
-    # ── Immediate run actions ─────────────────────────────────────────────────
+    # ── Immediate run actions (no pre-options needed) ─────────────────────────
     elif _narr_ingest:
         st.markdown("**Narratives — Ingestion (24h)**")
         try:
@@ -1959,40 +2105,6 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
         else:
             _stat.info(f"Ingested {_total_rows:,} rows, {_total_indexed:,} indexed.")
         _run_detection_flow(_es, _engine, _tracker, _user_id, hours=24)
-
-    elif _mkt_ingest:
-        st.markdown("**Market Analysis — Ingestion (24h)**")
-        _cmc_key = _Cfg.CMC_API_KEY
-        if not _cmc_key:
-            st.error("CMC_API_KEY not configured. Set it in your environment or Streamlit secrets.")
-        else:
-            _mkt_prog = st.progress(0, text="Fetching CoinMarketCap data…")
-            _mkt_stat = st.empty()
-            try:
-                from app.ingestion.crypto_markets import CryptoMarketsUpdater
-                _mkt_prog.progress(15, text="Calling CoinMarketCap API…")
-                _upd      = CryptoMarketsUpdater(_cmc_key, _mongo_uri, _mongo_db)
-                _projects = _upd.build_projects(discover_roadmaps=True)
-                _mkt_prog.progress(55, text="Saving to MongoDB…")
-                _upd.save_to_mongo(_projects)
-                _mkt_prog.progress(65, text="Running AI analysis…")
-                from app.markets.analyzer import MarketAnalyzer
-                _analyzer = MarketAnalyzer(_mongo_uri, _mongo_db)
-                def _cb(current, total, name):
-                    pct = 65 + int(30 * current / total)
-                    _mkt_prog.progress(pct, text=f"Analysed {name} ({current}/{total})…")
-                _results  = _analyzer.analyze_all(fetch_pages=True, dry_run=False, progress_cb=_cb)
-                _ok       = sum(1 for r in _results if not r.get("analysis_error"))
-                _cached_build_data.clear()
-                _mkt_prog.progress(100, text="Done.")
-                _mkt_stat.success(
-                    f"Updated {len(_projects)} projects, {_ok} analysed. Switch to Markets tab."
-                )
-                st.rerun()
-            except Exception as _exc:
-                _mkt_prog.empty()
-                st.error(f"Markets update failed: {_exc}")
-                logger.exception("Markets update failed")
 
     elif _pol_ingest:
         st.markdown("**Policy Updates — Ingestion (24h)**")
@@ -2028,61 +2140,6 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 _reg_prog.empty()
                 st.error(f"Regulation fetch failed: {_exc}")
                 logger.exception("Regulation fetch failed")
-
-    # ── Crypto 101 — add concepts from URL ───────────────────────────────────
-    st.divider()
-    st.markdown("#### Crypto 101 — Add concepts from URL")
-    st.caption(
-        "Paste any official or government page URL. "
-        "Kairo will auto-discover ALL concepts on the page and explain them — "
-        "no need to name them yourself."
-    )
-    with st.form("con_add_form", clear_on_submit=True):
-        _con_url_input = st.text_input(
-            "Source URL",
-            placeholder="https://www.scs.org.sg/articles/cryptocurrency-singapore",
-            key="con_url_field",
-        )
-        _con_add_btn = st.form_submit_button("Extract & Store Concepts", use_container_width=False)
-
-    if _con_add_btn:
-        _src = (_con_url_input or "").strip()
-        if not _src:
-            st.warning("Please enter a URL.")
-        else:
-            _con_trk_adm = _get_concept_tracker()
-            if not _con_trk_adm:
-                st.warning("MongoDB not configured — ConceptTracker unavailable.")
-            elif _engine is None:
-                st.error("Gemini not configured. Check GEMINI_KEY.")
-            else:
-                _con_prog = st.progress(0, text="Fetching page content…")
-                _con_stat = st.empty()
-                try:
-                    _con_prog.progress(25, text="Sending to Gemini for concept extraction…")
-                    _result = _con_trk_adm.fetch_and_store_from_url(_engine, _src)
-                    _con_prog.progress(100, text="Done.")
-                    if "error" in _result:
-                        _con_stat.error(f"Extraction failed: {_result['error']}")
-                    else:
-                        _sv  = _result.get("saved", 0)
-                        _sk  = _result.get("skipped", 0)
-                        _tot = _result.get("total_found", 0)
-                        _grp = _result.get("groups_updated", 0)
-                        if _sv:
-                            _con_stat.success(
-                                f"{_sv} concept(s) added, {_sk} already known "
-                                f"(of {_tot} found) · {_grp} group(s) updated."
-                            )
-                        else:
-                            _con_stat.info(
-                                f"No new concepts — {_sk} already known (of {_tot} found)."
-                            )
-                    _cached_build_data.clear()
-                except Exception as _exc:
-                    _con_prog.empty()
-                    st.error(f"Concept extraction failed: {_exc}")
-                    logger.exception("Concept extraction failed")
 
 
 def run() -> None:
