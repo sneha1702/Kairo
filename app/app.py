@@ -1070,29 +1070,52 @@ def _profile_tab(user: dict, mgr) -> None:
         with st.expander("Change Password"):
             with st.form("change_password_form"):
                 old_pw  = st.text_input("Current password",     type="password")
-                new_pw1 = st.text_input("New password",         type="password", help="At least 8 characters.")
+                new_pw1 = st.text_input("New password",         type="password",
+                                         help="At least 10 characters, with letters and numbers.")
                 new_pw2 = st.text_input("Confirm new password", type="password")
                 pw_btn  = st.form_submit_button("Update Password", use_container_width=True)
 
             if pw_btn:
+                from app.auth.user_manager import AuthError as _AE
                 if not old_pw or not new_pw1:
                     st.error("Please fill in all password fields.")
-                elif len(new_pw1) < 8:
-                    st.error("New password must be at least 8 characters.")
                 elif new_pw1 != new_pw2:
                     st.error("Passwords do not match.")
                 else:
-                    ok = mgr.change_password(username, old_pw, new_pw1)
-                    if ok:
-                        st.success("Password changed successfully.")
+                    try:
+                        ok = mgr.change_password(username, old_pw, new_pw1)
+                    except _AE as _ae:
+                        st.error(str(_ae))
                     else:
-                        st.error("Current password is incorrect.")
+                        if ok:
+                            st.success(
+                                "Password changed. Other sessions have been signed out — "
+                                "sign in again on any other devices."
+                            )
+                            # Re-issue a session token for this tab so the user
+                            # isn't accidentally bumped out of the page they're on.
+                            try:
+                                _new_tok = mgr.create_session_token(username)
+                                st.session_state["_kairo_session_token"] = _new_tok
+                                st.query_params["auto_session"] = _new_tok
+                            except Exception:
+                                pass
+                        else:
+                            st.error("Current password is incorrect.")
 
         st.divider()
 
         # ── Sign out ───────────────────────────────────────────────────────
         if st.button("Sign out", key="profile_tab_signout", use_container_width=True, type="secondary"):
-            st.session_state.pop("_kairo_user", None)
+            _tok = st.session_state.pop("_kairo_session_token", None)
+            if _tok:
+                try:
+                    mgr.invalidate_session_token(_tok)
+                except Exception:
+                    logger.warning("Server-side session invalidation failed during sign-out.")
+            for _k in [k for k in list(st.session_state.keys()) if k.startswith("_kairo")]:
+                st.session_state.pop(_k, None)
+            st.query_params.clear()
             st.rerun()
 
 # ---------------------------------------------------------------------------
