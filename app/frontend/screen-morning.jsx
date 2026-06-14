@@ -7,17 +7,25 @@ const K = window.KAIRO;
 let Icon, Asset, ForceTag, Dir, Confidence, ExplainToggle, CardLabel, StatusBadge;
 
 /* ---------- greeting header ---------- */
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return { text: "Good morning", icon: "sun" };
+  if (h < 17) return { text: "Good afternoon", icon: "sun" };
+  return { text: "Good evening", icon: "moon" };
+}
+
 function BriefHeader() {
   const u = K.user;
   const { developments, strengthening, risks } = u.summary;
+  const { text: greetText, icon: greetIcon } = getGreeting();
   return (
     <header style={{ marginBottom: 6 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, color: "var(--accent-ink)", marginBottom: 12 }}>
-        <Icon name="sun" size={19} stroke={1.8} />
+        <Icon name={greetIcon} size={19} stroke={1.8} />
         <span className="eyebrow" style={{ color: "var(--accent-ink)", whiteSpace: "nowrap" }}>{u.date}</span>
       </div>
       <h1 style={{ fontSize: "clamp(30px, 4vw, 40px)", fontWeight: 800, letterSpacing: "-0.025em" }}>
-        {u.name === "there" ? "Good morning." : `Good morning, ${u.name}.`}
+        {u.name === "there" ? `${greetText}.` : `${greetText}, ${u.name}.`}
       </h1>
       <p style={{ fontSize: 18, color: "var(--ink-2)", marginTop: 12, maxWidth: "44ch" }}>
         Here's what moved your market overnight — in about a minute.
