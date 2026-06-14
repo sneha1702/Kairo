@@ -58,6 +58,7 @@ function ProfileScreen() {
   const [tradingProfile, setTradingProfile] = useState(user.trading_profile || "");
   const [purpose,        setPurpose]        = useState(user.purpose         || "");
   const [saving,         setSaving]         = useState(false);
+  const [editing,        setEditing]        = useState(false);
 
   /* ── change password ── */
   const [oldPw,    setOldPw]    = useState("");
@@ -121,6 +122,17 @@ function ProfileScreen() {
     });
   }
 
+  function handleCancel() {
+    const u = window.KAIRO?.auth_user || {};
+    setFirstName(u.first_name || "");
+    setLastName(u.last_name || "");
+    setEmail(u.email || "");
+    setProfession(u.profession || "");
+    setTradingProfile(u.trading_profile || "");
+    setPurpose(u.purpose || "");
+    setEditing(false);
+  }
+
   function handleChangePassword() {
     setPwError("");
     if (!oldPw || !newPw1)  { setPwError("Please fill in all password fields."); return; }
@@ -155,6 +167,14 @@ function ProfileScreen() {
   };
   function focusIn(e)  { e.target.style.borderColor = "var(--accent)"; }
   function focusOut(e) { e.target.style.borderColor = "var(--hairline-strong)"; }
+
+  const disabledInputStyle = {
+    ...inputStyle,
+    background: "var(--hairline)",
+    color: "var(--ink-3)",
+    cursor: "not-allowed",
+    opacity: 0.65,
+  };
 
   /* pw result toast text */
   const pwResultToast = pwResult === "ok"
@@ -235,26 +255,26 @@ function ProfileScreen() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
             <div>
               <label style={labelStyle}>First name</label>
-              <input style={inputStyle} type="text" value={firstName} placeholder="Jane"
-                onChange={e => setFirstName(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
+              <input style={editing ? inputStyle : disabledInputStyle} type="text" value={firstName} placeholder="Jane"
+                onChange={e => setFirstName(e.target.value)} onFocus={focusIn} onBlur={focusOut} disabled={!editing} />
             </div>
             <div>
               <label style={labelStyle}>Last name</label>
-              <input style={inputStyle} type="text" value={lastName} placeholder="Smith"
-                onChange={e => setLastName(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
+              <input style={editing ? inputStyle : disabledInputStyle} type="text" value={lastName} placeholder="Smith"
+                onChange={e => setLastName(e.target.value)} onFocus={focusIn} onBlur={focusOut} disabled={!editing} />
             </div>
           </div>
 
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Email</label>
-            <input style={inputStyle} type="email" value={email} placeholder="you@example.com"
-              onChange={e => setEmail(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
+            <input style={editing ? inputStyle : disabledInputStyle} type="email" value={email} placeholder="you@example.com"
+              onChange={e => setEmail(e.target.value)} onFocus={focusIn} onBlur={focusOut} disabled={!editing} />
           </div>
 
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Profession</label>
-            <select style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
-              value={profession} onChange={e => setProfession(e.target.value)} onFocus={focusIn} onBlur={focusOut}>
+            <select style={editing ? { ...inputStyle, cursor: "pointer", appearance: "auto" } : { ...disabledInputStyle, appearance: "auto" }}
+              value={profession} onChange={e => setProfession(e.target.value)} onFocus={focusIn} onBlur={focusOut} disabled={!editing}>
               <option value="">Select your profession…</option>
               {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -262,8 +282,8 @@ function ProfileScreen() {
 
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Trading experience</label>
-            <select style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
-              value={tradingProfile} onChange={e => setTradingProfile(e.target.value)} onFocus={focusIn} onBlur={focusOut}>
+            <select style={editing ? { ...inputStyle, cursor: "pointer", appearance: "auto" } : { ...disabledInputStyle, appearance: "auto" }}
+              value={tradingProfile} onChange={e => setTradingProfile(e.target.value)} onFocus={focusIn} onBlur={focusOut} disabled={!editing}>
               <option value="">Select your experience level…</option>
               {TRADING_PROFILES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -271,25 +291,51 @@ function ProfileScreen() {
 
           <div style={{ marginBottom: 24 }}>
             <label style={labelStyle}>Why did you subscribe?</label>
-            <select style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
-              value={purpose} onChange={e => setPurpose(e.target.value)} onFocus={focusIn} onBlur={focusOut}>
+            <select style={editing ? { ...inputStyle, cursor: "pointer", appearance: "auto" } : { ...disabledInputStyle, appearance: "auto" }}
+              value={purpose} onChange={e => setPurpose(e.target.value)} onFocus={focusIn} onBlur={focusOut} disabled={!editing}>
               <option value="">Select your purpose…</option>
               {PURPOSES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
 
-          <button onClick={handleSave} disabled={saving} style={{
-            width: "100%", padding: "12px 24px",
-            background: saving ? "var(--ink-4)" : "var(--accent)",
-            color: "var(--paper)", border: "none",
-            borderRadius: "var(--r-sm)", fontSize: 15, fontWeight: 700,
-            cursor: saving ? "default" : "pointer",
-            fontFamily: "var(--font-sans)", transition: "background 0.15s",
-          }}
-          onMouseOver={e => { if (!saving) e.currentTarget.style.background = "var(--accent-ink)"; }}
-          onMouseOut={e => { if (!saving) e.currentTarget.style.background = saving ? "var(--ink-4)" : "var(--accent)"; }}>
-            {saving ? "Saving…" : "Save Profile"}
-          </button>
+          {!editing ? (
+            <button onClick={() => setEditing(true)} style={{
+              width: "100%", padding: "12px 24px",
+              background: "var(--surface-2)", color: "var(--ink-2)",
+              border: "1px solid var(--hairline-strong)",
+              borderRadius: "var(--r-sm)", fontSize: 15, fontWeight: 700,
+              cursor: "pointer", fontFamily: "var(--font-sans)", transition: "all 0.15s",
+            }}
+            onMouseOver={e => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.borderColor = "var(--ink-3)"; }}
+            onMouseOut={e => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}>
+              Edit Profile
+            </button>
+          ) : (
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={handleSave} disabled={saving} style={{
+                flex: 1, padding: "12px 24px",
+                background: saving ? "var(--ink-4)" : "var(--accent)",
+                color: "var(--paper)", border: "none",
+                borderRadius: "var(--r-sm)", fontSize: 15, fontWeight: 700,
+                cursor: saving ? "default" : "pointer",
+                fontFamily: "var(--font-sans)", transition: "background 0.15s",
+              }}
+              onMouseOver={e => { if (!saving) e.currentTarget.style.background = "var(--accent-ink)"; }}
+              onMouseOut={e => { if (!saving) e.currentTarget.style.background = saving ? "var(--ink-4)" : "var(--accent)"; }}>
+                {saving ? "Saving…" : "Save Profile"}
+              </button>
+              <button onClick={handleCancel} disabled={saving} style={{
+                padding: "12px 24px",
+                background: "var(--surface-2)", color: "var(--ink-2)",
+                border: "1px solid var(--hairline-strong)",
+                borderRadius: "var(--r-sm)", fontSize: 15, fontWeight: 600,
+                cursor: saving ? "default" : "pointer",
+                fontFamily: "var(--font-sans)",
+              }}>
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── Change Password ── */}

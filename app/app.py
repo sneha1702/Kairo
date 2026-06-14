@@ -39,6 +39,28 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 @st.cache_resource
+def _get_regulation_tracker():
+    """Return a RegulationTracker connected to MongoDB, or None if MONGO_URI not set."""
+    import os as _os
+    def _s(key, default=""):
+        try:
+            return st.secrets.get(key, _os.getenv(key, default) or default)
+        except Exception:
+            return _os.getenv(key, default) or default
+
+    mongo_uri = _s("MONGO_URI")
+    mongo_db  = _s("MONGO_DB") or "kairo"
+    if not mongo_uri:
+        return None
+    try:
+        from app.regulations.regulation_tracker import RegulationTracker
+        return RegulationTracker(mongo_uri, mongo_db)
+    except Exception as exc:
+        logger.warning("RegulationTracker init failed: %s", exc)
+        return None
+
+
+@st.cache_resource
 def init_services():
     """Initialise ES, Gemini, and MongoDB.  Returns (es_manager, narrative_engine, tracker).
     Each service is initialised independently — one failure does not block the others."""
