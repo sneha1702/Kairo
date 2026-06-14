@@ -256,6 +256,8 @@ def build_kairo_html(data_json: str) -> str:
 html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow: hidden;
   background: var(--paper);
   color: var(--ink-2);
   font-family: var(--font-sans);
