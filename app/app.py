@@ -2583,6 +2583,27 @@ def run() -> None:
         _render_login_page()  # calls st.stop() — nothing below runs
     is_admin = current_user.get("role") == "admin"
 
+    # ── Post-login loading screen: pre-warm slow caches so the app renders instantly ──
+    if st.session_state.pop("_kairo_just_logged_in", False):
+        _first_name = (current_user.get("first_name") or current_user.get("username") or "").strip()
+        st.markdown(
+            f"""
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                        height:80vh;font-family:ui-sans-serif,system-ui,sans-serif;gap:0">
+              <div style="font-size:32px;font-weight:800;color:#c46a43;letter-spacing:-0.03em;margin-bottom:12px">Kairo</div>
+              <div style="font-size:16px;color:#888;">{"Welcome back, " + _first_name + "!" if _first_name else "Welcome!"} Setting up your workspace…</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        try: _get_concept_tracker()
+        except Exception: pass
+        try: _get_regulation_tracker()
+        except Exception: pass
+        try: init_services()
+        except Exception: pass
+        st.rerun()
+
     # ── Tab layout ───────────────────────────────────────────────────────────
     if is_admin:
         _tabs = st.tabs(["Kairo", "⚙ Admin"])
