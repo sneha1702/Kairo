@@ -39,6 +39,28 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 @st.cache_resource
+def _get_concept_tracker():
+    """Return a ConceptTracker connected to MongoDB, or None if MONGO_URI not set."""
+    import os as _os
+    def _s(key, default=""):
+        try:
+            return st.secrets.get(key, _os.getenv(key, default) or default)
+        except Exception:
+            return _os.getenv(key, default) or default
+
+    mongo_uri = _s("MONGO_URI")
+    mongo_db  = _s("MONGO_DB") or "kairo"
+    if not mongo_uri:
+        return None
+    try:
+        from app.education.concept_tracker import ConceptTracker
+        return ConceptTracker(mongo_uri, mongo_db)
+    except Exception as exc:
+        logger.warning("ConceptTracker init failed: %s", exc)
+        return None
+
+
+@st.cache_resource
 def _get_regulation_tracker():
     """Return a RegulationTracker connected to MongoDB, or None if MONGO_URI not set."""
     import os as _os
