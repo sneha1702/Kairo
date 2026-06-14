@@ -179,7 +179,7 @@ function App() {
             fontSize: 13, fontWeight: 600, color: "var(--accent-ink)",
             letterSpacing: "-0.01em",
           }}>
-            Hey {username} <span style={{ color: "var(--ink-4)", fontWeight: 500 }}>(signed in)</span>
+            Hey, {username}
           </div>
         )}
         <div className="kairo-col" key={view}>{screen}</div>
