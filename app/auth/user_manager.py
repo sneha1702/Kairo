@@ -116,10 +116,7 @@ class UserManager:
         self._col.create_index([("username", ASCENDING)], unique=True)
 
         self._sessions_col = self._client[mongo_db]["kairo_sessions"]
-        # Token is stored only as an HMAC; we look it up by hash, never raw value.
-        self._sessions_col.create_index([("token_hash", ASCENDING)], unique=True)
-        self._sessions_col.create_index([("expires_at", ASCENDING)], expireAfterSeconds=0)
-        self._sessions_col.create_index([("username", ASCENDING)])
+        self._migrate_sessions_indexes()
 
         # Failed-login bookkeeping for rate limiting. TTL'd via expires_at.
         self._attempts_col = self._client[mongo_db]["kairo_login_attempts"]
@@ -129,6 +126,39 @@ class UserManager:
         # Server-side secret used to HMAC session tokens before persisting.
         # Auto-generated and stored once per deployment.
         self._token_secret = self._load_or_create_token_secret(mongo_db)
+
+    def _migrate_sessions_indexes(self) -> None:
+        """Bring the kairo_sessions collection in line with the current schema.
+
+        Old layout stored a unique index on the raw `token` field. The new
+        layout stores an HMAC under `token_hash`. Building the new unique
+        index over a collection that still holds legacy docs (where
+        `token_hash` is missing -> indexed as null) fails with E11000 on
+        duplicate nulls. Drop legacy artifacts, then re-create the index.
+        """
+        # Drop any old indexes from the previous schema. Names are well-known.
+        for stale in ("token_1",):
+            try:
+                self._sessions_col.drop_index(stale)
+            except Exception:
+                pass
+        # Legacy session docs were created under a different signing scheme
+        # and are no longer validatable. Purge them so the new unique index
+        # can build cleanly. (Worst case: users with a stale 'remember me'
+        # token get redirected to sign in once.)
+        try:
+            self._sessions_col.delete_many({"token_hash": {"$exists": False}})
+        except Exception:
+            pass
+        # `sparse=True` keeps the index forgiving if a future doc ever ends
+        # up missing `token_hash`. Uniqueness is still enforced for real values.
+        self._sessions_col.create_index(
+            [("token_hash", ASCENDING)], unique=True, sparse=True
+        )
+        self._sessions_col.create_index(
+            [("expires_at", ASCENDING)], expireAfterSeconds=0
+        )
+        self._sessions_col.create_index([("username", ASCENDING)])
 
     # ---- secret bootstrap ---------------------------------------------------
 
