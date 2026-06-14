@@ -357,8 +357,8 @@ function ProfileScreen() {
           </div>
           <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>New password</label>
-            <input style={inputStyle} type="password" value={newPw1} placeholder="at least 8 characters"
-              onChange={e => setNewPw1(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
+            <input style={inputStyle} type="password" value={newPw1} placeholder="at least 10 chars, letters + numbers"
+              onChange={e => setNewPw1(e.target.value)} onFocus={focusIn} onBlur={focusOut} autoComplete="new-password" />
           </div>
           <div style={{ marginBottom: 20 }}>
             <label style={labelStyle}>Confirm new password</label>
