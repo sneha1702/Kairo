@@ -60,7 +60,7 @@ def _get_concept_tracker():
         return None
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def _get_regulation_tracker():
     """Return a RegulationTracker connected to MongoDB, or None if MONGO_URI not set."""
     import os as _os
