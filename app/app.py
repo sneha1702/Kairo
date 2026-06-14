@@ -2161,16 +2161,19 @@ def run() -> None:
             logger.warning("Failed to load regulations for kairo_data: %s", _exc)
             kairo_data.setdefault("regulations", [])
             kairo_data.setdefault("regulation_last_run", {})
-        # Inject Crypto 101 concepts
+        # Inject Crypto 101 concepts + groupings
         try:
             _con_trk = _get_concept_tracker()
             if _con_trk:
-                kairo_data["concepts"] = _con_trk.get_all_concepts()
+                kairo_data["concepts"]       = _con_trk.get_all_concepts()
+                kairo_data["concept_groups"] = _con_trk.get_all_groups()
             else:
                 kairo_data.setdefault("concepts", [])
+                kairo_data.setdefault("concept_groups", [])
         except Exception as _exc:
             logger.warning("Failed to load concepts for kairo_data: %s", _exc)
             kairo_data.setdefault("concepts", [])
+            kairo_data.setdefault("concept_groups", [])
 
         # Inject one-time transient UI signals (popped so they don't repeat on refresh)
         _init_view = st.session_state.pop("_kairo_init_view", None)
