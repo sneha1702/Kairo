@@ -13,6 +13,7 @@ function Icon({ name, size = 18, stroke = 1.6, style }) {
   };
   const paths = {
     sun:    <><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19" /></>,
+    moon:   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
     today:  <><path d="M4 13.5 12 6l8 7.5" /><path d="M6 12v7h12v-7" /></>,
     narr:   <><path d="M5 5h14M5 12h14M5 19h9" /></>,
     history:<><circle cx="12" cy="12" r="8" /><path d="M12 8v4l2.5 1.5" /></>,
