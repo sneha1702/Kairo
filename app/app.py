@@ -1297,6 +1297,9 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     elif _pol_purge:
         st.session_state["_pol_purge_pending"] = True
         st.rerun()
+    elif _con_purge:
+        st.session_state["_con_purge_pending"] = True
+        st.rerun()
     elif _narr_backfill:
         st.session_state["_backfill_pending"] = "narratives"
         st.rerun()
