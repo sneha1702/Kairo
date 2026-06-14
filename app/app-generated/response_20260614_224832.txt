@@ -1,0 +1,28 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Surge in Capital Movement Across Blockchain Networks",
+    "category_sector": "Infrastructure",
+    "category_actor": "SmartMoney",
+    "category_behavior": "Bridging",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.74,
+    "key_evidence": [
+      "Over $56.8 billion in capital has been moved across various blockchain bridges in a single day, indicating significant activity.",
+      "Notable bridge activity includes LayerZero V2 with $22.7 billion, Portal with $7.8 billion, and CCIP with $5.1 billion.",
+      "This intense bridging activity shows a strong acceleration, running 221% faster than the 30-day average."
+    ],
+    "data_caveat": "Only 24 hours of data available, so this may be an early signal rather than a confirmed trend.",
+    "historical_context": "First detection with only 24h of data; no multi-day trend yet confirmed.",
+    "implications": "This surge in bridging activity suggests that experienced investors are actively shifting their funds between different blockchain ecosystems, likely seeking new opportunities or repositioning their portfolios. It highlights a dynamic market where capital is not staying put, but rather exploring different chains, which could lead to shifts in liquidity and asset valuations across various networks.",
+    "plain_english_summary": "Experienced investors are on the move, with over $56.8 billion being shifted across various crypto bridges in just one day. This suggests that money is actively flowing between different blockchain networks as people look for new opportunities.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "This means a lot of money is flowing from one blockchain network to another, suggesting that more experienced investors are looking for the next big thing or rebalancing their holdings. It's a sign that parts of the crypto market are highly active. Watch for news or announcements from specific blockchain ecosystems that might be attracting this new capital, as these could be areas of future growth. Also, keep an eye on total value locked (TVL) on various chains. On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```

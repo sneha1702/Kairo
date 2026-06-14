@@ -127,10 +127,13 @@ class DuneIngestionPipeline(BaseIngestionPipeline):
                 ingested_at=ingested_at,
             )
 
-            ok, failed = self._bulk_index(docs, qc.target_index)
-            result.docs_indexed = ok
-            result.docs_failed = len(failed)
-            result.failed_docs = failed
+            if docs:
+                ok, failed = self._bulk_index(docs, qc.target_index)
+                result.docs_indexed = ok
+                result.docs_failed = len(failed)
+                result.failed_docs = failed
+            else:
+                logger.info("[%s] No documents to index — skipping ES write", qc.query_name)
             result.success = True
 
         except Exception as exc:

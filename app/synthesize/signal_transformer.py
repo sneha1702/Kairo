@@ -84,14 +84,19 @@ class SignalTransformer:
 
     # ── Public entry point ─────────────────────────────────────────────────
 
-    def build_unified_signals(self, hours: int = 24) -> List[Dict[str, Any]]:
+    def build_unified_signals(self, hours: int = 24, dune_context: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
         Query all 8 dune_* indices for the given lookback window and return
         a flat list of unified signal records (capital_migration, smart_deployment,
         stablecoin_flow).
+
+        If dune_context is provided, reuse it instead of making a fresh ES query.
         """
-        logger.info("[TRANSFORM] Fetching ES context — lookback=%dh", hours)
-        ctx = self.es.get_dune_signal_context(hours=hours)
+        if dune_context is not None:
+            ctx = dune_context
+        else:
+            logger.info("[TRANSFORM] Fetching ES context — lookback=%dh", hours)
+            ctx = self.es.get_dune_signal_context(hours=hours)
 
         signals: List[Dict[str, Any]] = []
         signals.extend(self._capital_migration(ctx))
@@ -422,9 +427,17 @@ def run_narrative_generation(
         logger.info("[NARR] Creating NarrativeTracker from Config")
         tracker = NarrativeTracker(_secret("MONGO_URI"), _secret("MONGO_DB") or "kairo")
 
-    # ── Step 1: build unified signal schema ────────────────────────────────
+    # ── Step 1: fetch ES context and build unified signal schema ───────────
+    logger.info("[NARR] Fetching Dune context from ES (once)")
+    dune_context = es_manager.get_dune_signal_context(hours=hours)
+
     transformer     = SignalTransformer(es_manager)
-    unified_signals = transformer.build_unified_signals(hours=hours)
+    unified_signals = transformer.build_unified_signals(hours=hours, dune_context=dune_context)
+
+    if not unified_signals:
+        logger.info("[NARR] No signal data in window — skipping Gemini and further ES queries")
+        return []
+
     unified_signals = enrich_with_acceleration(unified_signals, es_manager)
 
     if dry_run:
@@ -432,9 +445,8 @@ def run_narrative_generation(
         _dump_signals(unified_signals)
         return []
 
-    # ── Step 2: fetch full context and trend for the Gemini prompt ─────────
-    logger.info("[NARR] Fetching full dune context and signal trend")
-    dune_context = es_manager.get_dune_signal_context(hours=hours)
+    # ── Step 2: fetch signal trend for the Gemini prompt ──────────────────
+    logger.info("[NARR] Fetching signal trend")
     bucket_h     = max(24, hours // 3)
     signal_trend = es_manager.get_signal_trend(hours_per_bucket=bucket_h, num_buckets=3)
 

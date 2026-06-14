@@ -218,16 +218,38 @@ def _shorten_headline(ev_str: str) -> str:
 
 
 def _parse_retail_considerations(text: str) -> tuple[str, str, str]:
-    """Parse 3-part retail_considerations string → (meaning, watch_for, risk_note)."""
+    """Parse retail_considerations → (meaning, watch_for, risk_note).
+    Handles both numbered format (1. / (1) / [1]) and free text.
+    """
     if not text or not isinstance(text, str):
         return ("", "", "")
     import re
     parts = re.split(r'[\(\[]?\s*[123]\s*[\)\]]?\s*[.:)]\s*', text)
     parts = [p.strip().rstrip(".,") for p in parts if p.strip()]
-    meaning   = parts[0] if len(parts) > 0 else ""
-    watch_for = parts[1] if len(parts) > 1 else ""
-    risk_note = parts[2] if len(parts) > 2 else ""
-    return (meaning, watch_for, risk_note)
+    if len(parts) >= 3:
+        return (parts[0], parts[1], parts[2])
+    # — free-text fallback: extract "Watch for…" and risk reminder —
+    meaning = text.strip()
+    watch_for = ""
+    risk_note = ""
+    # Try to find "Watch for" sentence
+    m = re.search(r'(?:Watch\s+for|Keep an eye on|Watch\s+)([^.]*\.)', text, re.IGNORECASE)
+    if m:
+        watch_for = m.group(0).strip()
+        # Remove watch_for from meaning
+        meaning = meaning.replace(watch_for, "").strip().rstrip(",").strip()
+    # Extract risk reminder: last sentence starting with "On-chain" or containing "not financial advice"
+    risk_patterns = [
+        r'(On-chain movements[^.]*\.)',
+        r'([^.]*not financial advice[^.]*\.)',
+    ]
+    for pat in risk_patterns:
+        rm = re.search(pat, text, re.IGNORECASE)
+        if rm:
+            risk_note = rm.group(0).strip()
+            meaning = meaning.replace(risk_note, "").strip().rstrip(",").strip()
+            break
+    return (meaning.strip(), watch_for.strip(), risk_note.strip())
 
 
 # ---------------------------------------------------------------------------
@@ -412,9 +434,7 @@ def _build_story(top: dict, dune_context: dict) -> dict:
             clean_name = str(name).split("'")[0].split('"')[0].strip().rstrip(",").strip()
             headline = f"{clean_name}."
 
-        pls = (top.get("plain_english_summary") or "").strip()
-        first_dot = pls.find(". ")
-        what_happening = (pls[:first_dot + 1] if first_dot != -1 else pls)[:280]
+        what_happening = (top.get("plain_english_summary") or "")[:400].strip()
 
         retail = top.get("retail_considerations") or ""
         _meaning, _watch_for, _risk_note = _parse_retail_considerations(retail)
@@ -901,27 +921,10 @@ def _detect_signal_context(evidence_text: str) -> str:
 def _build_episode_body(evidence_text: str, narrative: dict, idx: int) -> str:
     """
     Build a plain-English body for a timeline episode.
-    headline = the raw data fact; body = what it means + why the narrative matters.
+    body = what the signal means — NO narrative-level summary, which lives in BriefingSections.
     """
-    name = narrative.get("name", "this narrative")
-    plain_summary  = (narrative.get("plain_english_summary") or "").strip()
-    implications   = (narrative.get("implications") or "").strip()
     signal_context = _detect_signal_context(evidence_text)
-
-    # Rotate the "why it matters" text across episodes so they don't all read identically
-    narrative_context_pool = [x for x in [plain_summary, implications] if x and len(x) > 20]
-    if narrative_context_pool:
-        narrative_context = narrative_context_pool[idx % len(narrative_context_pool)]
-    else:
-        narrative_context = f"This signal contributes to the {name} narrative — sustained capital positioning across multiple data sources."
-
-    # Lead with signal meaning, close with narrative-level context
-    parts = []
-    if signal_context:
-        parts.append(signal_context)
-    if narrative_context:
-        parts.append(narrative_context)
-    text = " ".join(parts)
+    text = signal_context or evidence_text
     words = text.split()
     return " ".join(words[:100]) + ("…" if len(words) > 100 else "")
 
@@ -1063,9 +1066,7 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
         phase = _derive_narrative_phase(top, day, conf)
         smart_intent = _derive_smart_money_intent(top)
 
-        pls = (top.get("plain_english_summary") or "").strip()
-        first_dot = pls.find(". ")
-        what_happening = (pls[:first_dot + 1] if first_dot != -1 else pls)[:280]
+        what_happening = (top.get("plain_english_summary") or "")[:400].strip()
 
         retail = top.get("retail_considerations") or ""
         _meaning, _watch_for, _risk_note = _parse_retail_considerations(retail)
@@ -1096,6 +1097,7 @@ def _build_tracker(top: dict, dune_context: dict | None = None) -> dict:
             "why_matters":       why_matters,
             "risk_note":         risk_note,
             "watch_for":         watch_for,
+            "retail_considerations": retail[:500],
         }
     except Exception as exc:
         logger.warning("_build_tracker error: %s", exc)
@@ -1142,6 +1144,7 @@ def _empty_tracker() -> dict:
         "why_matters":       "",
         "risk_note":         "",
         "watch_for":         "",
+        "retail_considerations": "",
     }
 
 
