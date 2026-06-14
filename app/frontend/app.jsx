@@ -192,7 +192,7 @@ function kairoMount(attempts) {
     return;
   }
   ({ Icon, MorningBrief, NarrativeTracker, NarrativeHistory, ConfigScreen, CryptoMarkets,
-     PolicyPulse, ProfileScreen, useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor } = window);
+     PolicyPulse, LearnScreen, ProfileScreen, useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakColor } = window);
   ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 }
 kairoMount(0);
