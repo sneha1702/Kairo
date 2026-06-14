@@ -1147,6 +1147,25 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 st.session_state.pop("_pol_purge_pending", None)
                 st.rerun()
 
+    elif st.session_state.get("_con_purge_pending"):
+        st.warning("Permanently delete **all Crypto 101 concepts**? This cannot be undone.")
+        _pc1, _pc2 = st.columns(2)
+        with _pc1:
+            if st.button("Confirm", key="_con_purge_yes", type="primary", use_container_width=True):
+                _con_trk2 = _get_concept_tracker()
+                if _con_trk2:
+                    _n = _con_trk2.purge_all()
+                    st.session_state.pop("_con_purge_pending", None)
+                    _cached_build_data.clear()
+                    st.success(f"Deleted {_n} concept(s).")
+                    st.rerun()
+                else:
+                    st.error("ConceptTracker not connected.")
+        with _pc2:
+            if st.button("Cancel", key="_con_purge_no", use_container_width=True):
+                st.session_state.pop("_con_purge_pending", None)
+                st.rerun()
+
     # ── Backfill options panels ───────────────────────────────────────────────
     elif st.session_state.get("_backfill_pending") == "narratives":
         st.markdown("**Narratives — Backfill options**")
