@@ -72,7 +72,7 @@ class RegulationTracker:
         known_ids = self._get_known_ids()
         known_ids_text = "\n".join(f"  - {id_}" for id_ in sorted(known_ids)) or "  (none yet — this is the first run)"
 
-        prompt = REGULATION_PROMPT.format(known_ids=known_ids_text)
+        prompt = _PROMPT.replace("{known_ids}", known_ids_text)
 
         logger.info("[REGTRAK] Calling Gemini for regulation update (known IDs: %d)", len(known_ids))
         run_at = datetime.now(timezone.utc)
