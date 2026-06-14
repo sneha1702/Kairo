@@ -483,6 +483,28 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   <script type="text/babel">
 {app_jsx}
   </script>
+  <script>
+  /* Resize this iframe to fill the parent viewport so the app never clips
+     and only the inner .kairo-main div scrolls (not an outer iframe bar). */
+  (function () {{
+    function fit() {{
+      var h;
+      try {{ h = window.parent.innerHeight; }} catch (e) {{ h = window.innerHeight || 900; }}
+      /* Subtract ~56 px for Streamlit tab bar (admin view); 0 for plain user view.
+         postMessage is safe on same-origin Streamlit deployments. */
+      h = Math.max(h - 56, 600);
+      try {{
+        window.parent.postMessage({{
+          isStreamlitMessage: true,
+          type: "streamlit:setFrameHeight",
+          args: {{ height: h }}
+        }}, "*");
+      }} catch (e) {{}}
+    }}
+    fit();
+    window.addEventListener("resize", fit);
+  }})();
+  </script>
 </body>
 </html>"""
     return html
