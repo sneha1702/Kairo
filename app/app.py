@@ -1004,7 +1004,7 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     _mongo_db  = _os.getenv("MONGO_DB")  or _Cfg.MONGO_DB or "kairo"
     _user_id   = "default"
 
-    # ── Table header ──────────────────────────────────────────────────────────
+    # ── Table ─────────────────────────────────────────────────────────────────
     _h1, _h2, _h3, _h4 = st.columns([2, 2, 2, 2])
     with _h1: st.markdown("**Data Source**")
     with _h2: st.markdown("**Ingestion (last 24h)**")
@@ -1012,36 +1012,41 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     with _h4: st.markdown("**Backfill (last 6 months)**")
 
     st.markdown(
-        "<hr style='margin:6px 0 10px;border-color:var(--hairline)'>",
+        "<hr style='margin:6px 0 14px;border-color:var(--hairline)'>",
         unsafe_allow_html=True,
     )
 
-    # ── Row 1: Narratives ─────────────────────────────────────────────────────
+    # Row 1: Narratives
     _r1c1, _r1c2, _r1c3, _r1c4 = st.columns([2, 2, 2, 2])
     with _r1c1: st.markdown("**Narratives**")
-    with _r1c2: _narr_ingest    = st.button("Run",      key="btn_narr_ingest",    use_container_width=True)
-    with _r1c3: _narr_purge     = st.button("Purge",    key="btn_narr_purge",     use_container_width=True, type="secondary")
-    with _r1c4: _narr_backfill  = st.button("Backfill", key="btn_narr_backfill",  use_container_width=True)
+    with _r1c2: _narr_ingest   = st.button("Run",      key="btn_narr_ingest",   use_container_width=True)
+    with _r1c3: _narr_purge    = st.button("Purge",    key="btn_narr_purge",    use_container_width=True, type="secondary")
+    with _r1c4: _narr_backfill = st.button("Backfill", key="btn_narr_backfill", use_container_width=True)
 
-    # ── Row 2: Market Analysis ────────────────────────────────────────────────
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    # Row 2: Market Analysis
     _r2c1, _r2c2, _r2c3, _r2c4 = st.columns([2, 2, 2, 2])
     with _r2c1: st.markdown("**Market Analysis**")
-    with _r2c2: _mkt_ingest     = st.button("Run",      key="btn_mkt_ingest",     use_container_width=True)
-    with _r2c3: _mkt_purge      = st.button("Purge",    key="btn_mkt_purge",      use_container_width=True, type="secondary")
+    with _r2c2: _mkt_ingest    = st.button("Run",   key="btn_mkt_ingest", use_container_width=True)
+    with _r2c3: _mkt_purge     = st.button("Purge", key="btn_mkt_purge",  use_container_width=True, type="secondary")
     with _r2c4: st.markdown("—")
 
-    # ── Row 3: Policy Updates ─────────────────────────────────────────────────
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    # Row 3: Policy Updates
     _r3c1, _r3c2, _r3c3, _r3c4 = st.columns([2, 2, 2, 2])
     with _r3c1: st.markdown("**Policy Updates**")
-    with _r3c2: _pol_ingest     = st.button("Run",      key="btn_pol_ingest",     use_container_width=True)
-    with _r3c3: _pol_purge      = st.button("Purge",    key="btn_pol_purge",      use_container_width=True, type="secondary")
-    with _r3c4: _pol_backfill   = st.button("Backfill", key="btn_pol_backfill",   use_container_width=True)
+    with _r3c2: _pol_ingest    = st.button("Run",      key="btn_pol_ingest",    use_container_width=True)
+    with _r3c3: _pol_purge     = st.button("Purge",    key="btn_pol_purge",     use_container_width=True, type="secondary")
+    with _r3c4: _pol_backfill  = st.button("Backfill", key="btn_pol_backfill",  use_container_width=True)
 
     st.divider()
 
-    # ── Action dispatch — runs below the table ────────────────────────────────
-    # Purge confirmations (session-persistent) take priority over fresh clicks.
+    # ── Action dispatch ───────────────────────────────────────────────────────
+    # Priority order: purge confirmations → backfill options → fresh actions
 
+    # ── Purge confirmations ───────────────────────────────────────────────────
     if st.session_state.get("_narr_purge_pending"):
         st.warning("Permanently delete **all narratives**? This cannot be undone.")
         _pc1, _pc2 = st.columns(2)
@@ -1107,20 +1112,145 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 st.session_state.pop("_pol_purge_pending", None)
                 st.rerun()
 
-    # Set purge pending on fresh button clicks (no action on same rerun)
+    # ── Backfill options panels ───────────────────────────────────────────────
+    elif st.session_state.get("_backfill_pending") == "narratives":
+        st.markdown("**Narratives — Backfill options**")
+        _fetch_onchain = st.checkbox(
+            "Also fetch on-chain data for the last 6 months before synthesizing",
+            value=False,
+            key="_narr_bf_fetch",
+            help=(
+                "Unchecked (default): Gemini synthesizes using data already in Elasticsearch — fast. "
+                "Checked: fetches fresh on-chain data in weekly chunks first, then synthesizes — adds significant time."
+            ),
+        )
+        st.caption(
+            "Synthesize only — using existing Elasticsearch data." if not _fetch_onchain
+            else "Fetch 6 months of on-chain data (26 weekly chunks) → then synthesize narratives."
+        )
+        _bfc1, _bfc2 = st.columns(2)
+        with _bfc1:
+            _narr_bf_run = st.button("Run Backfill", key="_narr_bf_run", type="primary", use_container_width=True)
+        with _bfc2:
+            if st.button("Cancel", key="_narr_bf_cancel", use_container_width=True):
+                st.session_state.pop("_backfill_pending", None)
+                st.rerun()
+
+        if _narr_bf_run:
+            # Pop state before any st.rerun() calls inside the flow functions
+            st.session_state.pop("_backfill_pending", None)
+            if _fetch_onchain:
+                from datetime import timedelta as _td
+                try:
+                    _pipeline = _build_pipeline()
+                except Exception as exc:
+                    st.error(f"Pipeline init failed: {exc}")
+                    logger.exception("Pipeline init failed")
+                    return
+                _now      = datetime.now(timezone.utc)
+                _n_chunks = 26
+                _prog_oc  = st.progress(0, text=f"On-chain chunk 1/{_n_chunks}…")
+                for _i in range(_n_chunks):
+                    _chunk_end = _now - _td(weeks=_i)
+                    _prog_oc.progress(
+                        int(50 * _i / _n_chunks),
+                        text=f"On-chain chunk {_i + 1}/{_n_chunks}: week ending {_chunk_end.date()}",
+                    )
+                    try:
+                        _pipeline.run_all(
+                            end_time=_chunk_end.strftime("%Y-%m-%d %H:%M:%S"),
+                            time_window_hours=168,
+                        )
+                    except Exception as exc:
+                        st.warning(f"Chunk {_i + 1} failed: {exc}")
+                        logger.exception("On-chain backfill chunk %d failed", _i + 1)
+                _prog_oc.progress(50, text="On-chain fetch done. Starting Gemini synthesis…")
+
+            _run_narrative_backfill_flow(
+                _es, _engine, _tracker, _user_id,
+                backfill_days=180,
+                sleep_between=15,
+            )
+
+    elif st.session_state.get("_backfill_pending") == "policy":
+        st.markdown("**Policy Updates — Backfill options**")
+        _fetch_web = st.checkbox(
+            "Also fetch fresh regulation data from web before synthesizing",
+            value=False,
+            key="_pol_bf_fetch",
+            help=(
+                "Unchecked (default): uses regulations already stored in MongoDB. "
+                "Checked: calls Gemini to pull new regulatory developments from web trackers first."
+            ),
+        )
+        st.caption(
+            "Synthesize only — using existing MongoDB regulations." if not _fetch_web
+            else "Fetch new regulation data from web trackers via Gemini → deduplicate → store."
+        )
+        _bfc1, _bfc2 = st.columns(2)
+        with _bfc1:
+            _pol_bf_run = st.button("Run Backfill", key="_pol_bf_run", type="primary", use_container_width=True)
+        with _bfc2:
+            if st.button("Cancel", key="_pol_bf_cancel", use_container_width=True):
+                st.session_state.pop("_backfill_pending", None)
+                st.rerun()
+
+        if _pol_bf_run:
+            st.session_state.pop("_backfill_pending", None)
+            _reg_tracker = _get_regulation_tracker()
+            if not _reg_tracker:
+                st.warning("MongoDB not configured — RegulationTracker unavailable.")
+            elif _engine is None:
+                st.error("Gemini not configured. Check GEMINI_KEY.")
+            elif not _fetch_web:
+                try:
+                    _existing = _reg_tracker.get_latest_regulations(limit=1000)
+                    st.info(
+                        f"Found **{len(_existing)}** regulation(s) already in MongoDB. "
+                        "Existing data is already synthesized. Enable the checkbox to pull fresh web data."
+                    )
+                except Exception as _exc:
+                    st.error(f"Failed to read regulations: {_exc}")
+            else:
+                _reg_prog = st.progress(0, text="Querying Gemini for historical regulations (6 months)…")
+                _reg_stat = st.empty()
+                try:
+                    _reg_prog.progress(40, text="Sending prompt to Gemini…")
+                    _result  = _reg_tracker.fetch_and_store(_engine)
+                    _reg_prog.progress(100, text="Done.")
+                    if "error" in _result:
+                        _reg_stat.error(f"Backfill failed: {_result['error']}")
+                    else:
+                        _saved   = _result.get("saved", 0)
+                        _skipped = _result.get("skipped", 0)
+                        _reg_stat.success(
+                            f"Backfill complete — {_saved} regulation(s) added, {_skipped} already known."
+                        )
+                    _cached_build_data.clear()
+                    st.rerun()
+                except Exception as _exc:
+                    _reg_prog.empty()
+                    st.error(f"Backfill failed: {_exc}")
+                    logger.exception("Policy backfill failed")
+
+    # ── Set pending state on fresh button clicks ──────────────────────────────
     elif _narr_purge:
         st.session_state["_narr_purge_pending"] = True
         st.rerun()
-
     elif _mkt_purge:
         st.session_state["_mkt_purge_pending"] = True
         st.rerun()
-
     elif _pol_purge:
         st.session_state["_pol_purge_pending"] = True
         st.rerun()
+    elif _narr_backfill:
+        st.session_state["_backfill_pending"] = "narratives"
+        st.rerun()
+    elif _pol_backfill:
+        st.session_state["_backfill_pending"] = "policy"
+        st.rerun()
 
-    # ── Narratives: Ingestion 24h ─────────────────────────────────────────────
+    # ── Immediate run actions ─────────────────────────────────────────────────
     elif _narr_ingest:
         st.markdown("**Narratives — Ingestion (24h)**")
         try:
@@ -1129,42 +1259,29 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
             st.error(f"Pipeline init failed: {exc}")
             logger.exception("Pipeline init failed")
             return
-
         _now     = datetime.now(timezone.utc)
         _end_str = _now.strftime("%Y-%m-%d %H:%M:%S")
         _prog    = st.progress(0, text=f"Running {_Cfg.INGESTION_PROVIDER} pipeline (24h)…")
         _stat    = st.empty()
         try:
             _prog.progress(20, text="Fetching on-chain data…")
-            _res          = _pipeline.run_all(end_time=_end_str, time_window_hours=24)
-            _total_rows   = sum(r.rows_fetched for r in _res.values())
+            _res           = _pipeline.run_all(end_time=_end_str, time_window_hours=24)
+            _total_rows    = sum(r.rows_fetched for r in _res.values())
             _total_indexed = sum(r.docs_indexed for r in _res.values())
-            _errors       = [f"[{r.query_name}] {r.error}" for r in _res.values() if r.error]
+            _errors        = [f"[{r.query_name}] {r.error}" for r in _res.values() if r.error]
             _prog.progress(50, text="Running narrative detection…")
         except Exception as exc:
             _prog.empty()
             st.error(f"Ingestion failed: {exc}")
             logger.exception("Ingestion failed")
             return
-
         _cached_build_data.clear()
         if _errors:
             _stat.warning(f"Ingested {_total_rows:,} rows ({_total_indexed:,} indexed) — {len(_errors)} error(s)")
         else:
             _stat.info(f"Ingested {_total_rows:,} rows, {_total_indexed:,} indexed.")
-
         _run_detection_flow(_es, _engine, _tracker, _user_id, hours=24)
 
-    # ── Narratives: Backfill 6 months ─────────────────────────────────────────
-    elif _narr_backfill:
-        st.markdown("**Narratives — Backfill (6 months)**")
-        _run_narrative_backfill_flow(
-            _es, _engine, _tracker, _user_id,
-            backfill_days=180,
-            sleep_between=15,
-        )
-
-    # ── Market Analysis: Ingestion 24h ────────────────────────────────────────
     elif _mkt_ingest:
         st.markdown("**Market Analysis — Ingestion (24h)**")
         _cmc_key = _Cfg.CMC_API_KEY
@@ -1181,14 +1298,11 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 _mkt_prog.progress(55, text="Saving to MongoDB…")
                 _upd.save_to_mongo(_projects)
                 _mkt_prog.progress(65, text="Running AI analysis…")
-
                 from app.markets.analyzer import MarketAnalyzer
                 _analyzer = MarketAnalyzer(_mongo_uri, _mongo_db)
-
                 def _cb(current, total, name):
                     pct = 65 + int(30 * current / total)
                     _mkt_prog.progress(pct, text=f"Analysed {name} ({current}/{total})…")
-
                 _results  = _analyzer.analyze_all(fetch_pages=True, dry_run=False, progress_cb=_cb)
                 _ok       = sum(1 for r in _results if not r.get("analysis_error"))
                 _cached_build_data.clear()
@@ -1202,7 +1316,6 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 st.error(f"Markets update failed: {_exc}")
                 logger.exception("Markets update failed")
 
-    # ── Policy Updates: Ingestion 24h ─────────────────────────────────────────
     elif _pol_ingest:
         st.markdown("**Policy Updates — Ingestion (24h)**")
         _reg_tracker = _get_regulation_tracker()
@@ -1237,36 +1350,6 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 _reg_prog.empty()
                 st.error(f"Regulation fetch failed: {_exc}")
                 logger.exception("Regulation fetch failed")
-
-    # ── Policy Updates: Backfill 6 months ─────────────────────────────────────
-    elif _pol_backfill:
-        st.markdown("**Policy Updates — Backfill (6 months)**")
-        _reg_tracker = _get_regulation_tracker()
-        if not _reg_tracker:
-            st.warning("MongoDB not configured — RegulationTracker unavailable. Set MONGO_URI.")
-        elif _engine is None:
-            st.error("Gemini not configured. Check GEMINI_KEY.")
-        else:
-            _reg_prog = st.progress(0, text="Querying Gemini for historical regulations (6 months)…")
-            _reg_stat = st.empty()
-            try:
-                _reg_prog.progress(40, text="Sending prompt to Gemini…")
-                _result  = _reg_tracker.fetch_and_store(_engine)
-                _reg_prog.progress(100, text="Done.")
-                if "error" in _result:
-                    _reg_stat.error(f"Backfill failed: {_result['error']}")
-                else:
-                    _saved   = _result.get("saved", 0)
-                    _skipped = _result.get("skipped", 0)
-                    _reg_stat.success(
-                        f"Backfill complete — {_saved} regulation(s) added, {_skipped} already known."
-                    )
-                _cached_build_data.clear()
-                st.rerun()
-            except Exception as _exc:
-                _reg_prog.empty()
-                st.error(f"Backfill failed: {_exc}")
-                logger.exception("Policy backfill failed")
 
 
 def run() -> None:
