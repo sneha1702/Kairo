@@ -11,6 +11,7 @@ const NAV = [
   { id: "history",    label: "History",        icon: "history" },
   { id: "markets",    label: "Markets",        icon: "markets" },
   { id: "policy",     label: "Policy Pulse",   icon: "scale"   },
+  { id: "learn",      label: "Crypto 101",     icon: "book"    },
   { id: "config",     label: "Subscription",   icon: "watch"   },
   { id: "profile",    label: "Profile",        icon: "user"    },
   { id: "logout",     label: "Sign out",       icon: "logout", action: "logout" },
