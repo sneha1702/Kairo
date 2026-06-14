@@ -2102,6 +2102,42 @@ def run() -> None:
 
         /* ── Running indicator — hide it, show loading inside the iframe ── */
         [data-testid="stStatusWidget"] { display: none !important; }
+
+        /* ── Branded data-loading state ───────────────────────────────────── */
+        [data-testid="stSpinner"] {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 80px 24px !important;
+          background: var(--paper) !important;
+          min-height: 320px !important;
+        }
+        [data-testid="stSpinner"] > div {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          gap: 18px !important;
+        }
+        [data-testid="stSpinner"] i,
+        [data-testid="stSpinner"] svg {
+          width: 36px !important;
+          height: 36px !important;
+          color: var(--accent) !important;
+          stroke: var(--accent) !important;
+          fill: var(--accent) !important;
+          opacity: 0.85;
+        }
+        [data-testid="stSpinner"] > div > div:last-child,
+        [data-testid="stSpinner"] p {
+          font-size: 15.5px !important;
+          font-weight: 600 !important;
+          color: var(--ink-2) !important;
+          letter-spacing: -0.01em !important;
+          text-align: center !important;
+          max-width: 420px !important;
+          line-height: 1.5 !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
