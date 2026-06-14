@@ -1115,7 +1115,7 @@ _PW_METER_CSS = """
 """
 
 
-def _render_login_page(mgr) -> None:
+def _render_login_page() -> None:
     """Show the Kairo login/register gate. Blocks the rest of the app via st.stop()."""
     from app.auth.user_manager import (
         AuthError, password_strength, validate_password, validate_username,
@@ -1130,13 +1130,6 @@ def _render_login_page(mgr) -> None:
         st.html(_AUTH_HERO_HTML)
 
     with form_col:
-        if mgr is None:
-            st.error(
-                "Sign-in is temporarily unavailable. Please check back shortly. "
-                "(Administrator: configure MONGO_URI and restart the app.)"
-            )
-            st.stop()
-
         st.html(
             """
             <h2>Welcome back</h2>
@@ -1156,24 +1149,31 @@ def _render_login_page(mgr) -> None:
                 submitted = st.form_submit_button("Sign In", use_container_width=True, type="primary")
 
             if submitted:
-                generic_err = "Those credentials didn't match. Please try again."
-                try:
-                    user = mgr.authenticate(username or "", password or "")
-                except AuthError as exc:
-                    user = None
-                    generic_err = str(exc) if exc.code == "locked" else generic_err
-                if user:
-                    st.session_state["_kairo_user"] = user
-                    if remember_me:
-                        try:
-                            _token = mgr.create_session_token(user["username"])
-                            st.query_params["auto_session"] = _token
-                            st.session_state["_kairo_session_token"] = _token
-                        except Exception as _exc:
-                            logger.warning("remember-me token creation failed: %s", _exc)
-                    st.rerun()
+                mgr = _get_user_manager()
+                if mgr is None:
+                    st.error(
+                        "Sign-in is temporarily unavailable. Please check back shortly. "
+                        "(Administrator: configure MONGO_URI and restart the app.)"
+                    )
                 else:
-                    st.error(generic_err)
+                    generic_err = "Those credentials didn't match. Please try again."
+                    try:
+                        user = mgr.authenticate(username or "", password or "")
+                    except AuthError as exc:
+                        user = None
+                        generic_err = str(exc) if exc.code == "locked" else generic_err
+                    if user:
+                        st.session_state["_kairo_user"] = user
+                        if remember_me:
+                            try:
+                                _token = mgr.create_session_token(user["username"])
+                                st.query_params["auto_session"] = _token
+                                st.session_state["_kairo_session_token"] = _token
+                            except Exception as _exc:
+                                logger.warning("remember-me token creation failed: %s", _exc)
+                        st.rerun()
+                    else:
+                        st.error(generic_err)
 
         # ── Create account ───────────────────────────────────────────────
         with register_tab:
@@ -1216,16 +1216,22 @@ def _render_login_page(mgr) -> None:
                 elif not agreed:
                     st.error("Please accept the educational-use notice to continue.")
                 else:
-                    try:
-                        ok = mgr.create_user(new_user, new_pass, role="user", email=new_email or "")
-                    except AuthError as exc:
-                        ok = False
-                        st.error(str(exc))
+                    mgr = _get_user_manager()
+                    if mgr is None:
+                        st.error(
+                            "Account creation is temporarily unavailable. Please check back shortly."
+                        )
                     else:
-                        if ok:
-                            st.success("Account created. Sign in to continue.")
+                        try:
+                            ok = mgr.create_user(new_user, new_pass, role="user", email=new_email or "")
+                        except AuthError as exc:
+                            ok = False
+                            st.error(str(exc))
                         else:
-                            st.error("We couldn't create that account. Try a different username.")
+                            if ok:
+                                st.success("Account created. Sign in to continue.")
+                            else:
+                                st.error("We couldn't create that account. Try a different username.")
 
         st.html(
             '<p class="auth-meta">Kairo never shares your data. Sessions are encrypted, '
