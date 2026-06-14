@@ -52,15 +52,23 @@ function Logo() {
 }
 
 function handleLogout() {
-  try {
-    const url = new URL(window.top.location.href);
+  if (!window.confirm("Sign out of Kairo?")) return;
+  const go = (url) => {
+    // Drop the remember-me token from the URL so the server-side logout
+    // handler can see we're leaving, and so the token stops sitting in
+    // browser history.
+    url.searchParams.delete("auto_session");
     url.searchParams.set("kairo_action", "logout");
-    window.top.location.href = url.toString();
+    return url.toString();
+  };
+  try {
+    const u = new URL(window.top.location.href);
+    try { window.top.sessionStorage && window.top.sessionStorage.clear(); } catch (_) {}
+    window.top.location.replace(go(u));
   } catch (_) {
     try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("kairo_action", "logout");
-      window.location.href = url.toString();
+      const u = new URL(window.location.href);
+      window.location.replace(go(u));
     } catch (__) {}
   }
 }
