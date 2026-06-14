@@ -534,7 +534,7 @@ from config.config import Config as _Cfg
 # Auth — user manager (cached for the session)
 # ---------------------------------------------------------------------------
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def _get_user_manager():
     """Return a UserManager connected to MongoDB, or None if MONGO_URI not set."""
     import os as _os
