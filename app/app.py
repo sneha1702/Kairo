@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # Service initialisation (cached for the lifetime of the Streamlit session)
 # ---------------------------------------------------------------------------
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def _get_concept_tracker():
     """Return a ConceptTracker connected to MongoDB, or None if MONGO_URI not set."""
     import os as _os
