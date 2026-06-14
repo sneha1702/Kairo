@@ -110,8 +110,17 @@ class UserManager:
 
     def __init__(self, mongo_uri: str, mongo_db: str):
         from config.config import mongo_tls_ca_file
+        from pymongo.server_api import ServerApi
         ca = mongo_tls_ca_file()
-        self._client = MongoClient(mongo_uri, tlsCAFile=ca)
+        self._client = MongoClient(
+            mongo_uri,
+            tlsCAFile=ca,
+            server_api=ServerApi("1"),
+            connect=False,
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000,
+            socketTimeoutMS=10000,
+        )
         self._col = self._client[mongo_db][self.COLLECTION]
         self._col.create_index([("username", ASCENDING)], unique=True)
 
