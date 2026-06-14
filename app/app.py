@@ -84,8 +84,19 @@ def _get_regulation_tracker():
 
 @st.cache_resource
 def init_services():
-    """Initialise ES, Gemini, and MongoDB.  Returns (es_manager, narrative_engine, tracker).
-    Each service is initialised independently — one failure does not block the others."""
+    """Initialise ES, Gemini, and MongoDB. Returns (es_manager, narrative_engine, tracker).
+
+    Service requirements (intentionally asymmetric):
+      • MongoDB  — REQUIRED for the website to render briefs, regulations,
+                   profile, and Crypto 101 content. Without it, the auth gate
+                   blocks first anyway, so the user sees the login error.
+      • ES       — OPTIONAL. Used only to enrich live data during ingestion
+                   and detection. If down/misconfigured we render Mongo-backed
+                   content and skip on-chain enrichment silently.
+      • Gemini   — OPTIONAL. Used only during narrative detection / regulation
+                   refresh. The site renders without it; admin actions that
+                   need it will surface an error at that point.
+    """
     from config.config import Config
 
     def _secret(key: str, default: str = "") -> str:
@@ -108,32 +119,37 @@ def init_services():
     mongo_uri     = _secret("MONGO_URI")
     mongo_db      = _secret("MONGO_DB") or "kairo"
 
+    # ES: optional. Failures are logged at info-level so they don't pollute
+    # the admin log with red text on a perfectly working site.
     es_manager = None
     if es_url:
         try:
             es_manager = ElasticsearchManager(es_url, es_username, es_password, es_api_key_id)
         except Exception as exc:
-            logger.warning("ElasticsearchManager init failed: %s", exc)
+            logger.info("ES unavailable — site will render without on-chain enrichment (%s).", exc)
     else:
-        logger.warning("ES_URL not configured — Elasticsearch disabled.")
+        logger.info("ES_URL not configured — site will render without on-chain enrichment.")
 
+    # Gemini: optional. Only needed for ingestion/detection admin flows.
     narrative_engine = None
     if gemini_key:
         try:
             narrative_engine = NarrativeEngine(gemini_key)
         except Exception as exc:
-            logger.warning("NarrativeEngine init failed: %s", exc)
+            logger.info("Gemini unavailable — admin AI flows disabled (%s).", exc)
     else:
-        logger.warning("GEMINI_KEY not configured — NarrativeEngine disabled.")
+        logger.info("GEMINI_KEY not configured — admin AI flows disabled.")
 
+    # Mongo: required. We still don't raise — let the iframe handle empty
+    # data — but log loudly so the operator notices.
     tracker = None
     if mongo_uri:
         try:
             tracker = NarrativeTracker(mongo_uri, mongo_db)
         except Exception as exc:
-            logger.warning("NarrativeTracker init failed: %s", exc)
+            logger.warning("NarrativeTracker init failed (MongoDB required): %s", exc)
     else:
-        logger.warning("MONGO_URI not configured — NarrativeTracker disabled.")
+        logger.warning("MONGO_URI not configured — MongoDB is required for Kairo to work.")
 
     return es_manager, narrative_engine, tracker
 
