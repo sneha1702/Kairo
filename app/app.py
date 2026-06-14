@@ -1067,6 +1067,15 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
     with _r3c3: _pol_purge     = st.button("Purge",    key="btn_pol_purge",     use_container_width=True, type="secondary")
     with _r3c4: _pol_backfill  = st.button("Backfill", key="btn_pol_backfill",  use_container_width=True)
 
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+    # Row 4: Crypto 101 Concepts
+    _r4c1, _r4c2, _r4c3, _r4c4 = st.columns([2, 2, 2, 2])
+    with _r4c1: st.markdown("**Crypto 101 Concepts**")
+    with _r4c2: st.markdown("— (add via Crypto 101 tab)")
+    with _r4c3: _con_purge = st.button("Purge", key="btn_con_purge", use_container_width=True, type="secondary")
+    with _r4c4: st.markdown("—")
+
     st.divider()
 
     # ── Action dispatch ───────────────────────────────────────────────────────
