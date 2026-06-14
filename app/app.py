@@ -507,9 +507,15 @@ def _get_user_manager():
     try:
         from app.auth.user_manager import UserManager
         mgr = UserManager(mongo_uri, mongo_db)
-        created = mgr.ensure_default_admin()
-        if created:
-            logger.info("Default admin account created (admin / kairo-admin). Change this password!")
+        bootstrap = mgr.ensure_default_admin()
+        if bootstrap:
+            _u, _p = bootstrap
+            logger.warning(
+                "Bootstrap admin created — username=%s. One-time password printed once below. "
+                "Sign in and change it immediately, then remove this account or rotate the password.",
+                _u,
+            )
+            logger.warning("BOOTSTRAP ADMIN PASSWORD: %s", _p)
         return mgr
     except Exception as exc:
         logger.warning("UserManager init failed: %s", exc)
@@ -518,52 +524,204 @@ def _get_user_manager():
 
 _LOGIN_CSS = """
 <style>
-.auth-wrap {
+/* Hide Streamlit chrome on the login page */
+#MainMenu, header, footer { display: none !important; }
+.stApp { background: var(--paper) !important; }
+.block-container { padding: 0 !important; max-width: 100% !important; }
+
+/* ── Two-column auth layout ─────────────────────────────────────────────── */
+.auth-shell {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
+  gap: 0;
+}
+@media (max-width: 960px) {
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-hero { display: none; }
+}
+
+/* ── Left: brand + value prop ───────────────────────────────────────────── */
+.auth-hero {
+  background:
+    radial-gradient(800px 400px at 12% 10%, color-mix(in oklch, var(--accent) 18%, transparent), transparent 60%),
+    radial-gradient(700px 500px at 90% 90%, color-mix(in oklch, var(--accent) 10%, transparent), transparent 60%),
+    var(--surface);
+  padding: 64px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--hairline);
+}
+.auth-brand {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: var(--paper);
+  gap: 12px;
 }
-.auth-card {
-  width: 100%;
-  max-width: 400px;
-  background: var(--surface);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-xl);
-  box-shadow: var(--shadow-card);
-  padding: 44px 40px 40px;
-}
-.auth-logo {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  margin-bottom: 32px;
-}
-.auth-logo-dot {
-  width: 30px; height: 30px;
-  border-radius: 9px;
+.auth-brand-dot {
+  width: 34px; height: 34px;
+  border-radius: 10px;
   background: var(--ink);
   display: grid;
   place-items: center;
 }
-.auth-logo-inner {
-  width: 13px; height: 13px;
+.auth-brand-dot-inner {
+  width: 14px; height: 14px;
   border-radius: 99px;
   background: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 30%, transparent);
 }
-.auth-logo-text {
-  font-size: 24px;
+.auth-brand-text {
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--ink);
 }
-.auth-tagline {
+
+.auth-hero-headline {
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.035em;
+  margin: 56px 0 18px;
+  max-width: 520px;
+}
+.auth-hero-headline em {
+  font-style: normal;
+  color: var(--accent-ink);
+  background: linear-gradient(120deg, var(--accent-soft) 0%, transparent 100%);
+  padding: 0 4px;
+}
+.auth-hero-sub {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 480px;
+  margin: 0 0 36px;
+}
+
+.auth-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 480px;
+}
+.auth-pill {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+}
+.auth-pill-mark {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 800;
+}
+.auth-pill-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin: 0 0 2px;
+}
+.auth-pill-copy {
   font-size: 13px;
+  line-height: 1.5;
   color: var(--ink-3);
-  margin-top: -26px;
-  margin-bottom: 32px;
+  margin: 0;
+}
+
+.auth-foot {
+  font-size: 12px;
+  color: var(--ink-4);
+  letter-spacing: 0.02em;
+}
+
+/* ── Right: form panel ──────────────────────────────────────────────────── */
+.auth-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 48px;
+  background: var(--paper);
+}
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+.auth-card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.auth-card .auth-sub {
+  font-size: 14px;
+  color: var(--ink-3);
+  margin: 0 0 28px;
+}
+
+.auth-card .stTabs [data-baseweb="tab-list"] {
+  background: transparent !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  gap: 24px !important;
+  padding: 0 !important;
+  margin-bottom: 24px !important;
+}
+.auth-card .stTabs [data-baseweb="tab"] {
+  padding: 10px 0 !important;
+  font-size: 14px !important;
+}
+
+.auth-meta {
+  font-size: 12px;
+  color: var(--ink-4);
+  margin-top: 18px;
+  text-align: center;
+  line-height: 1.5;
+}
+.auth-meta a, .auth-meta code {
+  color: var(--ink-3);
+}
+</style>
+
+<!-- Defense in depth: limit URL leakage if a remember-me token ends up in the address bar. -->
+<meta name="referrer" content="strict-origin-when-cross-origin">
+"""
+
+
+_PW_METER_CSS = """
+<style>
+.pw-meter {
+  display: flex;
+  gap: 4px;
+  margin: 6px 0 4px;
+}
+.pw-meter span {
+  flex: 1;
+  height: 5px;
+  border-radius: 99px;
+  background: var(--hairline);
+}
+.pw-meter.lvl1 span:nth-child(-n+1) { background: oklch(0.65 0.15 30); }
+.pw-meter.lvl2 span:nth-child(-n+2) { background: oklch(0.70 0.13 70); }
+.pw-meter.lvl3 span:nth-child(-n+3) { background: oklch(0.65 0.12 130); }
+.pw-meter.lvl4 span:nth-child(-n+4) { background: oklch(0.60 0.13 150); }
+.pw-meter-label {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
 }
 </style>
 """
@@ -571,76 +729,179 @@ _LOGIN_CSS = """
 
 def _render_login_page(mgr) -> None:
     """Show the Kairo login/register gate. Blocks the rest of the app via st.stop()."""
+    from app.auth.user_manager import (
+        AuthError, password_strength, validate_password, validate_username,
+    )
+
     st.markdown(_LOGIN_CSS, unsafe_allow_html=True)
 
-    _, col, _ = st.columns([1, 1.4, 1])
-    with col:
-        st.markdown("""
-        <div class="auth-logo">
-          <div class="auth-logo-dot"><div class="auth-logo-inner"></div></div>
-          <span class="auth-logo-text">Kairo</span>
-        </div>
-        <p class="auth-tagline">Understanding, not data.</p>
-        """, unsafe_allow_html=True)
+    # ── Two-column shell: brand/value prop on the left, form on the right ──
+    st.markdown(
+        """
+        <div class="auth-shell">
+          <aside class="auth-hero">
+            <div class="auth-brand">
+              <div class="auth-brand-dot"><div class="auth-brand-dot-inner"></div></div>
+              <span class="auth-brand-text">Kairo</span>
+            </div>
 
-        if mgr is None:
-            st.error("MongoDB not configured — authentication unavailable. Set MONGO_URI to enable login.")
-            st.stop()
+            <div>
+              <h1 class="auth-hero-headline">
+                Crypto intelligence, <em>built like an HNI desk</em> — for everyone.
+              </h1>
+              <p class="auth-hero-sub">
+                Kairo decodes the signals the largest investors trade on — capital flows,
+                narrative shifts, regulatory moves — and turns them into clear, plain-English
+                briefs so you can act with conviction, not noise.
+              </p>
 
-        sign_in_tab, register_tab = st.tabs(["Sign In", "Create Account"])
+              <div class="auth-pills">
+                <div class="auth-pill">
+                  <div class="auth-pill-mark">⇡</div>
+                  <div>
+                    <p class="auth-pill-title">Live narrative signals</p>
+                    <p class="auth-pill-copy">Spot rotations the moment whales pivot — across L2s, AI, RWAs and more.</p>
+                  </div>
+                </div>
+                <div class="auth-pill">
+                  <div class="auth-pill-mark">◆</div>
+                  <div>
+                    <p class="auth-pill-title">Markets &amp; policy in one view</p>
+                    <p class="auth-pill-copy">Price action, regulation, and on-chain flow — synthesized, not stitched together.</p>
+                  </div>
+                </div>
+                <div class="auth-pill">
+                  <div class="auth-pill-mark">✶</div>
+                  <div>
+                    <p class="auth-pill-title">A daily brief that respects your time</p>
+                    <p class="auth-pill-copy">Wake up to a 3-minute read on what moved, why, and what it means for you.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        with sign_in_tab:
-            with st.form("login_form", clear_on_submit=False):
-                username = st.text_input("Username", placeholder="your username")
-                password = st.text_input("Password", type="password", placeholder="••••••••")
-                remember_me = st.checkbox("Keep me signed in for 30 days", value=False)
-                submitted = st.form_submit_button("Sign In", use_container_width=True)
+            <div class="auth-foot">© Kairo • Understanding, not data.</div>
+          </aside>
 
-            if submitted:
-                if not username or not password:
-                    st.error("Please enter both username and password.")
-                else:
-                    user = mgr.authenticate(username, password)
-                    if user:
-                        st.session_state["_kairo_user"] = user
-                        if remember_me:
-                            try:
-                                _token = mgr.create_session_token(user["username"])
-                                st.query_params["auto_session"] = _token
-                                st.session_state["_kairo_session_token"] = _token
-                            except Exception as _exc:
-                                logger.warning("remember-me token creation failed: %s", _exc)
-                        st.rerun()
-                    else:
-                        st.error("Invalid username or password.")
+          <div class="auth-panel">
+            <div class="auth-card">
+        """,
+        unsafe_allow_html=True,
+    )
 
+    # Streamlit form widgets render inline at the cursor; we close the card div after.
+    if mgr is None:
+        st.error(
+            "Sign-in is temporarily unavailable. Please check back shortly. "
+            "(Administrator: configure MONGO_URI and restart the app.)"
+        )
+        st.markdown("</div></div></div>", unsafe_allow_html=True)
+        st.stop()
+
+    st.markdown(
+        """
+        <h2>Welcome back</h2>
+        <p class="auth-sub">Sign in to your Kairo workspace, or create an account in seconds.</p>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    sign_in_tab, register_tab = st.tabs(["Sign In", "Create Account"])
+
+    # ── Sign in ──────────────────────────────────────────────────────────
+    with sign_in_tab:
+        with st.form("login_form", clear_on_submit=False):
+            username = st.text_input("Username", placeholder="your username", autocomplete="username")
+            password = st.text_input("Password", type="password", placeholder="••••••••", autocomplete="current-password")
+            remember_me = st.checkbox("Keep me signed in on this device", value=False,
+                                      help="Issues a 30-day session token tied to this browser. Avoid on shared computers.")
+            submitted = st.form_submit_button("Sign In", use_container_width=True, type="primary")
+
+        if submitted:
+            # Single generic error string to avoid leaking which field was wrong
+            # or whether the username exists.
+            generic_err = "Those credentials didn't match. Please try again."
+            try:
+                user = mgr.authenticate(username or "", password or "")
+            except AuthError as exc:
+                user = None
+                generic_err = str(exc) if exc.code == "locked" else generic_err
+            if user:
+                st.session_state["_kairo_user"] = user
+                if remember_me:
+                    try:
+                        _token = mgr.create_session_token(user["username"])
+                        st.query_params["auto_session"] = _token
+                        st.session_state["_kairo_session_token"] = _token
+                    except Exception as _exc:
+                        logger.warning("remember-me token creation failed: %s", _exc)
+                st.rerun()
+            else:
+                st.error(generic_err)
+
+    # ── Create account ───────────────────────────────────────────────────
+    with register_tab:
+        st.markdown(_PW_METER_CSS, unsafe_allow_html=True)
+
+        new_user  = st.text_input("Username", placeholder="3–30 chars, lowercase letters & numbers", key="reg_user",
+                                  autocomplete="username")
+        new_email = st.text_input("Email (optional)", placeholder="you@example.com", key="reg_email",
+                                  autocomplete="email")
+        new_pass  = st.text_input("Password", type="password",
+                                  placeholder="at least 10 chars, mix letters & numbers",
+                                  key="reg_pass", autocomplete="new-password")
+
+        # Live password strength meter (outside the form so it re-renders on input)
+        if new_pass:
+            score, label = password_strength(new_pass)
             st.markdown(
-                '<p style="font-size:12.5px;color:var(--ink-4);margin-top:8px;text-align:center">'
-                'Default admin: <code>admin</code> / <code>kairo-admin</code></p>',
+                f'<div class="pw-meter lvl{score}"><span></span><span></span><span></span><span></span></div>'
+                f'<div class="pw-meter-label">Strength: {label}</div>',
                 unsafe_allow_html=True,
             )
 
-        with register_tab:
-            with st.form("register_form", clear_on_submit=True):
-                new_user  = st.text_input("Username", placeholder="choose a username", key="reg_user")
-                new_email = st.text_input("Email", placeholder="you@example.com (optional)", key="reg_email")
-                new_pass  = st.text_input("Password", type="password", placeholder="at least 8 characters", key="reg_pass")
-                new_pass2 = st.text_input("Confirm password", type="password", placeholder="repeat password", key="reg_pass2")
-                reg_submitted = st.form_submit_button("Create Account", use_container_width=True)
+        with st.form("register_form", clear_on_submit=False):
+            new_pass2 = st.text_input("Confirm password", type="password",
+                                      placeholder="repeat password", key="reg_pass2",
+                                      autocomplete="new-password")
+            agreed = st.checkbox(
+                "I agree to use Kairo for educational/research purposes — Kairo briefs are not financial advice.",
+                key="reg_agree",
+            )
+            reg_submitted = st.form_submit_button("Create Account", use_container_width=True, type="primary")
 
-            if reg_submitted:
-                if not new_user or not new_pass:
-                    st.error("Username and password are required.")
-                elif len(new_pass) < 8:
-                    st.error("Password must be at least 8 characters.")
-                elif new_pass != new_pass2:
-                    st.error("Passwords do not match.")
-                else:
+        if reg_submitted:
+            uname_err = validate_username(new_user)
+            pw_err = validate_password(new_pass) if not uname_err else None
+            if uname_err:
+                st.error(uname_err)
+            elif pw_err:
+                st.error(pw_err)
+            elif new_pass != new_pass2:
+                st.error("Passwords do not match.")
+            elif not agreed:
+                st.error("Please accept the educational-use notice to continue.")
+            else:
+                try:
                     ok = mgr.create_user(new_user, new_pass, role="user", email=new_email or "")
+                except AuthError as exc:
+                    ok = False
+                    st.error(str(exc))
+                else:
                     if ok:
-                        st.success(f"Account created! You can now sign in as **{new_user.strip().lower()}**.")
+                        st.success("Account created. Sign in to continue.")
                     else:
-                        st.error(f"Username **{new_user.strip().lower()}** is already taken.")
+                        # Generic message — don't confirm whether the name is taken.
+                        st.error("We couldn't create that account. Try a different username.")
+
+    st.markdown(
+        '<p class="auth-meta">Kairo never shares your data. Sessions are encrypted, '
+        'tokens are hashed at rest, and we rate-limit sign-in attempts.</p>',
+        unsafe_allow_html=True,
+    )
+
+    # Close .auth-card, .auth-panel, .auth-shell
+    st.markdown("</div></div></div>", unsafe_allow_html=True)
 
     st.stop()
 
