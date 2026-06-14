@@ -167,11 +167,11 @@ def _cached_build_data(user_id: str, hours: int = 0) -> dict:
     try:
         es_manager, _engine, tracker = init_services()
         dune_context: dict = {}
-        if es_manager is not None:
-            try:
-                dune_context = es_manager.get_dune_signal_context(hours=hours)
-            except Exception as exc:
-                logger.warning("get_dune_signal_context failed: %s", exc)
+ #       if es_manager is not None:
+ #           try:
+ #               dune_context = es_manager.get_dune_signal_context(hours=hours)
+ #           except Exception as exc:
+ #               logger.warning("get_dune_signal_context failed: %s", exc)
 
         return build_kairo_data(
             es_manager=es_manager,
@@ -540,180 +540,524 @@ def _get_user_manager():
 
 _LOGIN_CSS = """
 <style>
+/* ── Design tokens (mirrors the authenticated app's :root) ──────────── */
+:root {
+  --paper:    oklch(0.985 0.006 80);
+  --surface:  oklch(0.995 0.004 85);
+  --surface-2:oklch(0.965 0.008 80);
+  --hairline: oklch(0.90 0.010 75);
+  --hairline-strong: oklch(0.84 0.012 70);
+  --ink:      oklch(0.27 0.012 60);
+  --ink-2:    oklch(0.42 0.012 60);
+  --ink-3:    oklch(0.58 0.012 65);
+  --ink-4:    oklch(0.70 0.010 70);
+  --accent:        oklch(0.64 0.124 42);
+  --accent-soft:   oklch(0.92 0.045 50);
+  --accent-ink:    oklch(0.46 0.115 40);
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --shadow-card: 0 1px 2px oklch(0.5 0.02 60 / 0.05), 0 6px 22px oklch(0.5 0.02 60 / 0.06);
+  --gap: 18px;
+  --card-pad: 26px;
+}
+
 /* Hide Streamlit chrome on the login page */
 #MainMenu, header, footer { display: none !important; }
 .stApp { background: var(--paper) !important; }
 .block-container { padding: 0 !important; max-width: 100% !important; }
 
-/* ── Two-column auth layout ─────────────────────────────────────────────── */
-.auth-shell {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
-  gap: 0;
-}
-@media (max-width: 960px) {
-  .auth-shell { grid-template-columns: 1fr; }
-  .auth-hero { display: none; }
+/* ── Real two-column layout via st.columns ───────────────────────────── */
+/* Streamlit form widgets can't be parented to a div we open in markdown,
+   so we use st.columns and apply pane styling to the columns themselves. */
+.stApp [data-testid="stHorizontalBlock"]:first-of-type {
+  gap: 0 !important;
+  align-items: stretch !important;
+  min-height: calc(100vh - 64px); /* leave room for footer */
 }
 
-/* ── Left: brand + value prop ───────────────────────────────────────────── */
-.auth-hero {
+/* Left pane (marketing) — first column gets the warm gradient + brand */
+.stApp [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:first-child {
   background:
     radial-gradient(800px 400px at 12% 10%, color-mix(in oklch, var(--accent) 18%, transparent), transparent 60%),
     radial-gradient(700px 500px at 90% 90%, color-mix(in oklch, var(--accent) 10%, transparent), transparent 60%),
-    var(--surface);
-  padding: 64px 56px;
+    var(--surface) !important;
+  border-right: 1px solid var(--hairline);
+  padding: 56px 56px 40px !important;
+  display: flex;
+  flex-direction: column;
+}
+.stApp [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:first-child
+  > [data-testid="stVerticalBlock"] {
+  height: 100%;
+}
+
+/* Right pane (form) — second column centers the auth card */
+.stApp [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:last-child {
+  background: var(--paper);
+  padding: 56px 48px !important;
+  display: flex;
+  align-items: center;
+}
+.stApp [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:last-child
+  > [data-testid="stVerticalBlock"] {
+  max-width: 420px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .stApp [data-testid="stHorizontalBlock"]:first-of-type {
+    flex-direction: column;
+    min-height: auto;
+  }
+  .stApp [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:first-child {
+    padding: 40px 28px !important;
+    border-right: none;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .stApp [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:last-child {
+    padding: 40px 28px !important;
+  }
+}
+
+/* ── Left pane content ───────────────────────────────────────────────── */
+.auth-hero-inner {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid var(--hairline);
+  flex: 1;
+  gap: 40px;
 }
-.auth-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.auth-brand { display: flex; align-items: center; gap: 12px; }
 .auth-brand-dot {
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  background: var(--ink);
-  display: grid;
-  place-items: center;
+  width: 34px; height: 34px; border-radius: 10px; background: var(--ink);
+  display: grid; place-items: center;
 }
 .auth-brand-dot-inner {
-  width: 14px; height: 14px;
-  border-radius: 99px;
-  background: var(--accent);
+  width: 14px; height: 14px; border-radius: 99px; background: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 30%, transparent);
 }
 .auth-brand-text {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--ink);
+  font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink);
 }
-
 .auth-hero-headline {
-  font-size: 44px;
-  line-height: 1.05;
-  font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -0.035em;
-  margin: 56px 0 18px;
-  max-width: 520px;
+  font-size: 42px; line-height: 1.05; font-weight: 800;
+  color: var(--ink); letter-spacing: -0.035em;
+  margin: 0 0 18px; max-width: 540px;
 }
 .auth-hero-headline em {
-  font-style: normal;
-  color: var(--accent-ink);
+  font-style: normal; color: var(--accent-ink);
   background: linear-gradient(120deg, var(--accent-soft) 0%, transparent 100%);
   padding: 0 4px;
 }
 .auth-hero-sub {
-  font-size: 17px;
-  line-height: 1.55;
-  color: var(--ink-2);
-  max-width: 480px;
-  margin: 0 0 36px;
+  font-size: 16.5px; line-height: 1.55; color: var(--ink-2);
+  max-width: 500px; margin: 0 0 32px;
 }
-
-.auth-pills {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 480px;
-}
+.auth-pills { display: flex; flex-direction: column; gap: 12px; max-width: 500px; }
 .auth-pill {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 14px 16px;
-  background: var(--surface-2);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-md);
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 16px; background: var(--surface-2);
+  border: 1px solid var(--hairline); border-radius: var(--r-md);
 }
 .auth-pill-mark {
-  flex-shrink: 0;
-  width: 28px; height: 28px;
-  border-radius: 8px;
-  background: var(--accent-soft);
-  color: var(--accent-ink);
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  font-weight: 800;
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+  background: var(--accent-soft); color: var(--accent-ink);
+  display: grid; place-items: center; font-size: 14px; font-weight: 800;
 }
 .auth-pill-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-  margin: 0 0 2px;
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  letter-spacing: -0.01em; margin: 0 0 2px;
 }
 .auth-pill-copy {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--ink-3);
-  margin: 0;
+  font-size: 13px; line-height: 1.5; color: var(--ink-3); margin: 0;
+}
+.auth-tagline {
+  font-size: 12px; color: var(--ink-4); letter-spacing: 0.02em;
+  margin-top: 8px;
 }
 
-.auth-foot {
-  font-size: 12px;
-  color: var(--ink-4);
-  letter-spacing: 0.02em;
+/* ── Right pane content ──────────────────────────────────────────────── */
+.auth-card-head h2 {
+  font-size: 24px; font-weight: 800; color: var(--ink);
+  letter-spacing: -0.02em; margin: 0 0 8px;
 }
-
-/* ── Right: form panel ──────────────────────────────────────────────────── */
-.auth-panel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 56px 48px;
-  background: var(--paper);
+.auth-card-head p {
+  font-size: 14px; color: var(--ink-3); margin: 0 0 24px;
 }
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-}
-.auth-card h2 {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  margin: 0 0 8px;
-}
-.auth-card .auth-sub {
-  font-size: 14px;
-  color: var(--ink-3);
-  margin: 0 0 28px;
-}
-
-.auth-card .stTabs [data-baseweb="tab-list"] {
+.stApp [data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:last-child .stTabs [data-baseweb="tab-list"] {
   background: transparent !important;
   border-bottom: 1px solid var(--hairline) !important;
   gap: 24px !important;
   padding: 0 !important;
-  margin-bottom: 24px !important;
+  margin-bottom: 20px !important;
 }
-.auth-card .stTabs [data-baseweb="tab"] {
+.stApp [data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:last-child .stTabs [data-baseweb="tab"] {
   padding: 10px 0 !important;
   font-size: 14px !important;
 }
-
 .auth-meta {
-  font-size: 12px;
-  color: var(--ink-4);
-  margin-top: 18px;
-  text-align: center;
-  line-height: 1.5;
+  font-size: 12px; color: var(--ink-4);
+  margin-top: 16px; text-align: center; line-height: 1.5;
 }
-.auth-meta a, .auth-meta code {
+
+/* ── Bottom footer bar ───────────────────────────────────────────────── */
+.auth-footer {
+  border-top: 1px solid var(--hairline);
+  background: var(--surface);
+  padding: 14px 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12.5px;
+  color: var(--ink-4);
+}
+.auth-footer-links {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+.auth-footer-links a {
   color: var(--ink-3);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+.auth-footer-links a:hover { color: var(--ink); }
+
+/* ── CSS-only modals (no rerun, no JS) ───────────────────────────────── */
+/* Each modal is hidden until its anchor (#about, #terms, #privacy) is
+   targeted by the URL hash. Clicking the link opens it; clicking the
+   backdrop or close button (href="#close") clears the hash and hides it. */
+.auth-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: oklch(0.2 0.012 60 / 0.5);
+  z-index: 9999;
+  padding: 32px;
+  overflow-y: auto;
+}
+.auth-modal:target {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.auth-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  text-decoration: none;
+  /* Click-through transparent link covering backdrop */
+}
+.auth-modal-card {
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-xl);
+  box-shadow: 0 28px 70px oklch(0.25 0.02 60 / 0.22);
+  width: 100%;
+  max-width: 640px;
+  margin: 6vh auto;
+  padding: 44px 48px 36px;
+}
+.auth-modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 34px; height: 34px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  text-decoration: none;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.auth-modal-close:hover { background: var(--hairline); color: var(--ink); }
+.auth-modal-card h2 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.auth-modal-card .modal-sub {
+  font-size: 14px;
+  color: var(--ink-3);
+  margin: 0 0 24px;
+}
+.auth-modal-card h3 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 22px 0 10px;
+}
+.auth-modal-card p {
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.65;
+  margin: 0 0 12px;
+}
+.auth-modal-card ul {
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.7;
+  margin: 0 0 10px;
+}
+.auth-modal-card ul li { margin: 4px 0; }
+.auth-modal-card ul li strong { color: var(--ink); }
+
+/* ── Orange (Kairo-accent) primary buttons ────────────────────────── */
+.auth-panel button[kind="primary"],
+.auth-panel button[data-testid*="primary"] {
+  background: var(--accent) !important;
+  color: var(--paper) !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+.auth-panel button[kind="primary"]:hover,
+.auth-panel button[data-testid*="primary"]:hover {
+  background: var(--accent-ink) !important;
+}
+
+.auth-modal-card .modal-fineprint {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12.5px;
+  color: var(--ink-4);
+  line-height: 1.55;
 }
 </style>
 
 <!-- Defense in depth: limit URL leakage if a remember-me token ends up in the address bar. -->
 <meta name="referrer" content="strict-origin-when-cross-origin">
+"""
+
+
+# Marketing pane content (left column)
+_AUTH_HERO_HTML = """
+<div class="auth-hero-inner">
+  <div class="auth-brand">
+    <div class="auth-brand-dot"><div class="auth-brand-dot-inner"></div></div>
+    <span class="auth-brand-text">Kairo</span>
+  </div>
+
+  <div>
+    <h1 class="auth-hero-headline">
+      Crypto intelligence, <em>built like an HNI desk</em> — for everyone.
+    </h1>
+    <p class="auth-hero-sub">
+      Kairo decodes the signals the largest investors trade on — capital flows,
+      narrative shifts, regulatory moves — and turns them into clear,
+      plain-English briefs so you can act with conviction, not noise.
+    </p>
+
+    <div class="auth-pills">
+      <div class="auth-pill">
+        <div class="auth-pill-mark">⇡</div>
+        <div>
+          <p class="auth-pill-title">Live narrative signals</p>
+          <p class="auth-pill-copy">Spot rotations the moment whales pivot — across L2s, AI, RWAs and more.</p>
+        </div>
+      </div>
+      <div class="auth-pill">
+        <div class="auth-pill-mark">◆</div>
+        <div>
+          <p class="auth-pill-title">Markets &amp; policy in one view</p>
+          <p class="auth-pill-copy">Price action, regulation, and on-chain flow — synthesized, not stitched together.</p>
+        </div>
+      </div>
+      <div class="auth-pill">
+        <div class="auth-pill-mark">✶</div>
+        <div>
+          <p class="auth-pill-title">A daily brief that respects your time</p>
+          <p class="auth-pill-copy">Wake up to a 3-minute read on what moved, why, and what it means for you.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-tagline">Understanding, not data.</div>
+</div>
+"""
+
+
+# Footer bar + the three CSS-target modals (About Us, Terms, Privacy)
+_AUTH_FOOTER_AND_MODALS = """
+<div class="auth-footer">
+  <span>© 2026 Kairo. All rights reserved.</span>
+  <nav class="auth-footer-links" aria-label="Footer">
+    <a href="#about">About Us</a>
+    <a href="#terms">Terms &amp; Conditions</a>
+    <a href="#privacy">Privacy</a>
+  </nav>
+</div>
+
+<!-- About Us -->
+<div id="about" class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
+  <a class="auth-modal-backdrop" href="#close" aria-label="Close dialog"></a>
+  <div class="auth-modal-card">
+    <a class="auth-modal-close" href="#close" aria-label="Close">×</a>
+    <h2 id="about-title">About Kairo</h2>
+    <p class="modal-sub">Crypto intelligence, built like an HNI desk — for everyone.</p>
+
+    <h3>Our Mission</h3>
+    <p>
+      Kairo exists to put the kind of market intelligence that high-net-worth
+      and institutional desks rely on into the hands of every individual
+      investor and curious learner. We decode capital flows, narrative shifts,
+      and regulatory context so that digital currencies and assets become
+      <strong>understandable</strong> and <strong>accessible</strong> — not
+      reserved for the few.
+    </p>
+
+    <h3>Our Values</h3>
+    <ul>
+      <li><strong>Clarity over noise.</strong> We summarize, we don't stream. Every brief earns its place.</li>
+      <li><strong>Education first.</strong> Every signal is explained, not just reported. We respect your time and your curiosity.</li>
+      <li><strong>Privacy by default.</strong> Your data is yours. Sessions are encrypted, tokens are hashed at rest, and we never sell personal data.</li>
+      <li><strong>Honest about limits.</strong> Briefs are research, not financial advice. We tell you what we see; you decide what to do.</li>
+      <li><strong>Built for the curious.</strong> Whether you're new to crypto or running a portfolio, Kairo meets you where you are.</li>
+    </ul>
+
+    <p class="modal-fineprint">
+      Kairo is an independent research tool. We are not registered as an
+      investment advisor and do not provide personalized financial advice.
+    </p>
+  </div>
+</div>
+
+<!-- Terms &amp; Conditions -->
+<div id="terms" class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+  <a class="auth-modal-backdrop" href="#close" aria-label="Close dialog"></a>
+  <div class="auth-modal-card">
+    <a class="auth-modal-close" href="#close" aria-label="Close">×</a>
+    <h2 id="terms-title">Terms &amp; Conditions</h2>
+    <p class="modal-sub">Last updated: June 2026 · By using Kairo, you agree to the following.</p>
+
+    <h3>1. Acceptance &amp; Eligibility</h3>
+    <p>
+      By creating an account or using Kairo, you confirm that you are at least
+      18 years old and legally able to enter into this agreement. If you do
+      not agree to these terms, do not use the service.
+    </p>
+
+    <h3>2. Educational Use Only</h3>
+    <p>
+      Kairo provides research, market commentary, and data summaries for
+      <strong>educational and informational purposes only</strong>. Nothing in
+      Kairo is financial, investment, tax, or legal advice, an offer to buy or
+      sell any asset, or a solicitation of any kind. Always do your own
+      research and consult a licensed professional before making decisions.
+    </p>
+
+    <h3>3. No Warranty on Data</h3>
+    <p>
+      Kairo aggregates data from third-party sources (on-chain providers,
+      market data vendors, public regulatory feeds). We make reasonable efforts
+      to ensure accuracy but make no guarantee. Use of any information is at
+      your own risk.
+    </p>
+
+    <h3>4. Your Account</h3>
+    <ul>
+      <li>You are responsible for keeping your password secure and for all activity under your account.</li>
+      <li>Don't share credentials or impersonate others.</li>
+      <li>We may suspend or terminate accounts engaged in abuse, scraping, automated access, or attempts to compromise the service.</li>
+    </ul>
+
+    <h3>5. Acceptable Use</h3>
+    <ul>
+      <li>Don't reverse-engineer, decompile, or attempt to extract the source code of Kairo.</li>
+      <li>Don't use Kairo to harass, deceive, or harm others, or to violate any law.</li>
+      <li>Don't bypass rate limits, authentication, or security controls.</li>
+    </ul>
+
+    <h3>6. Intellectual Property</h3>
+    <p>
+      The Kairo name, branding, briefs, and synthesis are our property.
+      You retain ownership of any content you submit; you grant us a limited
+      license to display it back to you within the service.
+    </p>
+
+    <h3>7. Limitation of Liability</h3>
+    <p>
+      To the maximum extent permitted by law, Kairo and its operators are not
+      liable for any direct, indirect, incidental, consequential, or punitive
+      damages arising from your use of the service, including any trading or
+      investment losses.
+    </p>
+
+    <h3>8. Changes</h3>
+    <p>
+      We may update these terms occasionally. Material changes will be
+      announced in-product. Continued use after a change means you accept
+      the updated terms.
+    </p>
+
+    <p class="modal-fineprint">
+      Questions? Contact us at <strong>hello@kairo.app</strong>.
+    </p>
+  </div>
+</div>
+
+<!-- Privacy -->
+<div id="privacy" class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="privacy-title">
+  <a class="auth-modal-backdrop" href="#close" aria-label="Close dialog"></a>
+  <div class="auth-modal-card">
+    <a class="auth-modal-close" href="#close" aria-label="Close">×</a>
+    <h2 id="privacy-title">Privacy</h2>
+    <p class="modal-sub">What we collect, why we collect it, and how we protect it.</p>
+
+    <h3>What we store</h3>
+    <ul>
+      <li>Your username and (optional) email.</li>
+      <li>Profile preferences you choose to share (name, profession, trading experience, purpose).</li>
+      <li>A salted, PBKDF2-hashed copy of your password — never the password itself.</li>
+      <li>Session tokens, stored only as HMAC hashes — the raw value never sits on our servers.</li>
+    </ul>
+
+    <h3>What we don't do</h3>
+    <ul>
+      <li>We don't sell or rent your personal data to advertisers or data brokers.</li>
+      <li>We don't track you across other websites.</li>
+      <li>We don't run third-party advertising or analytics that profile you.</li>
+    </ul>
+
+    <h3>Security</h3>
+    <p>
+      Sign-ins are rate-limited to defeat brute force. Failed attempts auto-lock
+      an account for a short cool-down. Session tokens expire after periods of
+      inactivity and are revoked when you change your password or sign out.
+    </p>
+
+    <h3>Your control</h3>
+    <p>
+      You can delete your account at any time from
+      <strong>Profile → Danger Zone</strong>. Deletion removes your account,
+      profile data, and all active sessions.
+    </p>
+
+    <p class="modal-fineprint">
+      Privacy questions? Reach us at <strong>privacy@kairo.app</strong>.
+    </p>
+  </div>
+</div>
 """
 
 
@@ -751,173 +1095,116 @@ def _render_login_page(mgr) -> None:
 
     st.markdown(_LOGIN_CSS, unsafe_allow_html=True)
 
-    # ── Two-column shell: brand/value prop on the left, form on the right ──
-    st.markdown(
-        """
-        <div class="auth-shell">
-          <aside class="auth-hero">
-            <div class="auth-brand">
-              <div class="auth-brand-dot"><div class="auth-brand-dot-inner"></div></div>
-              <span class="auth-brand-text">Kairo</span>
-            </div>
+    # ── Two-column layout via st.columns ────────────────────────────────
+    hero_col, form_col = st.columns([0.7, 0.3])
 
-            <div>
-              <h1 class="auth-hero-headline">
-                Crypto intelligence, <em>built like an HNI desk</em> — for everyone.
-              </h1>
-              <p class="auth-hero-sub">
-                Kairo decodes the signals the largest investors trade on — capital flows,
-                narrative shifts, regulatory moves — and turns them into clear, plain-English
-                briefs so you can act with conviction, not noise.
-              </p>
+    with hero_col:
+        st.html(_AUTH_HERO_HTML)
 
-              <div class="auth-pills">
-                <div class="auth-pill">
-                  <div class="auth-pill-mark">⇡</div>
-                  <div>
-                    <p class="auth-pill-title">Live narrative signals</p>
-                    <p class="auth-pill-copy">Spot rotations the moment whales pivot — across L2s, AI, RWAs and more.</p>
-                  </div>
-                </div>
-                <div class="auth-pill">
-                  <div class="auth-pill-mark">◆</div>
-                  <div>
-                    <p class="auth-pill-title">Markets &amp; policy in one view</p>
-                    <p class="auth-pill-copy">Price action, regulation, and on-chain flow — synthesized, not stitched together.</p>
-                  </div>
-                </div>
-                <div class="auth-pill">
-                  <div class="auth-pill-mark">✶</div>
-                  <div>
-                    <p class="auth-pill-title">A daily brief that respects your time</p>
-                    <p class="auth-pill-copy">Wake up to a 3-minute read on what moved, why, and what it means for you.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+    with form_col:
+        if mgr is None:
+            st.error(
+                "Sign-in is temporarily unavailable. Please check back shortly. "
+                "(Administrator: configure MONGO_URI and restart the app.)"
+            )
+            st.stop()
 
-            <div class="auth-foot">© Kairo • Understanding, not data.</div>
-          </aside>
-
-          <div class="auth-panel">
-            <div class="auth-card">
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Streamlit form widgets render inline at the cursor; we close the card div after.
-    if mgr is None:
-        st.error(
-            "Sign-in is temporarily unavailable. Please check back shortly. "
-            "(Administrator: configure MONGO_URI and restart the app.)"
+        st.html(
+            """
+            <h2>Welcome back</h2>
+            <p class="auth-sub">Sign in to your Kairo workspace, or create an account in seconds.</p>
+            """
         )
-        st.markdown("</div></div></div>", unsafe_allow_html=True)
-        st.stop()
 
-    st.markdown(
-        """
-        <h2>Welcome back</h2>
-        <p class="auth-sub">Sign in to your Kairo workspace, or create an account in seconds.</p>
-        """,
-        unsafe_allow_html=True,
-    )
+        sign_in_tab, register_tab = st.tabs(["Sign In", "Create Account"])
 
-    sign_in_tab, register_tab = st.tabs(["Sign In", "Create Account"])
+        # ── Sign in ──────────────────────────────────────────────────────
+        with sign_in_tab:
+            with st.form("login_form", clear_on_submit=False):
+                username = st.text_input("Username", placeholder="your username", autocomplete="username")
+                password = st.text_input("Password", type="password", placeholder="••••••••", autocomplete="current-password")
+                remember_me = st.checkbox("Keep me signed in on this device", value=False,
+                                          help="Issues a 30-day session token tied to this browser. Avoid on shared computers.")
+                submitted = st.form_submit_button("Sign In", use_container_width=True, type="primary")
 
-    # ── Sign in ──────────────────────────────────────────────────────────
-    with sign_in_tab:
-        with st.form("login_form", clear_on_submit=False):
-            username = st.text_input("Username", placeholder="your username", autocomplete="username")
-            password = st.text_input("Password", type="password", placeholder="••••••••", autocomplete="current-password")
-            remember_me = st.checkbox("Keep me signed in on this device", value=False,
-                                      help="Issues a 30-day session token tied to this browser. Avoid on shared computers.")
-            submitted = st.form_submit_button("Sign In", use_container_width=True, type="primary")
-
-        if submitted:
-            # Single generic error string to avoid leaking which field was wrong
-            # or whether the username exists.
-            generic_err = "Those credentials didn't match. Please try again."
-            try:
-                user = mgr.authenticate(username or "", password or "")
-            except AuthError as exc:
-                user = None
-                generic_err = str(exc) if exc.code == "locked" else generic_err
-            if user:
-                st.session_state["_kairo_user"] = user
-                if remember_me:
-                    try:
-                        _token = mgr.create_session_token(user["username"])
-                        st.query_params["auto_session"] = _token
-                        st.session_state["_kairo_session_token"] = _token
-                    except Exception as _exc:
-                        logger.warning("remember-me token creation failed: %s", _exc)
-                st.rerun()
-            else:
-                st.error(generic_err)
-
-    # ── Create account ───────────────────────────────────────────────────
-    with register_tab:
-        st.markdown(_PW_METER_CSS, unsafe_allow_html=True)
-
-        new_user  = st.text_input("Username", placeholder="3–30 chars, lowercase letters & numbers", key="reg_user",
-                                  autocomplete="username")
-        new_email = st.text_input("Email (optional)", placeholder="you@example.com", key="reg_email",
-                                  autocomplete="email")
-        new_pass  = st.text_input("Password", type="password",
-                                  placeholder="at least 10 chars, mix letters & numbers",
-                                  key="reg_pass", autocomplete="new-password")
-
-        # Live password strength meter (outside the form so it re-renders on input)
-        if new_pass:
-            score, label = password_strength(new_pass)
-            st.markdown(
-                f'<div class="pw-meter lvl{score}"><span></span><span></span><span></span><span></span></div>'
-                f'<div class="pw-meter-label">Strength: {label}</div>',
-                unsafe_allow_html=True,
-            )
-
-        with st.form("register_form", clear_on_submit=False):
-            new_pass2 = st.text_input("Confirm password", type="password",
-                                      placeholder="repeat password", key="reg_pass2",
-                                      autocomplete="new-password")
-            agreed = st.checkbox(
-                "I agree to use Kairo for educational/research purposes — Kairo briefs are not financial advice.",
-                key="reg_agree",
-            )
-            reg_submitted = st.form_submit_button("Create Account", use_container_width=True, type="primary")
-
-        if reg_submitted:
-            uname_err = validate_username(new_user)
-            pw_err = validate_password(new_pass) if not uname_err else None
-            if uname_err:
-                st.error(uname_err)
-            elif pw_err:
-                st.error(pw_err)
-            elif new_pass != new_pass2:
-                st.error("Passwords do not match.")
-            elif not agreed:
-                st.error("Please accept the educational-use notice to continue.")
-            else:
+            if submitted:
+                generic_err = "Those credentials didn't match. Please try again."
                 try:
-                    ok = mgr.create_user(new_user, new_pass, role="user", email=new_email or "")
+                    user = mgr.authenticate(username or "", password or "")
                 except AuthError as exc:
-                    ok = False
-                    st.error(str(exc))
+                    user = None
+                    generic_err = str(exc) if exc.code == "locked" else generic_err
+                if user:
+                    st.session_state["_kairo_user"] = user
+                    if remember_me:
+                        try:
+                            _token = mgr.create_session_token(user["username"])
+                            st.query_params["auto_session"] = _token
+                            st.session_state["_kairo_session_token"] = _token
+                        except Exception as _exc:
+                            logger.warning("remember-me token creation failed: %s", _exc)
+                    st.rerun()
                 else:
-                    if ok:
-                        st.success("Account created. Sign in to continue.")
+                    st.error(generic_err)
+
+        # ── Create account ───────────────────────────────────────────────
+        with register_tab:
+            st.markdown(_PW_METER_CSS, unsafe_allow_html=True)
+
+            new_user  = st.text_input("Username", placeholder="3–30 chars, lowercase letters & numbers", key="reg_user",
+                                      autocomplete="username")
+            new_email = st.text_input("Email (optional)", placeholder="you@example.com", key="reg_email",
+                                      autocomplete="email")
+            new_pass  = st.text_input("Password", type="password",
+                                      placeholder="at least 10 chars, mix letters & numbers",
+                                      key="reg_pass", autocomplete="new-password")
+
+            if new_pass:
+                score, label = password_strength(new_pass)
+                st.html(
+                    f'<div class="pw-meter lvl{score}"><span></span><span></span><span></span><span></span></div>'
+                    f'<div class="pw-meter-label">Strength: {label}</div>',
+                )
+
+            with st.form("register_form", clear_on_submit=False):
+                new_pass2 = st.text_input("Confirm password", type="password",
+                                          placeholder="repeat password", key="reg_pass2",
+                                          autocomplete="new-password")
+                agreed = st.checkbox(
+                    "I agree to use Kairo for educational/research purposes — Kairo briefs are not financial advice.",
+                    key="reg_agree",
+                )
+                reg_submitted = st.form_submit_button("Create Account", use_container_width=True, type="primary")
+
+            if reg_submitted:
+                uname_err = validate_username(new_user)
+                pw_err = validate_password(new_pass) if not uname_err else None
+                if uname_err:
+                    st.error(uname_err)
+                elif pw_err:
+                    st.error(pw_err)
+                elif new_pass != new_pass2:
+                    st.error("Passwords do not match.")
+                elif not agreed:
+                    st.error("Please accept the educational-use notice to continue.")
+                else:
+                    try:
+                        ok = mgr.create_user(new_user, new_pass, role="user", email=new_email or "")
+                    except AuthError as exc:
+                        ok = False
+                        st.error(str(exc))
                     else:
-                        # Generic message — don't confirm whether the name is taken.
-                        st.error("We couldn't create that account. Try a different username.")
+                        if ok:
+                            st.success("Account created. Sign in to continue.")
+                        else:
+                            st.error("We couldn't create that account. Try a different username.")
 
-    st.markdown(
-        '<p class="auth-meta">Kairo never shares your data. Sessions are encrypted, '
-        'tokens are hashed at rest, and we rate-limit sign-in attempts.</p>',
-        unsafe_allow_html=True,
-    )
+        st.html(
+            '<p class="auth-meta">Kairo never shares your data. Sessions are encrypted, '
+            'tokens are hashed at rest, and we rate-limit sign-in attempts.</p>',
+        )
 
-    # Close .auth-card, .auth-panel, .auth-shell
-    st.markdown("</div></div></div>", unsafe_allow_html=True)
+    st.html(_AUTH_FOOTER_AND_MODALS)
 
     st.stop()
 
@@ -2195,43 +2482,37 @@ def run() -> None:
         user_id        = st.session_state.get("admin_user_id", "default")
         hours_lookback = int(st.session_state.get("detect_hours_input", _Cfg.DUNE_QUERY_WINDOW_HOURS))
 
-        # User-facing loading state. The spinner only shows on a cold cache —
-        # warm reruns skip straight through. The default Streamlit "Running…"
-        # status widget is hidden globally via CSS, so this is the only signal
-        # the user sees while we fetch.
-        _greeting = (current_user.get("first_name") or current_user.get("username") or "there").strip()
-        with st.spinner(f"Kairo is fetching your latest market insights, {_greeting} — give us a moment…"):
-            kairo_data = _cached_build_data(user_id, hours_lookback)
-            kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
-            # Inject auth profile under a separate key — kairo_data["user"] is the
-            # morning-brief user section ({name, date, summary}); don't overwrite it.
-            kairo_data["auth_user"] = dict(current_user)
-            # Inject latest regulations for the Policy Pulse tab
-            try:
-                _reg_trk = _get_regulation_tracker()
-                if _reg_trk:
-                    kairo_data["regulations"] = _reg_trk.get_latest_regulations(limit=60)
-                    kairo_data["regulation_last_run"] = _reg_trk.get_last_run() or {}
-                else:
-                    kairo_data.setdefault("regulations", [])
-                    kairo_data.setdefault("regulation_last_run", {})
-            except Exception as _exc:
-                logger.warning("Failed to load regulations for kairo_data: %s", _exc)
+        kairo_data = _cached_build_data(user_id, hours_lookback)
+        kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
+        # Inject auth profile under a separate key — kairo_data["user"] is the
+        # morning-brief user section ({name, date, summary}); don't overwrite it.
+        kairo_data["auth_user"] = dict(current_user)
+        # Inject latest regulations for the Policy Pulse tab
+        try:
+            _reg_trk = _get_regulation_tracker()
+            if _reg_trk:
+                kairo_data["regulations"] = _reg_trk.get_latest_regulations(limit=60)
+                kairo_data["regulation_last_run"] = _reg_trk.get_last_run() or {}
+            else:
                 kairo_data.setdefault("regulations", [])
                 kairo_data.setdefault("regulation_last_run", {})
-            # Inject Crypto 101 concepts + groupings
-            try:
-                _con_trk = _get_concept_tracker()
-                if _con_trk:
-                    kairo_data["concepts"]       = _con_trk.get_all_concepts()
-                    kairo_data["concept_groups"] = _con_trk.get_all_groups()
-                else:
-                    kairo_data.setdefault("concepts", [])
-                    kairo_data.setdefault("concept_groups", [])
-            except Exception as _exc:
-                logger.warning("Failed to load concepts for kairo_data: %s", _exc)
+        except Exception as _exc:
+            logger.warning("Failed to load regulations for kairo_data: %s", _exc)
+            kairo_data.setdefault("regulations", [])
+            kairo_data.setdefault("regulation_last_run", {})
+        # Inject Crypto 101 concepts + groupings
+        try:
+            _con_trk = _get_concept_tracker()
+            if _con_trk:
+                kairo_data["concepts"]       = _con_trk.get_all_concepts()
+                kairo_data["concept_groups"] = _con_trk.get_all_groups()
+            else:
                 kairo_data.setdefault("concepts", [])
                 kairo_data.setdefault("concept_groups", [])
+        except Exception as _exc:
+            logger.warning("Failed to load concepts for kairo_data: %s", _exc)
+            kairo_data.setdefault("concepts", [])
+            kairo_data.setdefault("concept_groups", [])
 
         # Inject one-time transient UI signals (popped so they don't repeat on refresh)
         _init_view = st.session_state.pop("_kairo_init_view", None)

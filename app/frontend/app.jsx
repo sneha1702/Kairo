@@ -53,23 +53,18 @@ function Logo() {
 
 function handleLogout() {
   if (!window.confirm("Sign out of Kairo?")) return;
-  const go = (url) => {
-    // Drop the remember-me token from the URL so the server-side logout
-    // handler can see we're leaving, and so the token stops sitting in
-    // browser history.
-    url.searchParams.delete("auto_session");
-    url.searchParams.set("kairo_action", "logout");
-    return url.toString();
+  const buildUrl = (base) => {
+    const u = new URL(base);
+    u.searchParams.delete("auto_session");
+    u.searchParams.set("kairo_action", "logout");
+    return u.toString();
   };
-  try {
-    const u = new URL(window.top.location.href);
-    try { window.top.sessionStorage && window.top.sessionStorage.clear(); } catch (_) {}
-    window.top.location.replace(go(u));
-  } catch (_) {
-    try {
-      const u = new URL(window.location.href);
-      window.location.replace(go(u));
-    } catch (__) {}
+  try { sessionStorage.clear(); } catch (_) {}
+  // Streamlit's component iframe sandbox blocks window.top.location
+  // navigation, but allows popups to escape via window.open(url, '_top').
+  const url = buildUrl(window.top.location.href);
+  if (!window.open(url, '_top')) {
+    window.location.href = buildUrl(window.location.href);
   }
 }
 
