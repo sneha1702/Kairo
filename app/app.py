@@ -1821,14 +1821,30 @@ def run() -> None:
             if _confirm == _uname:
                 _mgr_del = _get_user_manager()
                 if _mgr_del:
+                    # delete_user also drops every session for this username.
                     _mgr_del.delete_user(_uname)
-                _tok = st.session_state.pop("_kairo_session_token", None)
-                if _tok and _mgr_del:
-                    try:
-                        _mgr_del.invalidate_session_token(_tok)
-                    except Exception:
-                        pass
-                st.session_state.pop("_kairo_user", None)
+                # Reuse the logout cleanup: wipe everything kairo-namespaced
+                # plus admin user id, plus any cached per-user data.
+                for _k in [k for k in list(st.session_state.keys()) if k.startswith("_kairo")]:
+                    st.session_state.pop(_k, None)
+                st.session_state.pop("admin_user_id", None)
+                try:
+                    _cached_build_data.clear()
+                except Exception:
+                    pass
+                st.components.v1.html(
+                    """
+                    <script>
+                      try {
+                        const u = new URL(window.top.location.href);
+                        u.searchParams.delete('auto_session');
+                        u.searchParams.delete('kairo_action');
+                        window.top.history.replaceState({}, '', u.toString());
+                      } catch (e) {}
+                    </script>
+                    """,
+                    height=0,
+                )
         st.query_params.clear()
         st.rerun()
 
