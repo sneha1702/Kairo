@@ -1692,6 +1692,61 @@ def _admin_panel_content(_es, _engine, _tracker) -> None:
                 st.error(f"Regulation fetch failed: {_exc}")
                 logger.exception("Regulation fetch failed")
 
+    # ── Crypto 101 — add concepts from URL ───────────────────────────────────
+    st.divider()
+    st.markdown("#### Crypto 101 — Add concepts from URL")
+    st.caption(
+        "Paste any official or government page URL. "
+        "Kairo will auto-discover ALL concepts on the page and explain them — "
+        "no need to name them yourself."
+    )
+    with st.form("con_add_form", clear_on_submit=True):
+        _con_url_input = st.text_input(
+            "Source URL",
+            placeholder="https://www.scs.org.sg/articles/cryptocurrency-singapore",
+            key="con_url_field",
+        )
+        _con_add_btn = st.form_submit_button("Extract & Store Concepts", use_container_width=False)
+
+    if _con_add_btn:
+        _src = (_con_url_input or "").strip()
+        if not _src:
+            st.warning("Please enter a URL.")
+        else:
+            _con_trk_adm = _get_concept_tracker()
+            if not _con_trk_adm:
+                st.warning("MongoDB not configured — ConceptTracker unavailable.")
+            elif _engine is None:
+                st.error("Gemini not configured. Check GEMINI_KEY.")
+            else:
+                _con_prog = st.progress(0, text="Fetching page content…")
+                _con_stat = st.empty()
+                try:
+                    _con_prog.progress(25, text="Sending to Gemini for concept extraction…")
+                    _result = _con_trk_adm.fetch_and_store_from_url(_engine, _src)
+                    _con_prog.progress(100, text="Done.")
+                    if "error" in _result:
+                        _con_stat.error(f"Extraction failed: {_result['error']}")
+                    else:
+                        _sv  = _result.get("saved", 0)
+                        _sk  = _result.get("skipped", 0)
+                        _tot = _result.get("total_found", 0)
+                        _grp = _result.get("groups_updated", 0)
+                        if _sv:
+                            _con_stat.success(
+                                f"{_sv} concept(s) added, {_sk} already known "
+                                f"(of {_tot} found) · {_grp} group(s) updated."
+                            )
+                        else:
+                            _con_stat.info(
+                                f"No new concepts — {_sk} already known (of {_tot} found)."
+                            )
+                    _cached_build_data.clear()
+                except Exception as _exc:
+                    _con_prog.empty()
+                    st.error(f"Concept extraction failed: {_exc}")
+                    logger.exception("Concept extraction failed")
+
 
 def run() -> None:
     """Entry point called by streamlit_app.py on every Streamlit rerun."""
