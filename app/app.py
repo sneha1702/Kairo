@@ -456,6 +456,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 {screen_regulations_jsx}
   </script>
   <script type="text/babel">
+{screen_learn_jsx}
+  </script>
+  <script type="text/babel">
 {app_jsx}
   </script>
 </body>
