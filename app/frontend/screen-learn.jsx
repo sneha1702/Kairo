@@ -9,7 +9,7 @@ const { useState, useMemo } = React;
 /* ── helpers ──────────────────────────────────────────────── */
 
 function buildDisplayRows(concepts, groups) {
-  if (!concepts.length) return { rows: [], ungrouped: [] };
+  if (!concepts || !concepts.length) return { rows: [], ungrouped: [] };
 
   const bySlug = {};
   concepts.forEach(c => { bySlug[c.concept_slug] = c; });
@@ -32,9 +32,9 @@ function buildDisplayRows(concepts, groups) {
   return { rows, ungrouped };
 }
 
-/* ── Small concept tile ───────────────────────────────────── */
+/* ── Small / large concept tile ───────────────────────────── */
 
-function ConceptTile({ concept, size = "sm", isExpanded, onToggle, onDetail }) {
+function ConceptTile({ concept, size, isExpanded, onToggle, onDetail }) {
   const isLg = size === "lg";
   return (
     <div
@@ -42,14 +42,18 @@ function ConceptTile({ concept, size = "sm", isExpanded, onToggle, onDetail }) {
       style={{
         cursor: "pointer",
         background: isExpanded ? "var(--accent-soft)" : "var(--surface)",
-        border: `1px solid ${isExpanded ? "color-mix(in oklch, var(--accent) 35%, transparent)" : "var(--hairline)"}`,
+        border: "1px solid " + (isExpanded
+          ? "color-mix(in oklch, var(--accent) 35%, transparent)"
+          : "var(--hairline)"),
         borderRadius: 16,
         padding: isLg ? "24px 22px" : "18px 18px",
         display: "flex",
         flexDirection: "column",
         gap: isLg ? 10 : 8,
         transition: "background 0.15s, border-color 0.15s, box-shadow 0.15s",
-        boxShadow: isExpanded ? "0 0 0 3px color-mix(in oklch, var(--accent) 12%, transparent)" : "var(--shadow-soft)",
+        boxShadow: isExpanded
+          ? "0 0 0 3px color-mix(in oklch, var(--accent) 12%, transparent)"
+          : "var(--shadow-soft)",
         height: "100%",
         boxSizing: "border-box",
       }}
@@ -83,12 +87,9 @@ function ConceptTile({ concept, size = "sm", isExpanded, onToggle, onDetail }) {
         </div>
       </div>
 
-      {/* expanded preview */}
+      {/* expanded preview — stopPropagation so the outer toggle doesn't fire */}
       {isExpanded && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{ marginTop: 4 }}
-        >
+        <div onClick={e => e.stopPropagation()} style={{ marginTop: 4 }}>
           <div style={{
             fontSize: 11, fontWeight: 700, letterSpacing: "0.09em",
             textTransform: "uppercase", color: "var(--accent-ink)",
@@ -122,8 +123,6 @@ function ConceptTile({ concept, size = "sm", isExpanded, onToggle, onDetail }) {
 
 function GroupRow({ anchor, related, expandedSlug, onToggle, onDetail }) {
   const hasRelated = related.length > 0;
-
-  // right side: up to 3 per row, 2 rows max = 6 related
   const visible = related.slice(0, 6);
   const cols = Math.min(visible.length, 3);
 
@@ -135,7 +134,6 @@ function GroupRow({ anchor, related, expandedSlug, onToggle, onDetail }) {
       marginBottom: 18,
       alignItems: "start",
     }}>
-      {/* anchor */}
       <ConceptTile
         concept={anchor}
         size="lg"
@@ -143,12 +141,10 @@ function GroupRow({ anchor, related, expandedSlug, onToggle, onDetail }) {
         onToggle={onToggle}
         onDetail={onDetail}
       />
-
-      {/* related grid */}
       {hasRelated && (
         <div style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gridTemplateColumns: "repeat(" + cols + ", 1fr)",
           gap: 10,
         }}>
           {visible.map(c => (
@@ -167,25 +163,22 @@ function GroupRow({ anchor, related, expandedSlug, onToggle, onDetail }) {
   );
 }
 
-/* ── Detail view (in-app, no iframe needed) ───────────────── */
+/* ── Detail view ──────────────────────────────────────────── */
 
 function ConceptDetail({ concept, onBack }) {
   const a = concept.traditional_analogy || {};
   return (
     <div className="screen-enter">
-      {/* back */}
+      {/* back button */}
       <button
         onClick={onBack}
         style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          marginBottom: 24, padding: "8px 14px",
+          marginBottom: 28, padding: "8px 14px",
           background: "var(--surface)", border: "1px solid var(--hairline)",
           borderRadius: 9, fontSize: 13.5, fontWeight: 600,
           color: "var(--ink-3)", cursor: "pointer",
-          transition: "color 0.15s, background 0.15s",
         }}
-        onMouseOver={e => { e.currentTarget.style.color = "var(--ink)"; e.currentTarget.style.background = "var(--surface-2)"; }}
-        onMouseOut={e => { e.currentTarget.style.color = "var(--ink-3)"; e.currentTarget.style.background = "var(--surface)"; }}
       >
         ← Back to Crypto 101
       </button>
@@ -325,6 +318,22 @@ function LearnScreen() {
   const [detailConcept, setDetailConcept] = useState(null);
   const [search, setSearch] = useState("");
 
+  // ALL hooks must be called unconditionally before any early returns
+  const filtered = useMemo(() => {
+    if (!search.trim()) return concepts;
+    const q = search.toLowerCase();
+    return concepts.filter(c =>
+      (c.concept_name  || "").toLowerCase().includes(q) ||
+      (c.plain_english || "").toLowerCase().includes(q) ||
+      (c.key_takeaway  || "").toLowerCase().includes(q)
+    );
+  }, [concepts, search]);
+
+  const { rows, ungrouped } = useMemo(
+    () => buildDisplayRows(concepts, groups),
+    [concepts, groups]
+  );
+
   function handleToggle(slug) {
     setExpandedSlug(prev => (prev === slug ? null : slug));
   }
@@ -332,35 +341,16 @@ function LearnScreen() {
   function handleDetail(concept) {
     setDetailConcept(concept);
     setExpandedSlug(null);
-    try { window.scrollTo(0, 0); } catch (_) {}
   }
 
-  // detail view
+  // ── Detail view (after all hooks) ──────────────────────────
   if (detailConcept) {
     return <ConceptDetail concept={detailConcept} onBack={() => setDetailConcept(null)} />;
   }
 
-  // filter by search
-  const filtered = useMemo(() => {
-    if (!search.trim()) return concepts;
-    const q = search.toLowerCase();
-    return concepts.filter(c =>
-      (c.concept_name   || "").toLowerCase().includes(q) ||
-      (c.plain_english  || "").toLowerCase().includes(q) ||
-      (c.key_takeaway   || "").toLowerCase().includes(q)
-    );
-  }, [concepts, search]);
-
-  // when searching, just show flat tiles
   const isSearching = search.trim().length > 0;
 
-  // build grouped layout from full concept + group list
-  const { rows, ungrouped } = useMemo(
-    () => buildDisplayRows(concepts, groups),
-    [concepts, groups]
-  );
-
-  // empty state
+  // ── Empty state ─────────────────────────────────────────────
   if (concepts.length === 0) {
     return (
       <div className="screen-enter">
@@ -381,8 +371,8 @@ function LearnScreen() {
           </div>
           <p style={{ fontSize: 14, color: "var(--ink-3)", maxWidth: 400, margin: "0 auto", lineHeight: 1.65 }}>
             An admin can add concepts from the Admin panel by pasting a link to any
-            government or official regulator page — Kairo will auto-discover and explain
-            all the concepts it finds.
+            official or government page — Kairo will auto-discover and explain all
+            the concepts it finds.
           </p>
           <div style={{
             marginTop: 22, padding: "14px 18px",
@@ -400,6 +390,7 @@ function LearnScreen() {
     );
   }
 
+  // ── Main grid view ──────────────────────────────────────────
   return (
     <div className="screen-enter">
       {/* header */}
@@ -428,7 +419,7 @@ function LearnScreen() {
           }}
         />
         <span style={{ fontSize: 12.5, color: "var(--ink-4)" }}>
-          {isSearching ? `${filtered.length} of ` : ""}{concepts.length} concept{concepts.length !== 1 ? "s" : ""}
+          {isSearching ? filtered.length + " of " : ""}{concepts.length} concept{concepts.length !== 1 ? "s" : ""}
         </span>
       </div>
 
@@ -457,8 +448,8 @@ function LearnScreen() {
           </div>
         )
       ) : (
-        /* grouped layout */
         <>
+          {/* grouped rows */}
           {rows.map(({ anchor, related }) => (
             <GroupRow
               key={anchor.concept_slug}
@@ -509,9 +500,9 @@ function LearnScreen() {
         background: "var(--surface-2)", borderRadius: 10, border: "1px solid var(--hairline)",
       }}>
         <p style={{ fontSize: 12, color: "var(--ink-3)", margin: 0, lineHeight: 1.6 }}>
-          <strong style={{ color: "var(--ink-2)" }}>Powered by Gemini</strong> — concepts are auto-extracted
-          from official sources and explained at three levels: technical definition, plain English,
-          and a real-world analogy. Admins can add new sources from the Admin panel.
+          <strong style={{ color: "var(--ink-2)" }}>Powered by Gemini</strong> — concepts are
+          auto-extracted from official sources and explained at three levels: technical definition,
+          plain English, and a real-world analogy. Admins can add new sources from the Admin panel.
         </p>
       </div>
     </div>
