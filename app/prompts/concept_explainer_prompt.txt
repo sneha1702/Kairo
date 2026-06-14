@@ -7,6 +7,8 @@ Given the web page content below, do the following:
 
 Mandatory sources to check first (validate URLs and use latest working versions):
 https://www.scs.org.sg/articles/cryptocurrency-singapore
+https://www.coingecko.com/learn
+
   
 CONCEPTS ALREADY IN OUR DATABASE — skip any concept whose slug matches these (do not include them in output):
 {existing_concepts}
