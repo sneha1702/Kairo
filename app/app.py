@@ -2143,37 +2143,43 @@ def run() -> None:
         user_id        = st.session_state.get("admin_user_id", "default")
         hours_lookback = int(st.session_state.get("detect_hours_input", _Cfg.DUNE_QUERY_WINDOW_HOURS))
 
-        kairo_data = _cached_build_data(user_id, hours_lookback)
-        kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
-        # Inject auth profile under a separate key — kairo_data["user"] is the
-        # morning-brief user section ({name, date, summary}); don't overwrite it.
-        kairo_data["auth_user"] = dict(current_user)
-        # Inject latest regulations for the Policy Pulse tab
-        try:
-            _reg_trk = _get_regulation_tracker()
-            if _reg_trk:
-                kairo_data["regulations"] = _reg_trk.get_latest_regulations(limit=60)
-                kairo_data["regulation_last_run"] = _reg_trk.get_last_run() or {}
-            else:
+        # User-facing loading state. The spinner only shows on a cold cache —
+        # warm reruns skip straight through. The default Streamlit "Running…"
+        # status widget is hidden globally via CSS, so this is the only signal
+        # the user sees while we fetch.
+        _greeting = (current_user.get("first_name") or current_user.get("username") or "there").strip()
+        with st.spinner(f"Kairo is fetching your latest market insights, {_greeting} — give us a moment…"):
+            kairo_data = _cached_build_data(user_id, hours_lookback)
+            kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
+            # Inject auth profile under a separate key — kairo_data["user"] is the
+            # morning-brief user section ({name, date, summary}); don't overwrite it.
+            kairo_data["auth_user"] = dict(current_user)
+            # Inject latest regulations for the Policy Pulse tab
+            try:
+                _reg_trk = _get_regulation_tracker()
+                if _reg_trk:
+                    kairo_data["regulations"] = _reg_trk.get_latest_regulations(limit=60)
+                    kairo_data["regulation_last_run"] = _reg_trk.get_last_run() or {}
+                else:
+                    kairo_data.setdefault("regulations", [])
+                    kairo_data.setdefault("regulation_last_run", {})
+            except Exception as _exc:
+                logger.warning("Failed to load regulations for kairo_data: %s", _exc)
                 kairo_data.setdefault("regulations", [])
                 kairo_data.setdefault("regulation_last_run", {})
-        except Exception as _exc:
-            logger.warning("Failed to load regulations for kairo_data: %s", _exc)
-            kairo_data.setdefault("regulations", [])
-            kairo_data.setdefault("regulation_last_run", {})
-        # Inject Crypto 101 concepts + groupings
-        try:
-            _con_trk = _get_concept_tracker()
-            if _con_trk:
-                kairo_data["concepts"]       = _con_trk.get_all_concepts()
-                kairo_data["concept_groups"] = _con_trk.get_all_groups()
-            else:
+            # Inject Crypto 101 concepts + groupings
+            try:
+                _con_trk = _get_concept_tracker()
+                if _con_trk:
+                    kairo_data["concepts"]       = _con_trk.get_all_concepts()
+                    kairo_data["concept_groups"] = _con_trk.get_all_groups()
+                else:
+                    kairo_data.setdefault("concepts", [])
+                    kairo_data.setdefault("concept_groups", [])
+            except Exception as _exc:
+                logger.warning("Failed to load concepts for kairo_data: %s", _exc)
                 kairo_data.setdefault("concepts", [])
                 kairo_data.setdefault("concept_groups", [])
-        except Exception as _exc:
-            logger.warning("Failed to load concepts for kairo_data: %s", _exc)
-            kairo_data.setdefault("concepts", [])
-            kairo_data.setdefault("concept_groups", [])
 
         # Inject one-time transient UI signals (popped so they don't repeat on refresh)
         _init_view = st.session_state.pop("_kairo_init_view", None)
