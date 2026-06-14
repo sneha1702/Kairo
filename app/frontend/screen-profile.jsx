@@ -184,9 +184,11 @@ function ProfileScreen() {
 
   /* pw result toast text */
   const pwResultToast = pwResult === "ok"
-    ? { msg: "Password changed successfully.", type: "success" }
+    ? { msg: "Password changed. You've been kept signed in on this device; sign in again on any others.", type: "success" }
     : pwResult === "wrong_password"
     ? { msg: "Current password is incorrect.", type: "error" }
+    : pwResult === "weak_password"
+    ? { msg: pwMessage || "Choose a stronger password.", type: "error" }
     : pwResult === "error"
     ? { msg: "Password change failed. Try again.", type: "error" }
     : null;
