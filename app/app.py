@@ -1689,16 +1689,49 @@ def run() -> None:
 
     _qp = st.query_params.get("kairo_action", "")
     if _qp == "logout":
-        _tok = st.session_state.pop("_kairo_session_token", None)
+        _tok = (
+            st.session_state.pop("_kairo_session_token", None)
+            or st.query_params.get("auto_session", "")
+        )
         if _tok:
             try:
                 _mgr_l = _get_user_manager()
                 if _mgr_l:
                     _mgr_l.invalidate_session_token(_tok)
             except Exception:
-                pass
-        st.session_state.pop("_kairo_user", None)
+                logger.warning("Server-side session invalidation failed during logout.")
+
+        # Wipe everything namespaced to Kairo from session_state so no previous
+        # user's data leaks into the next sign-in on the same Streamlit session.
+        for _k in [k for k in list(st.session_state.keys()) if k.startswith("_kairo")]:
+            st.session_state.pop(_k, None)
+        st.session_state.pop("admin_user_id", None)
+
+        # Purge any per-user cached data so the iframe can't render stale content.
+        try:
+            _cached_build_data.clear()
+        except Exception:
+            pass
+
         st.query_params.clear()
+
+        # Scrub the URL on the client side too — Streamlit only clears the
+        # query string for the next rerun, but a leftover `auto_session` token
+        # would still sit in the browser's address bar / history.
+        st.components.v1.html(
+            """
+            <script>
+              try {
+                const u = new URL(window.top.location.href);
+                u.searchParams.delete('auto_session');
+                u.searchParams.delete('kairo_action');
+                window.top.history.replaceState({}, '', u.toString());
+              } catch (e) {}
+              try { window.top.sessionStorage && window.top.sessionStorage.clear(); } catch (e) {}
+            </script>
+            """,
+            height=0,
+        )
         st.rerun()
     elif _qp == "save-profile":
         _raw = st.query_params.get("profile_data", "")
