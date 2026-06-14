@@ -158,7 +158,7 @@ def init_services():
 # Data building (cached for 5 minutes)
 # ---------------------------------------------------------------------------
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=300, show_spinner=False)
 def _cached_build_data(user_id: str, hours: int = 0) -> dict:
     """Fetch dune_context from ES and build kairo_data. Safe — always returns a dict."""
     if hours <= 0:
