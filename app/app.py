@@ -82,7 +82,7 @@ def _get_regulation_tracker():
         return None
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def init_services():
     """Initialise ES, Gemini, and MongoDB. Returns (es_manager, narrative_engine, tracker).
 
