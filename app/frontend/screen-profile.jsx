@@ -74,8 +74,9 @@ function ProfileScreen() {
   const [deleting,       setDeleting]       = useState(false);
 
   /* ── server-sent one-time signals ── */
-  const [toast,     setToast]     = useState(config.toast     || null);
-  const [pwResult,  setPwResult]  = useState(config.pw_result || null);
+  const [toast,     setToast]     = useState(config.toast       || null);
+  const [pwResult,  setPwResult]  = useState(config.pw_result   || null);
+  const pwMessage = config.pw_message || "";
 
   const initials = (() => {
     const f = (user.first_name || "").trim();
