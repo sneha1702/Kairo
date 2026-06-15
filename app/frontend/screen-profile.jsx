@@ -58,8 +58,7 @@ function ProfileScreen() {
   const [tradingProfile, setTradingProfile] = useState(user.trading_profile || "");
   const [purpose,        setPurpose]        = useState(user.purpose         || "");
   const [saving,         setSaving]         = useState(false);
-  // Stay in edit mode if returning from a save (config.toast is set by the server)
-  const [editing,        setEditing]        = useState(!!config.toast);
+  const [editing,        setEditing]        = useState(false);
 
   /* ── change password ── */
   const [oldPw,    setOldPw]    = useState("");
@@ -73,10 +72,9 @@ function ProfileScreen() {
   const [deleteConfirm,  setDeleteConfirm]  = useState("");
   const [deleting,       setDeleting]       = useState(false);
 
-  /* ── server-sent one-time signals ── */
-  const [toast,     setToast]     = useState(config.toast       || null);
-  const [pwResult,  setPwResult]  = useState(config.pw_result   || null);
-  const pwMessage = config.pw_message || "";
+  /* ── toasts ── */
+  const [toast,   setToast]   = useState(null);  // {msg, type, key}
+  const [pwToast, setPwToast] = useState(null);  // {msg, type, key}
 
   const initials = (() => {
     const f = (user.first_name || "").trim();
@@ -95,25 +93,12 @@ function ProfileScreen() {
   ];
   const avatarBg = ACCENT_COLORS[(user.username || "").charCodeAt(0) % ACCENT_COLORS.length] || "var(--accent)";
 
-  function navigate(params) {
-    try {
-      const url = new URL(window.top.location.href);
-      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-      window.top.location.href = url.toString();
-    } catch (_) {
-      try {
-        const url = new URL(window.location.href);
-        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-        window.location.href = url.toString();
-      } catch (__) {}
-    }
-  }
-
   function handleSave() {
     setSaving(true);
-    navigate({
-      kairo_action:  "save-profile",
-      profile_data:  JSON.stringify({
+    fetch('/api/profile/save/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         first_name:      firstName.trim(),
         last_name:       lastName.trim(),
         email:           email.trim(),
@@ -121,7 +106,25 @@ function ProfileScreen() {
         trading_profile: tradingProfile,
         purpose,
       }),
-    });
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        if (window.KAIRO?.auth_user) {
+          Object.assign(window.KAIRO.auth_user, {
+            first_name: firstName.trim(), last_name: lastName.trim(),
+            email: email.trim(), profession,
+            trading_profile: tradingProfile, purpose,
+          });
+        }
+        setEditing(false);
+        setToast({ msg: "Profile saved.", type: "success", key: Date.now() });
+      } else {
+        setToast({ msg: data.error || "Save failed.", type: "error", key: Date.now() });
+      }
+    })
+    .catch(() => setToast({ msg: "Network error. Please try again.", type: "error", key: Date.now() }))
+    .finally(() => setSaving(false));
   }
 
   function handleCancel() {
@@ -145,19 +148,44 @@ function ProfileScreen() {
     if (newPw1 === oldPw)    { setPwError("Pick a new password — don't reuse the old one."); return; }
     if (newPw1 !== newPw2)   { setPwError("Passwords do not match."); return; }
     setPwSaving(true);
-    navigate({
-      kairo_action: "change-password",
-      pw_data:      JSON.stringify({ old: oldPw, new: newPw1 }),
-    });
+    fetch('/api/profile/change-password/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ old: oldPw, new: newPw1 }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        setOldPw(""); setNewPw1(""); setNewPw2("");
+        setPwToast({ msg: "Password changed. Sign in again on other devices.", type: "success", key: Date.now() });
+      } else {
+        const code = data.code;
+        if (code === "wrong_password") setPwError("Current password is incorrect.");
+        else if (code === "weak_password") setPwError(data.error || "Choose a stronger password.");
+        else setPwError(data.error || "Password change failed. Try again.");
+      }
+    })
+    .catch(() => setPwError("Network error. Please try again."))
+    .finally(() => setPwSaving(false));
   }
 
   function handleDeleteAccount() {
     if (deleteConfirm !== user.username) return;
     setDeleting(true);
-    navigate({
-      kairo_action: "delete-account",
-      confirm_user: user.username,
-    });
+    fetch('/api/profile/delete-account/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm_user: user.username }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        window.location.href = data.redirect || '/login/';
+      } else {
+        setDeleting(false);
+      }
+    })
+    .catch(() => setDeleting(false));
   }
 
   const inputStyle = {
@@ -182,21 +210,10 @@ function ProfileScreen() {
     opacity: 0.65,
   };
 
-  /* pw result toast text */
-  const pwResultToast = pwResult === "ok"
-    ? { msg: "Password changed. You've been kept signed in on this device; sign in again on any others.", type: "success" }
-    : pwResult === "wrong_password"
-    ? { msg: "Current password is incorrect.", type: "error" }
-    : pwResult === "weak_password"
-    ? { msg: pwMessage || "Choose a stronger password.", type: "error" }
-    : pwResult === "error"
-    ? { msg: "Password change failed. Try again.", type: "error" }
-    : null;
-
   return (
     <div className="screen-enter">
-      {toast       && <Toast key="profile-toast"   message={toast}            type="success" />}
-      {pwResultToast && <Toast key="pw-toast" message={pwResultToast.msg} type={pwResultToast.type} />}
+      {toast   && <Toast key={toast.key}   message={toast.msg}   type={toast.type} />}
+      {pwToast && <Toast key={pwToast.key} message={pwToast.msg} type={pwToast.type} />}
 
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
 
