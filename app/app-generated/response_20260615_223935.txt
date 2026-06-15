@@ -1,0 +1,26 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Movement Accelerates: Over $40 Billion Shifting Between Blockchains",
+    "category_sector": "Infrastructure",
+    "category_actor": "SmartMoney",
+    "category_behavior": "Bridging",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.74,
+    "key_evidence": [
+      "On June 15th, approximately $40.75 billion (roughly the annual GDP of a small nation) moved across various blockchain bridges. This substantial activity runs 293% above its 30-day average, showing a dramatic increase in cross-chain capital repositioning. Key contributors to this movement include $16.53 billion via USDT, $7.55 billion via CCIP, $4.48 billion via Portal, $2.12 billion via Aster Bridge, $2.11 billion via Lighter Bridge, and $1.67 billion via Merlins Seal."
+    ],
+    "data_caveat": "Only 24 hours of data available, so this may be an early signal rather than a confirmed trend.",
+    "historical_context": "This cross-chain capital movement continues at a significantly accelerated pace, matching the high volume and acceleration observed previously for June 15th.",
+    "implications": "The sheer scale of capital moving between different blockchains suggests investors are actively re-evaluating and repositioning their holdings. This could be in anticipation of new opportunities, or to manage risk across different ecosystems, highlighting the increasing interconnectedness of the crypto market.",
+    "plain_english_summary": "Over $40 billion continues to flow between different blockchain networks at a rapid pace. This massive movement suggests big money is actively rebalancing positions across the crypto landscape.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "This means there's a lot of active trading and repositioning happening across various crypto platforms. Big money isn't just sitting still; it's looking for opportunities on different blockchains.\n\nWatch if this high volume of cross-chain transfers continues or if the acceleration rate drops. Sustained high activity could point to continued market churn or preparation for new trends.\n\nOn-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```

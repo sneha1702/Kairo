@@ -1,0 +1,40 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Exodus Intensifies: Over $40 Billion Continues to Flood Across Blockchains",
+    "category_sector": "Infrastructure",
+    "category_actor": "Institutional",
+    "category_behavior": "Bridging",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "Roughly $40.67 billion — the size of a large hedge fund — was moved across various blockchain bridges on June 15th, indicating a persistent and intensified trend of capital shifting between networks.",
+      "This cross-chain activity is accelerating rapidly, now running at 293% above its 30-day average, showing increased urgency in moving funds.",
+      "The dominant platforms facilitating these massive flows on June 15th included USDT0 (with $16.53 billion), CCIP ($7.55 billion), Portal ($4.48 billion), Aster Bridge ($2.12 billion), Lighter Bridge ($2.11 billion), and Unit ($1.82 billion)."
+    ],
+    "data_caveat": null,
+    "historical_context": "This continues a trend of significant cross-chain capital movement, with today's activity exceeding the already high volumes seen previously and maintaining a strong acceleration.",
+    "implications": "This consistent and accelerating flow of billions across chains suggests that major participants are actively repositioning assets, possibly seeking better opportunities, liquidity, or specific blockchain ecosystems. This can lead to increased volatility in destination chains or signal upcoming developments in those environments.",
+    "plain_english_summary": "A staggering $40 billion is moving between different blockchains right now, a huge amount that suggests big players are looking for new opportunities. This active shifting of funds often signals where the next big trends in crypto might emerge.",
+    "top_tokens": [
+      "USDT0",
+      "CCIP",
+      "PORTAL",
+      "ASTER BRIDGE",
+      "LIGHTER BRIDGE",
+      "UNIT",
+      "MERLINS SEAL",
+      "SOLVBTC",
+      "FREE PROTOCOL",
+      "EDGEX BRIDGE"
+    ],
+    "retail_considerations": "This means that powerful players in crypto are not sitting still; they are actively searching for the best places to deploy their capital, which could lead to price movements in the tokens and networks they are moving into.\nWatch for specific tokens or chains that show sustained inflows from these bridges, as they might be the next areas of significant growth or activity.\nOn-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  }
+]
+```

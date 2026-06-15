@@ -1,0 +1,79 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Movement Accelerates: Over $40 Billion Shifting Between Blockchains",
+    "category_sector": "Infrastructure",
+    "category_actor": "Institutional",
+    "category_behavior": "CrossChain",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "An enormous $40.77 billion — roughly the size of a large hedge fund — was moved across various blockchain bridges on June 15th, indicating a persistent and rapidly intensifying trend of capital shifting between different networks.",
+      "This cross-chain activity is now running at 293% above its 30-day average, showing increased urgency among market participants to reposition funds.",
+      "The most active platforms on June 15th included USDT0 (with $16.54 billion), CCIP ($7.56 billion), Portal ($4.48 billion), Aster Bridge ($2.13 billion), Lighter Bridge ($2.12 billion), Unit ($1.83 billion), Merlins Seal ($1.67 billion), SolvBTC ($1.45 billion), and Free Protocol ($1.03 billion)."
+    ],
+    "data_caveat": "This data primarily reflects activity on June 15th, confirming a continued trend.",
+    "historical_context": "This continues the trend observed previously, with even larger volumes now moving, underscoring persistent demand for cross-chain liquidity.",
+    "implications": "The massive capital flows suggest that large investors are actively seeking opportunities across different blockchain ecosystems, potentially signaling emerging trends or a re-evaluation of optimal deployment locations. This constant movement could lead to increased liquidity and development on recipient chains, but also pressure on chains losing capital.",
+    "plain_english_summary": "Huge amounts of money, over $40 billion, are still flying between different crypto blockchains at a super fast pace. This means big players are hunting for the best opportunities and shifting their funds around the crypto world.",
+    "top_tokens": [
+      "USDT0",
+      "CCIP",
+      "PORTAL",
+      "ASTER BRIDGE",
+      "LIGHTER BRIDGE",
+      "UNIT",
+      "MERLINS SEAL",
+      "SOLVBTC",
+      "FREE PROTOCOL",
+      "EDGEX BRIDGE",
+      "AXELAR",
+      "GRVT BRIDGE",
+      "APX BRIDGE",
+      "SODEX BRIDGE"
+    ],
+    "retail_considerations": [
+      "(1) For everyday investors, this signals that the crypto market is highly dynamic, with large capital allocators actively seeking out new opportunities beyond single blockchains. It highlights the importance of understanding the broader ecosystem, not just individual chains.",
+      "(2) Watch for which blockchains are consistently receiving significant capital inflows via bridges; these could be areas of future growth or innovation. Also, observe if these large flows begin to concentrate on fewer bridges, indicating a consolidation of infrastructure.",
+      "(3) On-chain movements are early signals that can reverse quickly — this is not financial advice."
+    ],
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  },
+  {
+    "narrative_id": "smart_money_positioning",
+    "name": "Large Investors Accumulate Wrapped Bitcoin and Stablecoins, Signaling Strategic Moves",
+    "category_sector": "DeFi",
+    "category_actor": "SmartMoney",
+    "category_behavior": "Accumulation",
+    "status": "NEW",
+    "strength": "Medium",
+    "momentum": "Stable",
+    "confidence_score": 0.75,
+    "key_evidence": [
+      "Very large holders moved approximately $20.87 billion worth of Wrapped Bitcoin (WBTC) across several days between May 28th and June 3rd, indicating strategic positioning.",
+      "Additionally, about $1.71 billion in USDC stablecoins was moved by experienced large investors between May 31st and June 2nd, suggesting a deliberate build-up or repositioning of stable assets."
+    ],
+    "data_caveat": "These movements occurred over several days and are flagged by individual whale transaction signals, making it an emergent pattern rather than a single event.",
+    "historical_context": "First detection with multiple days of data; this pattern of large investor movements of key assets suggests strategic accumulation, but a multi-day trend is still forming.",
+    "implications": "The accumulation of WBTC could suggest smart money is anticipating future Bitcoin price movements or preparing for increased activity within decentralized finance (DeFi) protocols that utilize wrapped Bitcoin. The stablecoin movements might indicate preparation for future deployments into new opportunities or simply a safe haven while evaluating market conditions.",
+    "plain_english_summary": "Experienced big investors are making significant moves, shifting over $20 billion in Wrapped Bitcoin and nearly $2 billion in USDC stablecoins. This suggests they are getting ready for future market opportunities or securing their positions.",
+    "top_tokens": [
+      "WBTC",
+      "USDC"
+    ],
+    "retail_considerations": [
+      "(1) When smart money accumulates foundational assets like Wrapped Bitcoin and stablecoins, it often signals an expectation of future market activity or a strategic repositioning. This could precede new trends or shifts in capital allocation.",
+      "(2) Pay attention to where these funds eventually move – are they going into specific DeFi protocols, new chains, or being held in preparation for market changes? Observing the next step could provide further clues.",
+      "(3) On-chain movements are early signals that can reverse quickly — this is not financial advice."
+    ],
+    "signal_sources": [
+      "whale_transactions"
+    ]
+  }
+]
+```

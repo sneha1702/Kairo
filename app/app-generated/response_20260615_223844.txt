@@ -1,0 +1,29 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Movement Accelerates: Over $40 Billion Shifting Between Blockchains",
+    "category_sector": "Infrastructure",
+    "category_actor": "Institutional",
+    "category_behavior": "Bridging",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "On June 15th, approximately $40.78 billion (roughly equivalent to the annual GDP of a small nation) moved across various blockchain bridges. This activity is running 293% above its 30-day average, showing a dramatic increase in cross-chain capital repositioning. Key movements included $16.54 billion via USDT, $7.56 billion via CCIP, $4.48 billion via Portal, $2.13 billion via Aster Bridge, $2.12 billion via Lighter Bridge, and $1.67 billion via Merlins Seal."
+    ],
+    "data_caveat": "The acceleration metric is based on a 7-day average compared to a 30-day average, indicating sustained, not just one-off, increased activity.",
+    "historical_context": "This continues a recent trend of significant capital rotation between different blockchain networks, now accelerating further.",
+    "implications": "The massive flow of capital across chains suggests investors are actively rebalancing portfolios, seeking new opportunities, or reacting to specific events within different blockchain ecosystems. This increased liquidity could fuel growth on recipient chains or indicate a shift in market preference towards specific Layer 1s or Layer 2s. It also highlights the growing interconnectedness of the crypto landscape.",
+    "plain_english_summary": "Over $40 billion is rapidly moving between different blockchains, indicating a significant and accelerating shift in where big money investors are placing their funds. This signals potential new areas of growth or strategic re-positioning across the crypto market.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "For regular investors, this means that major players are not staying put; they are actively searching for the next big opportunity or safe haven across various blockchain networks. This high level of activity can precede significant price movements in certain assets or chains. Watch for which specific chains or types of protocols see sustained inflows from these bridges, as this could indicate where the smart money is heading next. On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  }
+]
+```

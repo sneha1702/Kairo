@@ -1,0 +1,27 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Movement Accelerates: Over $40 Billion Shifting Between Blockchains",
+    "category_sector": "Infrastructure",
+    "category_actor": "Institutional",
+    "category_behavior": "Bridging",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "On June 15th, an enormous $40.77 billion — roughly the size of a large hedge fund — moved across various blockchain bridges. This surge in activity runs at 293% above its 30-day average, indicating significant and urgent repositioning of funds across different networks.",
+      "The most active bridge protocols facilitating these massive movements on June 15th included USDT0 (likely Tether's USDT stablecoin, with $16.54 billion), CCIP ($7.56 billion), Portal ($4.48 billion), Aster Bridge ($2.13 billion), Lighter Bridge ($2.12 billion), Unit ($1.83 billion), Merlins Seal ($1.67 billion), SolvBTC ($1.45 billion), Free Protocol ($1.03 billion), and others like EdgeX Bridge, Axelar, GRVT Bridge, APX Bridge, and Sodex Bridge."
+    ],
+    "data_caveat": "While this represents a significant single-day surge, observing sustained activity over several days will help confirm if this is a lasting trend rather than a one-off event.",
+    "historical_context": "This narrative, previously noted for its significant capital movement, is now showing a renewed and substantial acceleration far above its recent averages, indicating heightened activity.",
+    "implications": "This large-scale movement suggests that major investors are actively re-evaluating and repositioning their funds across different blockchain ecosystems. Such rapid capital shifts can lead to increased volatility and liquidity changes in both the sending and receiving chains, potentially signaling where smart money anticipates future growth or risks.",
+    "plain_english_summary": "Massive amounts of money are quickly being moved between different blockchains, with over $40 billion shifting hands in a single day. This could mean big investors are preparing for major changes or new opportunities in the crypto market, possibly leading to shifts in where value is concentrated.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "For everyday investors, this means that major capital is active and looking for new homes. Chains seeing significant inflows might experience growth, while sustained outflows could signal declining interest. | Watch which specific blockchains begin to attract — or lose — substantial capital in the coming days. This can indicate where large funds are placing their bets. | On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```

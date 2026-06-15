@@ -1,0 +1,40 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Movement Accelerates: Over $40 Billion Shifting Between Blockchains",
+    "category_sector": "Infrastructure",
+    "category_actor": "Protocol",
+    "category_behavior": "Bridging",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "On June 15th, an enormous $40.77 billion — roughly the size of a large hedge fund — moved across various blockchain bridges. This surge in activity runs at 293% above its 30-day average, indicating significant and urgent repositioning of funds across different networks.",
+      "The most active bridge protocols facilitating these massive movements on June 15th included USDT0 ($16.54 billion), CCIP ($7.56 billion), Portal ($4.48 billion), Aster Bridge ($2.13 billion), Lighter Bridge ($2.12 billion), Unit ($1.83 billion), Merlins Seal ($1.67 billion), SolvBTC ($1.45 billion), Free Protocol ($1.03 billion), and others like Axelar, EdgeX Bridge, GRVT Bridge, APX Bridge, and Sodex Bridge."
+    ],
+    "data_caveat": "All cited data represents activity from June 15th, validating recent trends.",
+    "historical_context": "This continuous and accelerated bridging activity on June 15th reaffirms the trend of significant capital movement between blockchain networks, continuing the heightened activity noted in recent reports.",
+    "implications": "This sustained, high-volume flow indicates that investors are actively rebalancing their crypto portfolios across different blockchain ecosystems, likely searching for new opportunities or responding to evolving market conditions. Such large-scale capital shifts can significantly impact liquidity and asset valuations on both the sending and receiving blockchains.",
+    "plain_english_summary": "A massive amount of money, over $40 billion, continues to rapidly move between different blockchain networks using bridges, showing that big players are actively reorganizing their crypto holdings. This suggests they might be looking for new growth areas or adjusting to market changes.",
+    "top_tokens": [
+      "USDT0",
+      "CCIP",
+      "PORTAL",
+      "ASTER BRIDGE",
+      "LIGHTER BRIDGE",
+      "UNIT",
+      "MERLINS SEAL",
+      "SOLVBTC",
+      "FREE PROTOCOL",
+      "EDGEX BRIDGE",
+      "AXELAR",
+      "GRVT BRIDGE",
+      "APX BRIDGE",
+      "SODEX BRIDGE"
+    ],
+    "retail_considerations": "The continued movement of huge amounts of money between different crypto networks suggests that larger investors are actively hunting for new opportunities or shifting their strategies. This could mean some blockchains might see an influx of funds, boosting their projects, while others might experience outflows.\nWatch which specific tokens or blockchains are gaining or losing this 'bridged' capital. An increase in bridging activity to a particular chain could signal upcoming price movements or new ecosystem developments there.\nOn-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```

@@ -1,0 +1,55 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Cross-Chain Capital Movement Accelerates: Over $40 Billion Shifting Between Blockchains",
+    "category_sector": "Infrastructure",
+    "category_actor": "SmartMoney",
+    "category_behavior": "CrossChain",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "On June 15th, approximately $40.77 billion was observed moving across various blockchain bridges, indicating a significant repositioning of capital. This activity is running 293% above its 30-day average. Major bridges facilitating these movements included USDT (Tether stablecoin) with $16.53 billion, CCIP ($7.55 billion), Portal ($4.48 billion), Aster Bridge ($2.12 billion), Lighter Bridge ($2.11 billion), and Merlins Seal ($1.67 billion)."
+    ],
+    "data_caveat": "The capital flows represent gross volume across bridges and do not indicate net inflows or outflows to specific chains.",
+    "historical_context": "This trend continues the accelerated cross-chain movement noted previously, reinforcing the ongoing repositioning of funds across the crypto ecosystem.",
+    "implications": "The continuous high volume of cross-chain transfers suggests experienced investors are actively rebalancing their portfolios, potentially seeking new yield opportunities or adjusting exposure to different blockchain ecosystems. This level of activity can precede shifts in liquidity and asset valuations on various chains.",
+    "plain_english_summary": "Huge amounts of money, over $40 billion, are rapidly moving between different crypto networks, suggesting big investors are actively re-positioning their funds. This accelerated cross-chain activity shows a significant search for new opportunities or adjustments in strategy.",
+    "top_tokens": [
+      "USDT"
+    ],
+    "retail_considerations": "For regular investors, this means that major players are constantly evaluating where the best opportunities lie, shifting funds accordingly. Watch for major narratives emerging on chains where this capital lands, as it could indicate future growth areas. On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "bridge_activity"
+    ]
+  },
+  {
+    "narrative_id": "smart_money_positioning",
+    "name": "Experienced Investors Continue Shifting Billions in Wrapped Bitcoin and Stablecoins",
+    "category_sector": "DeFi",
+    "category_actor": "SmartMoney",
+    "category_behavior": "Deployment",
+    "status": "STABLE",
+    "strength": "High",
+    "momentum": "Stable",
+    "confidence_score": 0.7,
+    "key_evidence": [
+      "Experienced large investors continued to actively manage their portfolios, with substantial movements of Wrapped Bitcoin (WBTC) and USDC stablecoins. Approximately $20.87 billion in WBTC whale transactions were recorded between May 28th and June 3rd. Additionally, USDC whale transactions amounted to about $1.71 billion during the period of May 31st to June 2nd, indicating ongoing capital allocation by significant holders."
+    ],
+    "data_caveat": "This data primarily reflects activity from late May to early June and does not include more recent smart money movements for these specific assets beyond June 3rd.",
+    "historical_context": "This continues the previously observed trend of large, experienced investors actively repositioning Wrapped Bitcoin and stablecoins, demonstrating sustained strategic capital management.",
+    "implications": "The persistent movement of these core assets by smart money suggests a continuous search for optimal risk-adjusted returns or strategic re-allocations in anticipation of market shifts. Such large-scale, sustained positioning can influence liquidity and market sentiment.",
+    "plain_english_summary": "Big, experienced investors are still actively moving around billions in Wrapped Bitcoin and USDC stablecoins. This shows they're carefully managing their money, likely looking for the best places to put it to work or adjusting to market changes.",
+    "top_tokens": [
+      "WBTC",
+      "USDC"
+    ],
+    "retail_considerations": "For you, this means following where smart money goes can sometimes offer clues about future market directions, especially for fundamental assets like Bitcoin and stablecoins. Keep an eye on reports of where these funds are ultimately deployed. On-chain movements are early signals that can reverse quickly — this is not financial advice.",
+    "signal_sources": [
+      "whale_transactions"
+    ]
+  }
+]
+```
