@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kairo Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --paper: oklch(0.985 0.006 80); --surface: oklch(0.995 0.004 85);
+      --surface-2: oklch(0.965 0.008 80); --hairline: oklch(0.90 0.010 75);
+      --ink: oklch(0.27 0.012 60); --ink-2: oklch(0.42 0.012 60);
+      --ink-3: oklch(0.58 0.012 65); --ink-4: oklch(0.70 0.010 70);
+      --accent: oklch(0.64 0.124 42); --accent-soft: oklch(0.92 0.045 50);
+      --accent-ink: oklch(0.46 0.115 40);
+      --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+      --r-sm: 10px; --r-md: 16px;
+    }
+    html, body { font-family: var(--font-sans); background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 32px; border-bottom: 1px solid var(--hairline);
+      background: var(--surface); position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .topbar-dot { width: 28px; height: 28px; border-radius: 8px; background: var(--ink); display: grid; place-items: center; }
+    .topbar-dot-inner { width: 11px; height: 11px; border-radius: 99px; background: var(--accent); box-shadow: 0 0 0 2px color-mix(in oklch, var(--accent) 30%, transparent); }
+    .topbar-name { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-user { font-size: 13px; color: var(--ink-3); }
+    .topbar-link { font-size: 13px; font-weight: 600; color: var(--ink-2); text-decoration: none; padding: 6px 14px; border: 1px solid var(--hairline); border-radius: var(--r-sm); transition: background 0.15s; }
+    .topbar-link:hover { background: var(--surface-2); }
+
+    .page { max-width: 960px; margin: 0 auto; padding: 40px 32px; }
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: var(--ink-3); margin-bottom: 32px; }
+
+    .stats-row { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+    .stat-card {
+      flex: 1; min-width: 140px; padding: 18px 20px;
+      background: var(--surface); border: 1px solid var(--hairline);
+      border-radius: var(--r-md);
+    }
+    .stat-card .stat-val { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
+    .stat-card .stat-label { font-size: 12px; color: var(--ink-4); margin-top: 4px; font-weight: 600; }
+
+    .section-title { font-size: 13px; font-weight: 700; color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px; }
+
+    /* ── Grid table ── */
+    .admin-grid { display: grid; grid-template-columns: 2fr 2fr 2fr 2fr; gap: 0; margin-bottom: 32px; }
+    .grid-head { font-size: 12.5px; font-weight: 700; color: var(--ink-3); padding: 8px 12px; border-bottom: 2px solid var(--hairline); }
+    .grid-cell { padding: 12px; border-bottom: 1px solid var(--hairline); display: flex; align-items: center; }
+    .grid-source { font-size: 14px; font-weight: 600; color: var(--ink); }
+
+    .btn { padding: 7px 14px; border-radius: 8px; border: none; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-run { background: var(--accent); color: white; }
+    .btn-run:hover { background: var(--accent-ink); }
+    .btn-purge { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--hairline); }
+    .btn-purge:hover { background: color-mix(in oklch, oklch(0.65 0.15 30) 12%, transparent); color: oklch(0.45 0.15 30); }
+    .btn-backfill { background: var(--surface); color: var(--ink-2); border: 1px solid var(--hairline); }
+    .btn-backfill:hover { background: var(--surface-2); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .cell-dash { color: var(--ink-4); font-size: 13px; }
+
+    /* ── Options panel ── */
+    .options-panel {
+      display: none; background: var(--surface); border: 1px solid var(--hairline);
+      border-radius: var(--r-md); padding: 22px 24px; margin-bottom: 16px;
+    }
+    .options-panel.visible { display: block; }
+    .options-panel h3 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+    .opt-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+    .opt-field { display: flex; flex-direction: column; gap: 5px; }
+    .opt-field label { font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+    .opt-field select, .opt-field input[type="text"], .opt-field input[type="number"] {
+      padding: 8px 12px; background: var(--paper); border: 1px solid var(--hairline);
+      border-radius: var(--r-sm); font-size: 14px; font-family: var(--font-sans); color: var(--ink);
+      outline: none; min-width: 140px;
+    }
+    .opt-field input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; }
+    .opt-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+    .opt-buttons { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-confirm { background: var(--accent); color: white; padding: 9px 20px; border-radius: 8px; border: none; font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: var(--font-sans); }
+    .btn-confirm:hover { background: var(--accent-ink); }
+    .btn-cancel-opt { background: transparent; border: 1px solid var(--hairline); color: var(--ink-2); padding: 9px 20px; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
+    .btn-cancel-opt:hover { background: var(--surface-2); }
+
+    /* ── Status / result ── */
+    .result-area { margin-bottom: 24px; }
+    .result-msg { padding: 12px 16px; border-radius: var(--r-sm); font-size: 14px; font-weight: 500; display: none; }
+    .result-msg.ok { display: block; background: color-mix(in oklch, oklch(0.60 0.13 150) 12%, transparent); color: oklch(0.40 0.13 150); border: 1px solid color-mix(in oklch, oklch(0.60 0.13 150) 30%, transparent); }
+    .result-msg.err { display: block; background: color-mix(in oklch, oklch(0.65 0.15 30) 12%, transparent); color: oklch(0.45 0.15 30); border: 1px solid color-mix(in oklch, oklch(0.65 0.15 30) 30%, transparent); }
+    .result-msg.loading { display: block; background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--hairline); }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--hairline); margin: 28px 0; }
+
+    /* ── Detection panel ── */
+    .detect-section { margin-top: 32px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="topbar-brand">
+    <div class="topbar-dot"><div class="topbar-dot-inner"></div></div>
+    <span class="topbar-name">Kairo</span>
+  </a>
+  <div class="topbar-right">
+    <span class="topbar-user">Admin: {{ user.username }}</span>
+    <a href="/" class="topbar-link">← App</a>
+    <a href="/logout/" class="topbar-link">Sign out</a>
+  </div>
+</div>
+
+<div class="page">
+  <h1>Admin Panel</h1>
+  <p class="subtitle">Manage data ingestion, narrative detection, and backfills.</p>
+
+  {% if flash %}
+  <div class="result-msg ok" style="display:block;margin-bottom:20px">{{ flash }}</div>
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val">{{ stats.total_narratives|default:"—" }}</div>
+      <div class="stat-label">Total Narratives</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">{{ stats.tracked_narratives|default:"—" }}</div>
+      <div class="stat-label">Tracked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">{{ stats.strengthening_narratives|default:"—" }}</div>
+      <div class="stat-label">Strengthening</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">{{ ingestion_provider }}</div>
+      <div class="stat-label">Ingestion Provider</div>
+    </div>
+  </div>
+
+  <!-- Result area -->
+  <div class="result-area">
+    <div class="result-msg" id="result-msg"></div>
+  </div>
+
+  <!-- Data sources table -->
+  <div class="section-title">Data Sources</div>
+  <div class="admin-grid">
+    <div class="grid-head">Source</div>
+    <div class="grid-head">Ingestion (last 24h)</div>
+    <div class="grid-head">Purge All</div>
+    <div class="grid-head">Backfill</div>
+
+    <!-- Narratives -->
+    <div class="grid-cell"><span class="grid-source">Narratives</span></div>
+    <div class="grid-cell"><button class="btn btn-run" onclick="runIngestion('narratives')">Run</button></div>
+    <div class="grid-cell"><button class="btn btn-purge" onclick="showPurge('narratives')">Purge</button></div>
+    <div class="grid-cell"><button class="btn btn-backfill" onclick="showBackfill('narratives')">Backfill</button></div>
+
+    <!-- Markets -->
+    <div class="grid-cell"><span class="grid-source">Market Analysis</span></div>
+    <div class="grid-cell"><button class="btn btn-run" onclick="showMarketsOptions()">Run</button></div>
+    <div class="grid-cell"><button class="btn btn-purge" onclick="showPurge('markets')">Purge</button></div>
+    <div class="grid-cell"><span class="cell-dash">—</span></div>
+
+    <!-- Policy -->
+    <div class="grid-cell"><span class="grid-source">Policy Updates</span></div>
+    <div class="grid-cell"><button class="btn btn-run" onclick="showPolicyOptions()">Run</button></div>
+    <div class="grid-cell"><button class="btn btn-purge" onclick="showPurge('policy')">Purge</button></div>
+    <div class="grid-cell"><button class="btn btn-backfill" onclick="showBackfill('policy')">Backfill</button></div>
+
+    <!-- Concepts -->
+    <div class="grid-cell"><span class="grid-source">Concept Extractor</span></div>
+    <div class="grid-cell"><button class="btn btn-run" onclick="showConceptsOptions()">Run</button></div>
+    <div class="grid-cell"><button class="btn btn-purge" onclick="showPurge('concepts')">Purge</button></div>
+    <div class="grid-cell"><span class="cell-dash">—</span></div>
+  </div>
+
+  <!-- Purge confirmation panel -->
+  <div class="options-panel" id="panel-purge">
+    <h3 id="purge-title">Purge all data?</h3>
+    <p style="font-size:13.5px;color:var(--ink-2);margin-bottom:14px">This permanently deletes data and cannot be undone.</p>
+    <div class="opt-buttons">
+      <button class="btn-confirm" onclick="confirmPurge()" style="background:oklch(0.55 0.15 30)">Yes, delete all</button>
+      <button class="btn-cancel-opt" onclick="hidePanel('panel-purge')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Narratives backfill options -->
+  <div class="options-panel" id="panel-backfill-narratives">
+    <h3>Narratives — Backfill options</h3>
+    <div class="opt-row">
+      <div class="opt-field">
+        <label>Backfill period</label>
+        <select id="narr-bf-period">
+          <option value="2">2 days</option>
+          <option value="7">1 week</option>
+          <option value="30">1 month</option>
+          <option value="90">3 months</option>
+          <option value="180" selected>6 months</option>
+          <option value="365">1 year</option>
+        </select>
+      </div>
+    </div>
+    <div class="opt-check" style="margin-bottom:14px">
+      <input type="checkbox" id="narr-bf-fetch" />
+      <label for="narr-bf-fetch">Also fetch on-chain data for this period before synthesizing</label>
+    </div>
+    <div class="opt-buttons">
+      <button class="btn-confirm" onclick="runBackfill('narratives')">Run Backfill</button>
+      <button class="btn-cancel-opt" onclick="hidePanel('panel-backfill-narratives')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Policy backfill options -->
+  <div class="options-panel" id="panel-backfill-policy">
+    <h3>Policy Updates — Backfill options</h3>
+    <div class="opt-check" style="margin-bottom:14px">
+      <input type="checkbox" id="pol-bf-fetch" />
+      <label for="pol-bf-fetch">Fetch fresh regulation data from web before synthesizing</label>
+    </div>
+    <div class="opt-buttons">
+      <button class="btn-confirm" onclick="runBackfill('policy')">Run Backfill</button>
+      <button class="btn-cancel-opt" onclick="hidePanel('panel-backfill-policy')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Market Analysis options -->
+  <div class="options-panel" id="panel-markets">
+    <h3>Market Analysis — Ingestion options</h3>
+    <div class="opt-check" style="margin-bottom:14px">
+      <input type="checkbox" id="mkt-roadmaps" />
+      <label for="mkt-roadmaps">Discover roadmaps (fetches roadmap pages per project — adds 15–30 min)</label>
+    </div>
+    <div class="opt-buttons">
+      <button class="btn-confirm" onclick="runMarketsIngestion()">Run Ingestion</button>
+      <button class="btn-cancel-opt" onclick="hidePanel('panel-markets')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Policy options -->
+  <div class="options-panel" id="panel-policy">
+    <h3>Policy Updates — Ingestion options</h3>
+    <div class="opt-check" style="margin-bottom:14px">
+      <input type="checkbox" id="pol-fetch-web" checked />
+      <label for="pol-fetch-web">Fetch fresh regulation data from web via Gemini</label>
+    </div>
+    <div class="opt-buttons">
+      <button class="btn-confirm" onclick="runPolicyIngestion()">Run Ingestion</button>
+      <button class="btn-cancel-opt" onclick="hidePanel('panel-policy')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Concepts options -->
+  <div class="options-panel" id="panel-concepts">
+    <h3>Concept Extractor — options</h3>
+    <div class="opt-row">
+      <div class="opt-field" style="flex:1">
+        <label for="con-url">Source URL <span style="color:var(--ink-4);font-weight:400">(optional)</span></label>
+        <input type="text" id="con-url" placeholder="https://example.com/article" />
+      </div>
+    </div>
+    <div class="opt-buttons">
+      <button class="btn-confirm" onclick="runConceptsIngestion()">Run</button>
+      <button class="btn-cancel-opt" onclick="hidePanel('panel-concepts')">Cancel</button>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Narrative detection section -->
+  <div class="detect-section">
+    <div class="section-title">Narrative Detection</div>
+    <div class="options-panel visible" id="panel-detection" style="display:block">
+      <h3 style="margin-bottom:12px">Run Detection</h3>
+      <div class="opt-row">
+        <div class="opt-field">
+          <label for="detect-hours">Lookback window (hours)</label>
+          <input type="number" id="detect-hours" value="{{ dune_query_window_hours }}" min="1" max="8760" style="width:120px" />
+        </div>
+      </div>
+      <div class="opt-buttons">
+        <button class="btn-confirm" onclick="runDetection()">Run Detection</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let _pendingPurgeSource = null;
+
+  function showResult(msg, type) {
+    const el = document.getElementById('result-msg');
+    el.textContent = msg;
+    el.className = 'result-msg ' + type;
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function hidePanel(id) {
+    document.getElementById(id).classList.remove('visible');
+    _pendingPurgeSource = null;
+  }
+
+  function showPanel(id) {
+    // Hide all panels first
+    document.querySelectorAll('.options-panel').forEach(p => {
+      if (p.id !== 'panel-detection') p.classList.remove('visible');
+    });
+    document.getElementById(id).classList.add('visible');
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function showPurge(source) {
+    _pendingPurgeSource = source;
+    const titles = { narratives: 'Narratives', markets: 'Market Analysis', policy: 'Policy Updates', concepts: 'Concept data' };
+    document.getElementById('purge-title').textContent = `Delete all ${titles[source] || source} data?`;
+    showPanel('panel-purge');
+  }
+
+  function showBackfill(source) { showPanel('panel-backfill-' + source); }
+  function showMarketsOptions() { showPanel('panel-markets'); }
+  function showPolicyOptions() { showPanel('panel-policy'); }
+  function showConceptsOptions() { showPanel('panel-concepts'); }
+
+  async function post(url, body) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return res.json();
+  }
+
+  async function confirmPurge() {
+    if (!_pendingPurgeSource) return;
+    const source = _pendingPurgeSource;
+    hidePanel('panel-purge');
+    showResult('Purging…', 'loading');
+    try {
+      const data = await post('/api/admin/purge/', { source });
+      showResult(data.message || (data.ok ? 'Done.' : data.error), data.ok ? 'ok' : 'err');
+    } catch (e) { showResult('Network error.', 'err'); }
+  }
+
+  async function runIngestion(source) {
+    showResult(`Running ${source} ingestion…`, 'loading');
+    try {
+      const data = await post('/api/admin/run-ingestion/', { source });
+      showResult(data.message || (data.ok ? 'Done.' : data.error), data.ok ? 'ok' : 'err');
+    } catch (e) { showResult('Network error.', 'err'); }
+  }
+
+  async function runBackfill(source) {
+    const days = source === 'narratives'
+      ? parseInt(document.getElementById('narr-bf-period').value, 10)
+      : 7;
+    const fetch_fresh = source === 'narratives'
+      ? document.getElementById('narr-bf-fetch').checked
+      : document.getElementById('pol-bf-fetch').checked;
+    hidePanel('panel-backfill-' + source);
+    showResult(`Running ${source} backfill (${days} days)… This may take several minutes.`, 'loading');
+    try {
+      const data = await post('/api/admin/backfill/', { source, days, fetch_fresh });
+      showResult(data.message || (data.ok ? 'Done.' : data.error), data.ok ? 'ok' : 'err');
+    } catch (e) { showResult('Network error.', 'err'); }
+  }
+
+  async function runMarketsIngestion() {
+    const discover_roadmaps = document.getElementById('mkt-roadmaps').checked;
+    hidePanel('panel-markets');
+    showResult('Running market analysis… This may take a while.', 'loading');
+    try {
+      const data = await post('/api/admin/run-ingestion/', { source: 'markets', discover_roadmaps });
+      showResult(data.message || (data.ok ? 'Done.' : data.error), data.ok ? 'ok' : 'err');
+    } catch (e) { showResult('Network error.', 'err'); }
+  }
+
+  async function runPolicyIngestion() {
+    hidePanel('panel-policy');
+    showResult('Fetching policy updates from Gemini…', 'loading');
+    try {
+      const data = await post('/api/admin/run-ingestion/', { source: 'policy' });
+      showResult(data.message || (data.ok ? 'Done.' : data.error), data.ok ? 'ok' : 'err');
+    } catch (e) { showResult('Network error.', 'err'); }
+  }
+
+  async function runConceptsIngestion() {
+    const source_url = document.getElementById('con-url').value.trim();
+    hidePanel('panel-concepts');
+    showResult('Running concept extraction…', 'loading');
+    try {
+      const data = await post('/api/admin/run-ingestion/', { source: 'concepts', source_url });
+      showResult(data.message || (data.ok ? 'Done.' : data.error), data.ok ? 'ok' : 'err');
+    } catch (e) { showResult('Network error.', 'err'); }
+  }
+
+  async function runDetection() {
+    const hours = parseInt(document.getElementById('detect-hours').value, 10) || {{ dune_query_window_hours }};
+    showResult(`Running narrative detection (${hours}h lookback)… This may take a few minutes.`, 'loading');
+    try {
+      const data = await post('/api/admin/run-detection/', { hours });
+      showResult(data.message || (data.ok ? 'Done.' : data.error), data.ok ? 'ok' : 'err');
+    } catch (e) { showResult('Network error.', 'err'); }
+  }
+</script>
+</body>
+</html>
