@@ -1,0 +1,32 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Massive Capital Movement Across Blockchains via Bridges",
+    "category_sector": "Infrastructure",
+    "category_actor": "Institutional",
+    "category_behavior": "Bridging",
+    "status": "NEW",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.74,
+    "key_evidence": [
+      "Over $55 billion in assets, including major stablecoins and protocol-specific tokens, moved across various blockchain bridges in a single day.",
+      "This cross-chain bridging activity is accelerating significantly, running 236% faster than the average over the last 30 days.",
+      "Notable movements include $22.7 billion via the LayerZero V2 protocol, $10.7 billion through a USDT bridge, $6.3 billion via Portal, $4.9 billion using CCIP, and $2.3 billion through the Aster Bridge."
+    ],
+    "data_caveat": "Only 24 hours of data available, so this may be an early signal rather than a confirmed trend. We also cannot determine the specific blockchains these assets are moving to or from.",
+    "historical_context": "First detection with only 24h of data; no multi-day trend yet confirmed.",
+    "implications": "This significant surge in cross-chain movement could indicate that large investors are actively repositioning their capital, potentially seeking higher yields, new decentralized applications (dapps), or preparing for upcoming network upgrades on different blockchains. It suggests a high level of activity behind the scenes that could impact liquidity and token valuations across various ecosystems in the near future.",
+    "plain_english_summary": "Huge amounts of money, over $55 billion, are rapidly shifting between different crypto networks using special tools called bridges. This suggests big players are looking for new opportunities, and this kind of movement often signals shifts in where money will flow next.",
+    "top_tokens": [
+      "LAYERZERO V2",
+      "USDT0",
+      "PORTAL",
+      "CCIP",
+      "ASTER BRIDGE"
+    ],
+    "retail_considerations": "For regular investors, this means that major players are not sitting still; they are actively moving significant funds around the crypto landscape, which can create new opportunities or shifts in market leadership for different blockchain networks. Keep an eye on announcements from major bridge protocols or specific blockchain ecosystems for signs of where this capital might be heading next, as significant inflows into a particular chain often precede increased activity and price action. On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```

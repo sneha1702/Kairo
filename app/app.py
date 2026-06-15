@@ -1173,6 +1173,7 @@ def _render_login_page() -> None:
                             except Exception as _exc:
                                 logger.warning("remember-me token creation failed: %s", _exc)
                         st.rerun()
+                        st.stop()
                     else:
                         st.error(generic_err)
 
@@ -2414,6 +2415,19 @@ def run() -> None:
         unsafe_allow_html=True,
     )
 
+    # Listen for cross-iframe navigation requests from the React app.
+    # The sandboxed component iframe cannot navigate window.top directly,
+    # so it sends a postMessage and we handle the redirect here.
+    st.html("""
+<script>
+window.addEventListener("message", function(e) {
+  if (e.data && e.data.type === "kairo-nav" && e.data.url) {
+    window.location.href = e.data.url;
+  }
+});
+</script>
+""")
+
     # Handle actions triggered by the React iframe via query params
     def _preserve_session_token():
         """Clear action params but keep auto_session so remember-me persists in URL."""
@@ -2593,8 +2607,7 @@ def run() -> None:
         with tab_admin:
             _admin_panel()
     else:
-        _tabs = st.tabs(["Kairo"])
-        tab_kairo = _tabs[0]
+        tab_kairo = st.container()
 
     # ── Kairo tab — iframe only ───────────────────────────────────────────────
     with tab_kairo:

@@ -1,0 +1,42 @@
+```json
+[
+  {
+    "narrative_id": "bridge_capital_rotation",
+    "name": "Massive Capital Movement Across Blockchains via Bridges Accelerates Further",
+    "category_sector": "Infrastructure",
+    "category_actor": "SmartMoney",
+    "category_behavior": "Rotation",
+    "status": "ACCELERATING",
+    "strength": "High",
+    "momentum": "Strengthening",
+    "confidence_score": 0.85,
+    "key_evidence": [
+      "An astonishing $57.0 billion — nearly the size of Ecuador's annual economic output — flowed across various blockchain bridges in just one day (June 14, 2026).",
+      "This cross-chain bridging activity is accelerating rapidly, running 236% faster than its 30-day average, indicating sustained and intensified movement.",
+      "Dominant protocols facilitating these massive movements include LayerZero V2 ($22.73 billion), USDT0 ($10.77 billion), Portal ($6.39 billion), CCIP ($4.93 billion), Aster Bridge ($2.37 billion), SOLVBTC ($1.84 billion), Unit ($1.70 billion), Merlins Seal ($1.36 billion), and Lighter Bridge ($1.50 billion)."
+    ],
+    "data_caveat": "This data reflects a single day of intense activity; continuation over multiple days would solidify this trend.",
+    "historical_context": "This surge represents an increase from the $54.13 billion observed previously, indicating a sustained and growing trend of capital movement between different blockchain ecosystems.",
+    "implications": "The continuous, massive movement of funds across bridges suggests that experienced investors are actively rebalancing their portfolios, seeking new opportunities, or preparing for significant shifts in different blockchain environments. This could precede notable price action or increased liquidity on specific chains as capital flows in and out.",
+    "plain_english_summary": "Big money is moving their crypto across different blockchains at a faster pace than ever before. This suggests they're positioning themselves for potential shifts or new opportunities in the market.",
+    "top_tokens": [
+      "LAYERZERO V2",
+      "USDT0",
+      "PORTAL",
+      "CCIP",
+      "ASTER BRIDGE",
+      "SOLVBTC",
+      "UNIT",
+      "MERLINS SEAL",
+      "LIGHTER BRIDGE",
+      "FREE PROTOCOL",
+      "AXELAR",
+      "EDGEX BRIDGE",
+      "APX BRIDGE",
+      "GRVT BRIDGE",
+      "SODEX BRIDGE"
+    ],
+    "retail_considerations": "When large amounts of money move between different crypto networks, it often means big investors are looking for the next big opportunity or shifting funds away from less attractive areas. This can sometimes lead to new trends or price movements on the destination blockchains.::Watch for continued high volumes on these bridges and any significant inflow spikes into specific chains, as this might indicate where professional capital is heading next.::On-chain movements are early signals that can reverse quickly — this is not financial advice."
+  }
+]
+```

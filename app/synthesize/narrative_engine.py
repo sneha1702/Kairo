@@ -548,11 +548,12 @@ class NarrativeEngine:
         )
 
         _prompt_template = (_PROMPT_DIR / "narrative_engine_prompt.txt").read_text(encoding="utf-8")
-        prompt = _prompt_template.format(
-            history_section=history_section,
-            data_freshness_header=data_freshness_header,
-            confidence_cap_note=confidence_cap_note,
-            unified_section=unified_section,
+        prompt = (
+            _prompt_template
+            .replace("{history_section}", history_section)
+            .replace("{data_freshness_header}", data_freshness_header)
+            .replace("{confidence_cap_note}", confidence_cap_note)
+            .replace("{unified_section}", unified_section)
         )
 
         # ── Save prompt to disk ────────────────────────────────────────────────

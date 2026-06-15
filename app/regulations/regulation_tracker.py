@@ -96,8 +96,8 @@ class RegulationTracker:
         deduplicate against existing MongoDB records, save only new ones.
         Returns a summary dict with saved/skipped counts.
 
-        Idempotency: the unique index on `id` combined with $setOnInsert means
-        running this twice on the same data makes zero additional writes.
+        Idempotency: the unique index on `id` prevents duplicate documents;
+        re-running with the same data updates date fields in place.
         """
         known_ids = self._get_known_ids()
         known_ids_text = (
@@ -105,7 +105,8 @@ class RegulationTracker:
             or "  (none yet — this is the first run)"
         )
 
-        prompt = _PROMPT.replace("{known_ids}", known_ids_text)
+        current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        prompt = _PROMPT.replace("{known_ids}", known_ids_text).replace("{current_date}", current_date)
 
         logger.info("[REGTRAK] Calling Gemini for regulation update (known IDs: %d)", len(known_ids))
         run_at = datetime.now(timezone.utc)
@@ -280,14 +281,14 @@ class RegulationTracker:
                 logger.warning("[REGTRAK] Regulation missing id — skipping")
                 skipped += 1
                 continue
-            if reg_id in known_ids:
-                # Already in MongoDB — $setOnInsert would also be a no-op, but skip
-                # early to avoid the round-trip.
-                skipped += 1
-                continue
 
             # Parse the publication date string into a real datetime for time-series indexing.
             event_dt = _parse_event_date(reg.get("date_of_event", ""))
+            if event_dt and event_dt.year < 2025:
+                logger.warning(
+                    "[REGTRAK] Suspicious date_of_event year=%d for %s — date=%s",
+                    event_dt.year, reg_id, reg.get("date_of_event", ""),
+                )
 
             doc = {
                 **reg,
@@ -295,15 +296,16 @@ class RegulationTracker:
                 "stored_at":      run_at,
             }
             try:
-                # $setOnInsert: if the id already exists the document is untouched.
-                # The unique index on `id` provides an additional DB-level guarantee.
+                # Use $set so that date fields can be corrected on re-runs,
+                # while still relying on the unique index for dedup.
                 self.db[self.COLLECTION_REGS].update_one(
                     {"id": reg_id},
-                    {"$setOnInsert": doc},
+                    {"$set": doc},
                     upsert=True,
                 )
+                if reg_id not in known_ids:
+                    saved += 1
                 known_ids.add(reg_id)
-                saved += 1
             except Exception as exc:
                 logger.warning("[REGTRAK] Failed to upsert %s: %s", reg_id, exc)
                 skipped += 1

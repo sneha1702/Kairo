@@ -358,6 +358,9 @@
 
   QUALITY RULES
 
+  * The current year is 2026. The current date is {current_date}.
+  * `date_of_event` MUST be the actual date the regulatory event occurred — use the 2026 year for events happening this year. Do not use 2024 or 2025.
+  * `date_captured` MUST be today's date ({current_date}).
   * Only include developments from the last 30 days.
   * Prioritise balanced coverage across China, India, EU, and US.
   * Explicitly flag contradictions such as:

@@ -59,14 +59,14 @@ function doLogoutNav() {
     u.searchParams.set("kairo_action", "logout");
     return u.toString();
   };
+  const url = buildUrl(window.top.location.href);
   try {
-    window.top.location.href = buildUrl(window.top.location.href);
+    window.top.location.href = url;
   } catch (_) {
     try {
-      window.parent.location.href = buildUrl(window.parent.location.href);
-    } catch (_2) {
-      try { window.top.location.replace("/?kairo_action=logout"); } catch (_3) {}
-    }
+      window.parent.postMessage({ type: "kairo-nav", url }, "*");
+    } catch (_2) {}
+    window.open(url, "_blank");
   }
 }
 
@@ -211,8 +211,49 @@ function App() {
 
 /* wait for all babel src modules to finish loading before first render —
    type=text/babel src scripts can resolve out of order, so gate the mount */
+function renderSkeleton() {
+  const root = document.getElementById("root");
+  if (!root || root.children.length) return;
+  root.innerHTML = `
+<div class="kairo-app" style="display:flex;height:100vh;background:var(--paper)">
+  <nav class="kairo-rail" style="width:200px;padding:4px;display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+    <div style="padding:4px 4px 28px">
+      <div style="display:flex;align-items:center;gap:11px">
+        <span style="width:30px;height:30px;border-radius:9px;background:var(--ink);display:grid;place-items:center;flex-shrink:0">
+          <span style="width:13px;height:13px;border-radius:99px;background:var(--accent);box-shadow:0 0 0 3px color-mix(in oklch,var(--accent)30%,transparent)"></span>
+        </span>
+        <span style="font-size:21px;font-weight:800;color:var(--ink)">Kairo</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">Today</div>
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">Narratives</div>
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">History</div>
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">Markets</div>
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">Policy Pulse</div>
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">Crypto 101</div>
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">Subscription</div>
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">Profile</div>
+    </div>
+    <div style="margin-top:8px;border-top:1px solid var(--hairline);padding-top:8px">
+      <div style="padding:11px 13px;border-radius:12px;color:var(--ink-4);font-size:15px;font-weight:600">Sign out</div>
+    </div>
+  </nav>
+  <main style="flex:1;display:flex;align-items:center;justify-content:center;padding:32px">
+    <div style="text-align:center">
+      <div class="kairo-spinner"></div>
+      <div style="font-size:15px;font-weight:600;color:var(--ink-3);margin-top:20px">Loading your news…</div>
+    </div>
+  </main>
+</div>
+<style>
+.kairo-spinner{width:40px;height:40px;border-radius:99px;border:3px solid var(--hairline-strong);border-top-color:var(--accent);animation:kairo-spin .8s linear infinite;margin:0 auto}
+@keyframes kairo-spin{to{transform:rotate(360deg)}}
+</style>`;
+}
 function kairoMount(attempts) {
   attempts = attempts || 0;
+  if (attempts === 0) renderSkeleton();
   const ready = window.MorningBrief && window.NarrativeTracker && window.NarrativeHistory
     && window.ConfigScreen && window.CryptoMarkets && window.PolicyPulse && window.LearnScreen
     && window.useTweaks && window.TweaksPanel && window.Icon && window.KAIRO;
