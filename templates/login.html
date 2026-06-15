@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>Kairo — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper:    oklch(0.985 0.006 80);
+      --surface:  oklch(0.995 0.004 85);
+      --surface-2:oklch(0.965 0.008 80);
+      --hairline: oklch(0.90  0.010 75);
+      --hairline-strong: oklch(0.84 0.012 70);
+      --ink:      oklch(0.27  0.012 60);
+      --ink-2:    oklch(0.42  0.012 60);
+      --ink-3:    oklch(0.58  0.012 65);
+      --ink-4:    oklch(0.70  0.010 70);
+      --accent:        oklch(0.64 0.124 42);
+      --accent-soft:   oklch(0.92 0.045 50);
+      --accent-ink:    oklch(0.46 0.115 40);
+      --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+      --r-sm: 10px; --r-md: 16px; --r-lg: 22px; --r-xl: 28px;
+      --shadow-card: 0 1px 2px oklch(0.5 0.02 60 / 0.05), 0 6px 22px oklch(0.5 0.02 60 / 0.06);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font-sans);
+      background: var(--paper);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Two-pane layout ── */
+    .auth-page {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .auth-hero-pane {
+      flex: 0.7;
+      background:
+        radial-gradient(800px 400px at 12% 10%, color-mix(in oklch, var(--accent) 18%, transparent), transparent 60%),
+        radial-gradient(700px 500px at 90% 90%, color-mix(in oklch, var(--accent) 10%, transparent), transparent 60%),
+        var(--surface);
+      border-right: 1px solid var(--hairline);
+      padding: 56px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .auth-form-pane {
+      flex: 0.3;
+      min-width: 380px;
+      background: var(--paper);
+      padding: 56px 48px;
+      display: flex;
+      align-items: center;
+    }
+
+    .auth-form-inner { width: 100%; max-width: 420px; margin: 0 auto; }
+
+    @media (max-width: 960px) {
+      .auth-page { flex-direction: column; }
+      .auth-hero-pane { flex: none; padding: 40px 28px; border-right: none; border-bottom: 1px solid var(--hairline); }
+      .auth-form-pane { flex: none; min-width: 0; padding: 40px 28px; }
+    }
+
+    /* ── Hero pane content ── */
+    .auth-hero-inner { display: flex; flex-direction: column; justify-content: space-between; flex: 1; gap: 40px; }
+    .auth-brand { display: flex; align-items: center; gap: 12px; }
+    .auth-brand-dot {
+      width: 34px; height: 34px; border-radius: 10px; background: var(--ink);
+      display: grid; place-items: center;
+    }
+    .auth-brand-dot-inner {
+      width: 14px; height: 14px; border-radius: 99px; background: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 30%, transparent);
+    }
+    .auth-brand-text { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); }
+    .auth-hero-headline {
+      font-size: 42px; line-height: 1.05; font-weight: 800;
+      color: var(--ink); letter-spacing: -0.035em; margin: 0 0 18px; max-width: 540px;
+    }
+    .auth-hero-headline em {
+      font-style: normal; color: var(--accent-ink);
+      background: linear-gradient(120deg, var(--accent-soft) 0%, transparent 100%);
+      padding: 0 4px;
+    }
+    .auth-hero-sub { font-size: 16.5px; line-height: 1.55; color: var(--ink-2); max-width: 500px; margin: 0 0 32px; }
+    .auth-pills { display: flex; flex-direction: column; gap: 12px; max-width: 500px; }
+    .auth-pill {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 16px; background: var(--surface-2);
+      border: 1px solid var(--hairline); border-radius: var(--r-md);
+    }
+    .auth-pill-mark {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+      background: var(--accent-soft); color: var(--accent-ink);
+      display: grid; place-items: center; font-size: 14px; font-weight: 800;
+    }
+    .auth-pill-title { font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; margin: 0 0 2px; }
+    .auth-pill-copy { font-size: 13px; line-height: 1.5; color: var(--ink-3); margin: 0; }
+    .auth-tagline { font-size: 12px; color: var(--ink-4); letter-spacing: 0.02em; margin-top: 8px; }
+
+    /* ── Form pane content ── */
+    .auth-card-head h2 { font-size: 24px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; margin: 0 0 8px; }
+    .auth-card-head p { font-size: 14px; color: var(--ink-3); margin: 0 0 24px; }
+
+    /* ── Tabs ── */
+    .auth-tabs {
+      display: flex; gap: 0; border-bottom: 1px solid var(--hairline); margin-bottom: 20px;
+    }
+    .auth-tab {
+      padding: 10px 0; margin-right: 24px; font-size: 14px; font-weight: 600;
+      color: var(--ink-3); background: none; border: none; border-bottom: 2px solid transparent;
+      cursor: pointer; font-family: var(--font-sans); transition: color 0.15s;
+    }
+    .auth-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+    .auth-tab-panel { display: none; }
+    .auth-tab-panel.active { display: block; }
+
+    /* ── Form fields ── */
+    .form-field { margin-bottom: 14px; }
+    .form-field label { display: block; font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+    .form-field input[type="text"],
+    .form-field input[type="password"],
+    .form-field input[type="email"] {
+      width: 100%; padding: 10px 14px;
+      background: var(--surface); border: 1px solid var(--hairline-strong);
+      border-radius: var(--r-sm); color: var(--ink); font-size: 15px;
+      font-family: var(--font-sans); outline: none; transition: border-color 0.15s;
+    }
+    .form-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    .form-check { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; }
+    .form-check input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+    .form-check label { font-size: 13.5px; color: var(--ink-2); cursor: pointer; }
+
+    .btn-primary {
+      width: 100%; padding: 11px; border-radius: var(--r-sm); border: none;
+      background: var(--accent); color: white; font-size: 14.5px; font-weight: 700;
+      font-family: var(--font-sans); cursor: pointer; letter-spacing: -0.01em;
+      transition: background 0.15s; margin-top: 4px;
+    }
+    .btn-primary:hover { background: var(--accent-ink); }
+    .btn-primary:focus { box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .auth-error {
+      background: color-mix(in oklch, oklch(0.65 0.15 30) 12%, transparent);
+      border: 1px solid color-mix(in oklch, oklch(0.65 0.15 30) 35%, transparent);
+      border-radius: var(--r-sm); padding: 10px 14px;
+      font-size: 13.5px; color: oklch(0.45 0.15 30);
+      margin-bottom: 14px; display: none;
+    }
+    .auth-error.visible { display: block; }
+
+    .auth-success {
+      background: color-mix(in oklch, oklch(0.60 0.13 150) 12%, transparent);
+      border: 1px solid color-mix(in oklch, oklch(0.60 0.13 150) 35%, transparent);
+      border-radius: var(--r-sm); padding: 10px 14px;
+      font-size: 13.5px; color: oklch(0.40 0.13 150);
+      margin-bottom: 14px; display: none;
+    }
+    .auth-success.visible { display: block; }
+
+    .auth-meta { font-size: 12px; color: var(--ink-4); margin-top: 16px; text-align: center; line-height: 1.5; }
+
+    /* ── Password strength meter ── */
+    .pw-meter { display: flex; gap: 4px; margin: 6px 0 4px; }
+    .pw-meter span { flex: 1; height: 5px; border-radius: 99px; background: var(--hairline); }
+    .pw-meter.lvl1 span:nth-child(-n+1) { background: oklch(0.65 0.15 30); }
+    .pw-meter.lvl2 span:nth-child(-n+2) { background: oklch(0.70 0.13 70); }
+    .pw-meter.lvl3 span:nth-child(-n+3) { background: oklch(0.65 0.12 130); }
+    .pw-meter.lvl4 span:nth-child(-n+4) { background: oklch(0.60 0.13 150); }
+    .pw-meter-label { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+
+    /* ── Footer ── */
+    .auth-footer {
+      border-top: 1px solid var(--hairline); background: var(--surface);
+      padding: 14px 56px; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 12px;
+      font-size: 12.5px; color: var(--ink-4);
+    }
+    .auth-footer-links { display: flex; gap: 22px; flex-wrap: wrap; }
+    .auth-footer-links a { color: var(--ink-3); text-decoration: none; font-weight: 600; transition: color 0.15s; }
+    .auth-footer-links a:hover { color: var(--ink); }
+
+    /* ── CSS-only modals ── */
+    .auth-modal { display: none; position: fixed; inset: 0; background: oklch(0.2 0.012 60 / 0.5); z-index: 9999; padding: 32px; overflow-y: auto; }
+    .auth-modal:target { display: flex; align-items: flex-start; justify-content: center; }
+    .auth-modal-backdrop { position: absolute; inset: 0; text-decoration: none; }
+    .auth-modal-card {
+      position: relative; background: var(--paper); border: 1px solid var(--hairline);
+      border-radius: var(--r-xl); box-shadow: 0 28px 70px oklch(0.25 0.02 60 / 0.22);
+      width: 100%; max-width: 640px; margin: 6vh auto; padding: 44px 48px 36px;
+    }
+    .auth-modal-close {
+      position: absolute; top: 16px; right: 16px; width: 34px; height: 34px;
+      border-radius: 99px; background: var(--surface-2); color: var(--ink-2);
+      text-decoration: none; display: grid; place-items: center;
+      font-size: 22px; line-height: 1; font-weight: 500; transition: background 0.15s;
+    }
+    .auth-modal-close:hover { background: var(--hairline); color: var(--ink); }
+    .auth-modal-card h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.025em; color: var(--ink); margin: 0 0 6px; }
+    .auth-modal-card .modal-sub { font-size: 14px; color: var(--ink-3); margin: 0 0 24px; }
+    .auth-modal-card h3 { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-3); margin: 22px 0 10px; }
+    .auth-modal-card p { color: var(--ink-2); font-size: 14.5px; line-height: 1.65; margin: 0 0 12px; }
+    .auth-modal-card ul { padding-left: 18px; color: var(--ink-2); font-size: 14.5px; line-height: 1.7; margin: 0 0 10px; }
+    .auth-modal-card ul li { margin: 4px 0; }
+    .auth-modal-card ul li strong { color: var(--ink); }
+    .auth-modal-card .modal-fineprint { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--hairline); font-size: 12.5px; color: var(--ink-4); line-height: 1.55; }
+  </style>
+</head>
+<body>
+
+<div class="auth-page">
+  <!-- Left: hero -->
+  <div class="auth-hero-pane">
+    <div class="auth-hero-inner">
+      <div class="auth-brand">
+        <div class="auth-brand-dot"><div class="auth-brand-dot-inner"></div></div>
+        <span class="auth-brand-text">Kairo</span>
+      </div>
+      <div>
+        <h1 class="auth-hero-headline">
+          Crypto intelligence, <em>built like an HNI desk</em> — for everyone.
+        </h1>
+        <p class="auth-hero-sub">
+          Kairo decodes the signals the largest investors trade on — capital flows,
+          narrative shifts, regulatory moves — and turns them into clear,
+          plain-English briefs so you can act with conviction, not noise.
+        </p>
+        <div class="auth-pills">
+          <div class="auth-pill">
+            <div class="auth-pill-mark">⇡</div>
+            <div>
+              <p class="auth-pill-title">Live narrative signals</p>
+              <p class="auth-pill-copy">Spot rotations the moment whales pivot — across L2s, AI, RWAs and more.</p>
+            </div>
+          </div>
+          <div class="auth-pill">
+            <div class="auth-pill-mark">◆</div>
+            <div>
+              <p class="auth-pill-title">Markets &amp; policy in one view</p>
+              <p class="auth-pill-copy">Price action, regulation, and on-chain flow — synthesized, not stitched together.</p>
+            </div>
+          </div>
+          <div class="auth-pill">
+            <div class="auth-pill-mark">✶</div>
+            <div>
+              <p class="auth-pill-title">A daily brief that respects your time</p>
+              <p class="auth-pill-copy">Wake up to a 3-minute read on what moved, why, and what it means for you.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="auth-tagline">Understanding, not data.</div>
+    </div>
+  </div>
+
+  <!-- Right: form -->
+  <div class="auth-form-pane">
+    <div class="auth-form-inner">
+      <div class="auth-card-head">
+        <h2>Welcome back</h2>
+        <p>Sign in to your Kairo workspace, or create an account in seconds.</p>
+      </div>
+
+      {% if error %}
+      <div class="auth-error visible" id="page-error">{{ error }}</div>
+      {% endif %}
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+      </div>
+
+      <!-- Sign-in panel -->
+      <div class="auth-tab-panel active" id="panel-signin">
+        <div class="auth-error" id="signin-error"></div>
+        <div class="form-field">
+          <label for="si-username">Username</label>
+          <input type="text" id="si-username" placeholder="your username" autocomplete="username" />
+        </div>
+        <div class="form-field">
+          <label for="si-password">Password</label>
+          <input type="password" id="si-password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div class="form-check">
+          <input type="checkbox" id="si-remember" />
+          <label for="si-remember">Keep me signed in on this device</label>
+        </div>
+        <button class="btn-primary" id="si-btn" onclick="doLogin()">Sign In</button>
+      </div>
+
+      <!-- Register panel -->
+      <div class="auth-tab-panel" id="panel-register">
+        <div class="auth-error" id="reg-error"></div>
+        <div class="auth-success" id="reg-success"></div>
+        <div class="form-field">
+          <label for="reg-username">Username</label>
+          <input type="text" id="reg-username" placeholder="3–30 chars, lowercase letters &amp; numbers" autocomplete="username" />
+        </div>
+        <div class="form-field">
+          <label for="reg-email">Email <span style="color:var(--ink-4);font-weight:400">(optional)</span></label>
+          <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="form-field">
+          <label for="reg-pass">Password</label>
+          <input type="password" id="reg-pass" placeholder="at least 10 chars, mix letters &amp; numbers"
+                 autocomplete="new-password" oninput="updatePwMeter(this.value)" />
+          <div class="pw-meter" id="pw-meter"><span></span><span></span><span></span><span></span></div>
+          <div class="pw-meter-label" id="pw-label"></div>
+        </div>
+        <div class="form-field">
+          <label for="reg-pass2">Confirm password</label>
+          <input type="password" id="reg-pass2" placeholder="repeat password" autocomplete="new-password" />
+        </div>
+        <div class="form-check">
+          <input type="checkbox" id="reg-agree" />
+          <label for="reg-agree">I agree to use Kairo for educational / research purposes — briefs are not financial advice.</label>
+        </div>
+        <button class="btn-primary" id="reg-btn" onclick="doRegister()">Create Account</button>
+      </div>
+
+      <p class="auth-meta">Kairo never shares your data. Sessions are encrypted, tokens are hashed at rest, and we rate-limit sign-in attempts.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="auth-footer">
+  <span>© 2026 Kairo. All rights reserved.</span>
+  <nav class="auth-footer-links">
+    <a href="#about">About Us</a>
+    <a href="#terms">Terms &amp; Conditions</a>
+    <a href="#privacy">Privacy</a>
+  </nav>
+</div>
+
+<!-- About modal -->
+<div id="about" class="auth-modal" role="dialog">
+  <a class="auth-modal-backdrop" href="#close"></a>
+  <div class="auth-modal-card">
+    <a class="auth-modal-close" href="#close">×</a>
+    <h2>About Kairo</h2>
+    <p class="modal-sub">Crypto intelligence, built like an HNI desk — for everyone.</p>
+    <h3>Our Mission</h3>
+    <p>Kairo exists to put the kind of market intelligence that high-net-worth and institutional desks rely on into the hands of every individual investor and curious learner. We decode capital flows, narrative shifts, and regulatory context so that digital currencies and assets become <strong>understandable</strong> and <strong>accessible</strong> — not reserved for the few.</p>
+    <h3>Our Values</h3>
+    <ul>
+      <li><strong>Clarity over noise.</strong> We summarize, we don't stream.</li>
+      <li><strong>Education first.</strong> Every signal is explained, not just reported.</li>
+      <li><strong>Privacy by default.</strong> Your data is yours.</li>
+      <li><strong>Honest about limits.</strong> Briefs are research, not financial advice.</li>
+    </ul>
+    <p class="modal-fineprint">Kairo is an independent research tool. We are not registered as an investment advisor.</p>
+  </div>
+</div>
+
+<!-- Terms modal -->
+<div id="terms" class="auth-modal" role="dialog">
+  <a class="auth-modal-backdrop" href="#close"></a>
+  <div class="auth-modal-card">
+    <a class="auth-modal-close" href="#close">×</a>
+    <h2>Terms &amp; Conditions</h2>
+    <p class="modal-sub">By using Kairo, you agree to the following.</p>
+    <h3>1. Educational Use Only</h3>
+    <p>Kairo provides research and data summaries for <strong>educational and informational purposes only</strong>. Nothing in Kairo is financial, investment, tax, or legal advice. Always consult a licensed professional before making decisions.</p>
+    <h3>2. Your Account</h3>
+    <ul>
+      <li>You are responsible for keeping your password secure.</li>
+      <li>Don't share credentials or impersonate others.</li>
+      <li>We may suspend accounts engaged in abuse or attempts to compromise the service.</li>
+    </ul>
+    <h3>3. Limitation of Liability</h3>
+    <p>To the maximum extent permitted by law, Kairo and its operators are not liable for any damages arising from your use of the service.</p>
+    <p class="modal-fineprint">Questions? Contact us at <strong>hello@kairo.app</strong>.</p>
+  </div>
+</div>
+
+<!-- Privacy modal -->
+<div id="privacy" class="auth-modal" role="dialog">
+  <a class="auth-modal-backdrop" href="#close"></a>
+  <div class="auth-modal-card">
+    <a class="auth-modal-close" href="#close">×</a>
+    <h2>Privacy</h2>
+    <p class="modal-sub">What we collect, why we collect it, and how we protect it.</p>
+    <h3>What we store</h3>
+    <ul>
+      <li>Your username and (optional) email.</li>
+      <li>Profile preferences you choose to share.</li>
+      <li>A salted, PBKDF2-hashed copy of your password — never the password itself.</li>
+      <li>Session tokens, stored only as HMAC hashes.</li>
+    </ul>
+    <h3>What we don't do</h3>
+    <ul>
+      <li>We don't sell or rent your personal data.</li>
+      <li>We don't track you across other websites.</li>
+    </ul>
+    <p class="modal-fineprint">Privacy questions? Reach us at <strong>privacy@kairo.app</strong>.</p>
+  </div>
+</div>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function clearError(id) {
+  const el = document.getElementById(id);
+  el.textContent = '';
+  el.classList.remove('visible');
+}
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+async function doLogin() {
+  clearError('signin-error');
+  const username = document.getElementById('si-username').value.trim();
+  const password = document.getElementById('si-password').value;
+  const remember_me = document.getElementById('si-remember').checked;
+  if (!username || !password) { showError('signin-error', 'Please fill in username and password.'); return; }
+  const btn = document.getElementById('si-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch('/api/auth/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, remember_me }),
+    });
+    const data = await res.json();
+    if (data.ok) { window.location.href = data.redirect || '/'; }
+    else { showError('signin-error', data.error || 'Sign-in failed.'); btn.disabled = false; btn.textContent = 'Sign In'; }
+  } catch (e) { showError('signin-error', 'Network error. Please try again.'); btn.disabled = false; btn.textContent = 'Sign In'; }
+}
+
+async function doRegister() {
+  clearError('reg-error');
+  clearError('reg-success');
+  const username = document.getElementById('reg-username').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-pass').value;
+  const password2 = document.getElementById('reg-pass2').value;
+  const agreed = document.getElementById('reg-agree').checked;
+  if (password !== password2) { showError('reg-error', 'Passwords do not match.'); return; }
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    const res = await fetch('/api/auth/register/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, agreed }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showSuccess('reg-success', data.message || 'Account created. Sign in to continue.');
+      btn.disabled = false; btn.textContent = 'Create Account';
+    } else {
+      showError('reg-error', data.error || 'Registration failed.');
+      btn.disabled = false; btn.textContent = 'Create Account';
+    }
+  } catch (e) { showError('reg-error', 'Network error. Please try again.'); btn.disabled = false; btn.textContent = 'Create Account'; }
+}
+
+function updatePwMeter(pw) {
+  let score = 0;
+  if (pw.length >= 10) score++;
+  if (/[A-Za-z]/.test(pw) && /\d/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (pw.length >= 16) score++;
+  const meter = document.getElementById('pw-meter');
+  meter.className = 'pw-meter' + (pw ? ' lvl' + Math.max(1, score) : '');
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  document.getElementById('pw-label').textContent = pw ? ('Strength: ' + (labels[Math.max(1, score)] || '')) : '';
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  const panel = document.querySelector('.auth-tab-panel.active');
+  if (panel && panel.id === 'panel-signin') doLogin();
+  else if (panel && panel.id === 'panel-register') doRegister();
+});
+</script>
+</body>
+</html>
