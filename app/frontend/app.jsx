@@ -53,39 +53,7 @@ function Logo() {
 
 function doLogoutNav() {
   try { sessionStorage.clear(); } catch (_) {}
-  const buildUrl = (base) => {
-    const u = new URL(base);
-    u.searchParams.delete("auto_session");
-    u.searchParams.set("kairo_action", "logout");
-    return u.toString();
-  };
-
-  // Reading window.top.location.href is allowed with allow-same-origin; setting it is not.
-  let topHref;
-  try { topHref = window.top.location.href; } catch (_) {}
-  if (!topHref) try { topHref = window.parent.location.href; } catch (_) {}
-  if (!topHref) topHref = window.location.href;
-  const url = buildUrl(topHref);
-
-  // Primary: postMessage to the Streamlit parent window.
-  // st.html() injects a listener there that does window.location.href = url.
-  // Setting window.top.location is silently blocked inside the sandboxed iframe
-  // (no throw, so the old try/catch fallback never fired).
-  try { window.parent.postMessage({ type: "kairo-nav", url }, "*"); } catch (_) {}
-  try { window.top.postMessage({ type: "kairo-nav", url }, "*"); } catch (_) {}
-
-  // Fallback: open an unsandboxed popup (allow-popups-to-escape-sandbox removes the
-  // sandbox from popups), navigate the opener's top frame, then close the popup.
-  try {
-    const p = window.open("about:blank", "_blank", "width=1,height=1,top=-9999,left=-9999");
-    if (p) {
-      p.document.write(
-        "<scr" + "ipt>try{window.opener.top.location.href=" + JSON.stringify(url) +
-        ";}catch(e){}window.close();<\/scr" + "ipt>"
-      );
-      p.document.close();
-    }
-  } catch (_) {}
+  window.location.href = '/logout/';
 }
 
 function Sidebar({ view, setView }) {
