@@ -89,16 +89,6 @@ def index(request):
         kairo_data.setdefault("concepts", [])
         kairo_data.setdefault("concept_groups", [])
 
-    for sess_key, cfg_key in [
-        ("_kairo_init_view", "initial_view"),
-        ("_kairo_toast", "toast"),
-        ("_kairo_pw_result", "pw_result"),
-        ("_kairo_pw_message", "pw_message"),
-    ]:
-        val = request.session.pop(sess_key, None)
-        if val:
-            kairo_data["config"][cfg_key] = val
-
     try:
         data_json = json.dumps(kairo_data, cls=_KairoEncoder, ensure_ascii=False)
     except Exception as exc:
