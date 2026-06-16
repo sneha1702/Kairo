@@ -1,6 +1,5 @@
 """
-Module-level singletons that replace st.cache_resource.
-Initialized lazily on first call; reused for the process lifetime.
+Module-level singletons initialized lazily on first call and reused for the process lifetime.
 """
 import os
 import time
