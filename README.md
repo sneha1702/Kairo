@@ -602,4 +602,4 @@ poetry  run python3 app/synthesize/signal_transformer.py --hours 48
 
 6. Launch app
 
-poetry run streamlit run app/app.py
+poetry run python manage.py runserver   
