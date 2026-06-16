@@ -53,10 +53,9 @@ def index(request):
     if redir:
         return redir
 
-    user_id = request.session.get("admin_user_id", "default")
-
     from config.config import Config as _Cfg
-    hours = int(request.session.get("detect_hours", _Cfg.DUNE_QUERY_WINDOW_HOURS))
+    user_id = "default"
+    hours = _Cfg.DUNE_QUERY_WINDOW_HOURS
 
     kairo_data = get_cached_build_data(user_id, hours)
     kairo_data.setdefault("config", {})["dune_query_window_hours"] = _Cfg.DUNE_QUERY_WINDOW_HOURS
