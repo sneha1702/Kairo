@@ -303,3 +303,8 @@ dev_feature_checklist.txt
 deploy/DEPLOYMENT.md
 bug_report.txt
 /bug_report.txt
+
+.session_store
+
+.claude
+

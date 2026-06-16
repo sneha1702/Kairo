@@ -62,7 +62,9 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:discuss.streamlit.io)",
       "WebFetch(domain:bobcares.com)",
-      "Bash(openssl s_client -connect ac-ctazhbz-shard-00-00.wwrd9ag.mongodb.net:27017 -servername ac-ctazhbz-shard-00-00.wwrd9ag.mongodb.net -tls1_2 -brief)"
+      "Bash(openssl s_client -connect ac-ctazhbz-shard-00-00.wwrd9ag.mongodb.net:27017 -servername ac-ctazhbz-shard-00-00.wwrd9ag.mongodb.net -tls1_2 -brief)",
+      "Bash(DJANGO_SETTINGS_MODULE=kairo.settings python *)",
+      "Bash(DJANGO_SETTINGS_MODULE=kairo.settings python3 *)"
     ]
   }
 }
